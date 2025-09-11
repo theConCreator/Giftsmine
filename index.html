@@ -14,26 +14,36 @@ main.active{display:block;}
 .tab-bar button.active{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);color:#fff;}
 .grid{display:grid;gap:5px;justify-content:center;}
 .mines-grid{grid-template-columns: repeat(5, minmax(50px,1fr));}
-.mine-cell,.block{aspect-ratio:1/1;background:#333;border-radius:0;display:flex;align-items:center;justify-content:center;font-size:0.9em;font-weight:bold;cursor:pointer;transition:0.2s;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,0.2);position:relative;overflow:hidden;background-size:cover;background-position:center;}
+.mine-cell,.block{aspect-ratio:1/1;background:#eee;border-radius:0;display:flex;align-items:center;justify-content:center;font-size:0.9em;font-weight:bold;cursor:pointer;transition:0.2s;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,0.2);position:relative;overflow:hidden;background-size:cover;background-position:center;}
 .mine-cell.disabled{pointer-events:none;opacity:0.6;}
-.mine-cell.revealed.safe{background:#4caf50;}
-.mine-cell.revealed.mine{background:#f44336;}
-.block-price{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.7);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
-.block-timer{position:absolute;top:2px;left:2px;background:rgba(0,0,0,0.7);padding:2px 4px;font-size:0.7em;border-radius:2px;}
+.mine-cell.revealed.safe{background:#a4f9a4;}
+.mine-cell.revealed.mine{background:#f96c6c;}
+.block-price{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.5);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
+.block-timer{position:absolute;top:2px;left:2px;background:rgba(0,0,0,0.5);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
 .inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
-.gift-item{background:#222;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.3);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;position:relative;}
+.gift-item{background:#222;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.5);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;position:relative;}
 .gift-img{width:50px;height:50px;}
 .stake-options{margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 #mineReward{border:2px dashed #aaa;padding:10px;margin-left:10px;border-radius:10px;min-width:150px;text-align:center;font-weight:bold;position:relative;}
 button#collectReward{padding:10px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;margin-left:10px;transition:0.3s;}
 button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
+#loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background-size:cover;background-position:center;background-image:url('images/loader-bg.jpg');}
+#loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .flying{position:absolute;width:80px;height:80px;pointer-events:none;z-index:1000;}
-#hint{position:absolute;left:10px;bottom:80px;font-weight:bold;color:white;}
+#mineHint{position:absolute;left:50%;bottom:60px;transform:translateX(-50%);font-size:18px;color:#fff;opacity:0.7;}
 </style>
 </head>
 <body>
 
+<div id="loader">
+  <div id="loaderAnimation"></div>
+  <p>Загрузка ресурсов...</p>
+</div>
+
 <div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
+
+<div id="mineHint">жми, жми, жми!</div>
 
 <main id="menu" class="active">
 <h2>Главное меню</h2>
@@ -42,6 +52,7 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 
 <main id="mines">
 <h2>Мины 💣</h2>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
 <div class="stake-options">
 <label><input type="radio" name="stakeType" value="ton" checked onchange="updateStakeInput()"> TON</label>
 <label><input type="radio" name="stakeType" value="gift" onchange="updateStakeInput()"> Подарок</label>
@@ -53,13 +64,14 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 <div id="mineReward">Выигрыш: –</div>
 <button id="collectReward" onclick="collectReward()">Забрать</button>
 </div>
+</div>
 <div class="grid mines-grid" id="minesGrid"></div>
+<p id="minesStatus"></p>
 </main>
 
 <main id="mine">
 <h2>Шахта ⛏️</h2>
 <div class="grid" id="mineGrid" style="grid-template-columns:repeat(4,minmax(60px,1fr))"></div>
-<div id="hint">жми, жми, жми!</div>
 </main>
 
 <main id="inventory">
@@ -76,11 +88,12 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
+// ---- Лоадер ----
+const loaderAnim=lottie.loadAnimation({container:document.getElementById('loaderAnimation'),renderer:'svg',loop:true,autoplay:true,path:'animations/loading.json'});
+
 // ---- Баланс ----
 let balance=10000;
-function updateBalance(){
-    document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
-}
+function updateBalance(){document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;}
 
 // ---- Вкладки ----
 const backgrounds={menu:'url(images/menu.jpg)',mines:'url(images/mines.jpg)',mine:'url(images/mine.jpg)',inventory:'url(images/inventory.jpg)'};
@@ -95,79 +108,11 @@ function showTab(id){
 
 // ---- Подарки ----
 const rawGifts=[
-{ name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},{name:"Lunar Snake",price:1.38},
-{name:"Snake Box",price:1.36},{name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},{name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},
-{name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},{name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},{name:"Jingle Bells",price:1.74},
-{name:"Cookie Heart",price:1.75},{name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},{name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
-{name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},{name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},{name:"Spiced Wine",price:2.12},
-{name:"Stellar Rocket",price:2.19},{name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},{name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},
-{name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},{name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},{name:"Witch Hat",price:2.86},
-{name:"Light Sword",price:3.13},{name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},{name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
-{name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},{name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},{name:"Valentine Box",price:4.2},
-{name:"Snoop Cigar",price:4.26},{name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},{name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},
-{name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},{name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},{name:"Top Hat",price:7.99},
-{name:"Trapped Heart",price:8.69},{name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},{name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
-{name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},{name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},{name:"Toy Bear",price:19.3},
-{name:"Vintage Cigar",price:23.98},{name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},{name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},
-{name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},{name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},{name:"Genie Lamp",price:47.07},
-{name:"Westside Sign",price:51.27},{name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},{name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
-{name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},{name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},{name:"Nail Bracelet",price:129.84},
-{name:"Heroic Helmet",price:219.99},{name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},{name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
-];
+// Вставь сюда полный список подарков из твоего последнего сообщения
+{name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},{name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},{name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},{name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},{name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},{name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},{name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},{name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},{name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},{name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},{name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},{name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},{name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},{name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},{name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},{name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},{name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},{name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},{name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},{name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},{name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},{name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},{name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},{name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},{name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},{name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},{name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},{name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},{name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},{name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},{name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},{name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},{name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},{name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},{name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},{name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},{name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},{name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},{name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},{name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},{name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},{name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},{name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},{name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}];
 
 const gifts=rawGifts.map(g=>({name:g.name,price:g.price,img:`emoji/${g.name}.json`}));
 let inventory=[];
-
-// ---- Функции шахты ----
-const oreTypes=[{name:'Coal',min:1,max:3,img:'images/ores/coal.png'},{name:'Iron',min:3,max:6,img:'images/ores/iron.png'},{name:'Gold',min:7,max:10,img:'images/ores/gold.png'},{name:'Diamond',min:11,max:15,img:'images/ores/diamond.png'},{name:'Emerald',min:15,max:20,img:'images/ores/emerald.png'}];
-
-function getGiftByBlockPrice(blockPrice){
-    const min=blockPrice*0.5,max=blockPrice*1.3;
-    let possible=gifts.filter(g=>g.price>=min && g.price<=max);
-    if(possible.length===0) possible=gifts.sort((a,b)=>Math.abs(a.price-blockPrice)-Math.abs(b.price-blockPrice));
-    return possible[Math.floor(Math.random()*possible.length)];
-}
-
-function spawnBlock(cell,basePrice=2){
-    const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
-    const price=+(basePrice*(0.5+Math.random()*0.8)).toFixed(2);
-    cell.className='block'; cell.style.backgroundImage=`url(${ore.img})`;
-    cell.innerHTML='';
-    const priceLabel=document.createElement('div'); priceLabel.className='block-price'; priceLabel.innerHTML=price+' <img src="ton.svg" style="width:12px;vertical-align:middle">'; cell.appendChild(priceLabel);
-    const timerLabel=document.createElement('div'); timerLabel.className='block-timer'; cell.appendChild(timerLabel);
-    let stage=0; let ready=true;
-    let recovery=0;
-    cell.onclick=()=>{
-        if(!ready||balance<price) return;
-        balance-=price; updateBalance();
-        stage++;
-        cell.style.filter=`brightness(${1-stage*0.15})`;
-        if(stage>=5){
-            ready=false;
-            const gift=getGiftByBlockPrice(price); inventory.push(gift); renderInventory();
-            // Анимация полета
-            const fly=document.createElement('div'); fly.className='flying'; document.body.appendChild(fly);
-            const rect=cell.getBoundingClientRect();
-            fly.style.left=rect.left+'px'; fly.style.top=rect.top+'px';
-            fly.innerHTML=`<img src="ton.svg" style="width:24px">`;
-            let dx=window.innerWidth-rect.left-80,dy=window.innerHeight-rect.top-80,steps=30,i=0;
-            const anim=setInterval(()=>{i++; fly.style.left=rect.left+dx*i/steps+'px'; fly.style.top=rect.top+dy*i/steps+'px'; if(i>=steps){clearInterval(anim); fly.remove();}},16);
-            const recoveryTime=Math.floor(60+Math.random()*1740); // 1–30мин
-            recovery=recoveryTime;
-            timerLabel.innerText=formatTime(recovery);
-            const interval=setInterval(()=>{
-                recovery--; timerLabel.innerText=formatTime(recovery);
-                if(recovery<=0){clearInterval(interval); stage=0; ready=true; spawnBlock(cell,price*1.05);}},1000);
-        }
-    };
-}
-
-function generateMineGrid(){
-    const grid=document.getElementById('mineGrid'); grid.innerHTML='';
-    for(let i=0;i<16;i++){
-        const cell=document.createElement('div'); spawnBlock(cell,2+Math.random()*5); grid.appendChild(cell);
-    }
-}
 
 // ---- Инвентарь ----
 function renderInventory(){
@@ -180,68 +125,82 @@ function renderInventory(){
         const tonIcon=document.createElement('img'); tonIcon.src='ton.svg'; tonIcon.style.width='16px'; tonIcon.style.verticalAlign='middle';
         info.appendChild(tonIcon);
         const sellBtn=document.createElement('button'); sellBtn.innerText=`Продать`; sellBtn.onclick=()=>{balance+=item.price;inventory.splice(index,1);renderInventory();updateBalance();};
-        div.appendChild(info); div.appendChild(sellBtn);
+        const withdrawBtn=document.createElement('button'); withdrawBtn.innerText='Вывести'; withdrawBtn.onclick=()=>{alert('Вывод позже');};
+        div.appendChild(info); div.appendChild(sellBtn); div.appendChild(withdrawBtn);
         list.appendChild(div);
     });
 }
 
-// ---- Мины ----
-let minesGrid=[]; let minesActive=false; let currentStakeValue=0; let mineMultiplier=1;
+// ---- Шахта ----
+const oreTypes=[{name:'Coal',img:'images/ores/coal.png'},{name:'Iron',img:'images/ores/iron.png'},{name:'Gold',img:'images/ores/gold.png'},{name:'Diamond',img:'images/ores/diamond.png'},{name:'Emerald',img:'images/ores/emerald.png'}];
 
-function generateMines(){
-    const grid=document.getElementById('minesGrid'); grid.innerHTML=''; minesGrid=[];
-    let mineIndexes=[];
-    while(mineIndexes.length<5){ let idx=Math.floor(Math.random()*25); if(!mineIndexes.includes(idx)) mineIndexes.push(idx);}
-    for(let i=0;i<25;i++){
-        const cell=document.createElement('div'); cell.className='mine-cell disabled';
-        const isMine=mineIndexes.includes(i); cell.dataset.mine=isMine?'1':'0';
-        cell.addEventListener('click',()=>{if(minesActive) revealMine(cell);});
-        grid.appendChild(cell); minesGrid.push(cell);
+function getGiftByBlockPrice(blockPrice){
+    const min=blockPrice*0.5, max=blockPrice*1.3;
+    let possible=gifts.filter(g=>g.price>=min && g.price<=max);
+    if(possible.length===0) possible=gifts.sort((a,b)=>Math.abs(a.price-blockPrice)-Math.abs(b.price-blockPrice));
+    return possible[Math.floor(Math.random()*possible.length)];
+}
+
+function spawnBlock(cell,basePrice=2){
+    const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
+    const price=+(basePrice*(0.7+Math.random()*0.6)).toFixed(2);
+    cell.className='block'; 
+    cell.style.backgroundImage=`url(${ore.img})`;
+    cell.innerHTML='';
+    const priceLabel=document.createElement('div'); priceLabel.className='block-price'; priceLabel.innerHTML=price+' <img src="ton.svg" style="width:12px;vertical-align:middle">'; cell.appendChild(priceLabel);
+    const timerLabel=document.createElement('div'); timerLabel.className='block-timer'; cell.appendChild(timerLabel);
+    let stage=0; let ready=false; setTimeout(()=>ready=true,500);
+    cell.onclick=()=>{
+        if(!ready) return;
+        stage++;
+        cell.style.filter=`brightness(${1-stage*0.15})`;
+        if(stage>=5){
+            balance-=price; updateBalance(); // списываем только при полном разрушении
+            const gift=getGiftByBlockPrice(price); inventory.push(gift); renderInventory();
+            // анимация полета
+            const fly=document.createElement('div'); fly.className='flying'; document.body.appendChild(fly);
+            fly.style.left=cell.getBoundingClientRect().left+'px';
+            fly.style.top=cell.getBoundingClientRect().top+'px';
+            fly.innerHTML=`🎁`;
+            const destX=window.innerWidth-100, destY=window.innerHeight-100;
+            const anim=setInterval(()=>{ 
+                const x=parseFloat(fly.style.left); const y=parseFloat(fly.style.top);
+                if(Math.abs(x-destX)<5 && Math.abs(y-destY)<5){ clearInterval(anim); fly.remove(); return;}
+                fly.style.left=x+(destX-x)/10+'px'; fly.style.top=y+(destY-y)/10+'px';
+            },16);
+            cell.onclick=null; cell.innerHTML='';
+            // восстановление через 1-30мин
+            const delay=Math.floor(1+Math.random()*30)*60000;
+            let remaining=Math.floor(delay/1000);
+            const restoreInterval=setInterval(()=>{
+                const min=Math.floor(remaining/60); const sec=remaining%60;
+                timerLabel.innerText=`${min}:${sec<10?'0'+sec:sec}`;
+                remaining--;
+                if(remaining<0){ clearInterval(restoreInterval); spawnBlock(cell, price*1.05); }
+            },1000);
+        }
+    };
+}
+
+function generateMineGrid(){
+    const grid=document.getElementById('mineGrid'); grid.innerHTML='';
+    for(let i=0;i<16;i++){
+        const cell=document.createElement('div'); spawnBlock(cell,2+Math.random()*5); grid.appendChild(cell);
     }
 }
 
-function revealMine(cell){
-    if(cell.dataset.mine==='1'){cell.classList.add('revealed','mine'); minesActive=false; document.getElementById('mineReward').innerText='Выигрыш: ПРОИГРЫШ';}
-    else{cell.classList.add('revealed','safe'); mineMultiplier+=0.1; document.getElementById('mineReward').innerText=`Выигрыш: ${currentStakeValue} × ${mineMultiplier.toFixed(1)} ≈ ${(currentStakeValue*mineMultiplier).toFixed(2)}`;}
+// ---- Предзагрузка ----
+async function preloadAssets(){
+    const images=[
+        'images/menu.jpg','images/mines.jpg','images/mine.jpg','images/inventory.jpg',
+        'images/ores/coal.png','images/ores/iron.png','images/ores/gold.png','images/ores/diamond.png','images/ores/emerald.png'
+    ];
+    const promises=images.map(src=>new Promise(resolve=>{const img=new Image();img.src=src;img.onload=resolve;img.onerror=resolve;}));
+    await Promise.all(promises);
+    document.getElementById('loader').style.display='none';
+    showTab('menu'); generateMineGrid(); updateBalance();
 }
-
-function updateStakeInput(){
-    const type=document.querySelector('input[name="stakeType"]:checked').value;
-    document.getElementById('tonStake').style.display=type==='ton'?'inline-block':'none';
-    document.getElementById('giftStake').style.display=type==='gift'?'inline-block':'none';
-}
-
-function startMines(){
-    const type=document.querySelector('input[name="stakeType"]:checked').value;
-    if(type==='ton'){
-        const stake=parseFloat(document.getElementById('tonStake').value);
-        if(isNaN(stake)||stake<0.5){alert('Минимум 0.5 TON');return;}
-        if(stake>balance){alert('Недостаточно средств');return;}
-        balance-=stake; updateBalance(); currentStakeValue=stake;
-    } else {
-        if(!inventory.length){alert('Нет подарков');return;}
-        document.getElementById('giftStake').innerHTML=inventory.map((g,i)=>`<option value="${i}">${g.name} (${g.price})</option>`).join('');
-        const idx=document.getElementById('giftStake').value; const gift=inventory.splice(idx,1)[0]; renderInventory(); currentStakeValue=gift.price;
-    }
-    mineMultiplier=1; minesActive=true;
-    document.querySelectorAll('.mine-cell').forEach(c=>c.classList.remove('disabled'));
-}
-
-// ---- Забрать ----
-function collectReward(){
-    if(!currentStakeValue||mineMultiplier<=1){alert('Нет выигрыша'); return;}
-    const rewardValue=currentStakeValue*mineMultiplier;
-    const gift=getGiftByBlockPrice(rewardValue); inventory.push(gift); renderInventory(); localStorage.setItem('inventory',JSON.stringify(inventory));
-    alert(`Вы получили ${gift.name} (~${gift.price} TON)`);
-    minesActive=false; mineMultiplier=1; currentStakeValue=0;
-    generateMines();
-    document.getElementById('mineReward').innerText='Выигрыш: –';
-}
-
-// ---- Инициализация ----
-generateMineGrid();
-generateMines();
-updateBalance();
+preloadAssets();
 </script>
 </body>
 </html>
