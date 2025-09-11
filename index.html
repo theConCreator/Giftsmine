@@ -14,12 +14,10 @@ main.active{display:block;}
 .tab-bar button.active{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);color:#333;}
 .grid{display:grid;gap:5px;justify-content:center;}
 .mines-grid{grid-template-columns: repeat(5, minmax(50px,1fr));}
-
 .mine-cell,.block{aspect-ratio:1/1;background:#eee;border-radius:0;display:flex;align-items:center;justify-content:center;font-size:0.9em;font-weight:bold;cursor:pointer;transition:0.2s;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,0.2);position:relative;overflow:hidden;background-size:cover;background-position:center;}
 .mine-cell.revealed.safe{background:#a4f9a4;}
 .mine-cell.revealed.mine{background:#f96c6c;}
 .block-price{position:absolute;bottom:2px;right:2px;background:rgba(255,255,255,0.7);padding:2px 4px;font-size:0.7em;border-radius:2px;}
-
 .inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
 .gift-item{background:#fff;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.3);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;animation:fadeIn 0.5s;position:relative;}
 .gift-item:hover{transform:scale(1.05);}
@@ -28,16 +26,15 @@ main.active{display:block;}
 #mineReward{border:2px dashed #aaa;padding:10px;margin-left:10px;border-radius:10px;min-width:150px;text-align:center;font-weight:bold;position:relative;}
 button#collectReward{padding:10px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;margin-left:10px;transition:0.3s;}
 button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
-#loader{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;}
-.spinner{width:50px;height:50px;border:5px solid #ccc;border-top:5px solid #ff9a9e;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px;}
-@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+#loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background-size:cover;background-position:center;background-image:url('images/loader-bg.jpg');}
+#loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 <body>
 
 <div id="loader">
-  <div class="spinner"></div>
+  <div id="loaderAnimation"></div>
   <p>Загрузка ресурсов...</p>
 </div>
 
@@ -84,7 +81,17 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 <button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
+// ---- Лоадер JSON анимация ----
+const loaderAnim = lottie.loadAnimation({
+  container: document.getElementById('loaderAnimation'),
+  renderer: 'svg',
+  loop: true,
+  autoplay: true,
+  path: 'animations/loading.json'
+});
+
 // ---- Баланс ----
 let balance = 10000;
 const balanceEl = document.getElementById('balance');
@@ -102,10 +109,9 @@ function showTab(id){
 }
 
 // ---- Подарки ----
-const rawGifts = [{name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"Lunar Snake",price:1.32},{name:"Plush Pepe",price:5199}]; // Можно расширить полный список
+const rawGifts = [{name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"Lunar Snake",price:1.32},{name:"Plush Pepe",price:5199}]; 
 const gifts = rawGifts.map(g=>({name:g.name,price:g.price,img:`emoji/${g.name}.json`})); 
 let inventory=[];
-
 function renderInventory(){
     const list=document.getElementById('inventoryList'); list.innerHTML='';
     inventory.forEach((item,index)=>{
@@ -128,13 +134,12 @@ const oreTypes = [
   {name:'Emerald',min:15,max:20,img:'images/ores/emerald.png'}
 ];
 
-let mineBlocks = [];
-
 function getGiftByBlockPrice(blockPrice){
   const possible = gifts.filter(g=>g.price <= blockPrice*1.2 && g.price >= blockPrice*0.8);
   return possible.length ? possible[Math.floor(Math.random()*possible.length)] : gifts[0];
 }
 
+let mineBlocks = [];
 function generateMineGrid(){
   const grid = document.getElementById('mineGrid');
   grid.innerHTML='';
@@ -186,7 +191,6 @@ function generateMines(){
     minesGrid.push(cell);
   }
 }
-
 function revealMine(cell){
   if(cell.dataset.mine==='1'){
     cell.classList.add('revealed','mine');
@@ -195,31 +199,34 @@ function revealMine(cell){
   }
 }
 
-// ---- Ставки ----
+// ---- Ставки мин ----
 function updateStakeInput(){
     const type = document.querySelector('input[name="stakeType"]:checked').value;
     document.getElementById('tonStake').style.display = type==='ton'?'inline-block':'none';
     document.getElementById('giftStake').style.display = type==='gift'?'inline-block':'none';
 }
+function startMines(){ alert('Механика ставок мин пока заглушена'); }
+function collectReward(){ alert('Механика выдачи подарков мин пока заглушена'); }
 
-function startMines(){ alert('Механика ставок мин будет здесь'); }
-function collectReward(){ alert('Механика выдачи подарка за выигрыш мин будет здесь'); }
-
-// ---- Загрузка ресурсов ----
+// ---- Предзагрузка ресурсов ----
 async function preloadAssets(){
-  const images = ['images/menu.jpg','images/mine.jpg','images/inventory.jpg','images/ores/coal.png','images/ores/iron.png','images/ores/gold.png','images/ores/diamond.png','images/ores/emerald.png'];
-  const promises = images.map(src=>{
-    return new Promise(resolve=>{
-      const img = new Image();
-      img.src=src;
-      img.onload = resolve;
+    const images = [
+        'images/menu.jpg','images/mines.jpg','images/mine.jpg','images/inventory.jpg',
+        'images/ores/coal.png','images/ores/iron.png','images/ores/gold.png','images/ores/diamond.png','images/ores/emerald.png'
+    ];
+    const promises = images.map(src => {
+        return new Promise(resolve=>{
+            const img = new Image();
+            img.src = src;
+            img.onload = resolve;
+            img.onerror = resolve; // не зависает, если ошибка
+        });
     });
-  });
-  await Promise.all(promises);
-  document.getElementById('loader').style.display='none';
-  showTab('menu');
-  generateMineGrid();
-  generateMines();
+    await Promise.all(promises);
+    document.getElementById('loader').style.display='none';
+    showTab('menu');
+    generateMineGrid();
+    generateMines();
 }
 preloadAssets();
 </script>
