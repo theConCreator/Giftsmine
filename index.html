@@ -18,7 +18,7 @@ main.active{display:block;}
 .mine-cell.disabled{pointer-events:none;opacity:0.6;}
 .mine-cell.revealed.safe{background:#a4f9a4;}
 .mine-cell.revealed.mine{background:#f96c6c;}
-.block-price{position:absolute;bottom:2px;right:2px;background:rgba(255,255,255,0.7);padding:2px 4px;font-size:0.7em;border-radius:2px;}
+.block-price{position:absolute;bottom:2px;right:2px;background:rgba(255,255,255,0.7);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
 .inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
 .gift-item{background:#fff;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.3);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;animation:fadeIn 0.5s;position:relative;}
 .gift-item:hover{transform:scale(1.05);}
@@ -40,7 +40,7 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
   <p>Загрузка ресурсов...</p>
 </div>
 
-<div id="balance">Баланс: 10000 TON</div>
+<div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
 
 <main id="menu" class="active">
 <h2>Главное меню</h2>
@@ -89,8 +89,8 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 const loaderAnim=lottie.loadAnimation({container:document.getElementById('loaderAnimation'),renderer:'svg',loop:true,autoplay:true,path:'animations/loading.json'});
 
 // ---- Баланс ----
-let balance=localStorage.getItem('balance')?+localStorage.getItem('balance'):10000;
-function updateBalance(){document.getElementById('balance').innerText=`Баланс: ${balance.toFixed(2)} TON`; localStorage.setItem('balance',balance);}
+let balance=10000;
+function updateBalance(){document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;}
 
 // ---- Вкладки ----
 const backgrounds={menu:'url(images/menu.jpg)',mines:'url(images/mines.jpg)',mine:'url(images/mine.jpg)',inventory:'url(images/inventory.jpg)'};
@@ -106,7 +106,7 @@ function showTab(id){
 // ---- Подарки ----
 const rawGifts=[{name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"Lunar Snake",price:1.32},{name:"Plush Pepe",price:5199}];
 const gifts=rawGifts.map(g=>({name:g.name,price:g.price,img:`emoji/${g.name}.json`}));
-let inventory=JSON.parse(localStorage.getItem('inventory')||'[]');
+let inventory=[];
 
 // ---- Инвентарь ----
 function renderInventory(){
@@ -115,9 +115,11 @@ function renderInventory(){
         const div=document.createElement('div'); div.className='gift-item';
         const img=document.createElement('div'); img.className='gift-img'; div.appendChild(img);
         lottie.loadAnimation({container:img,renderer:'svg',loop:true,autoplay:true,path:item.img});
-        const info=document.createElement('div'); info.innerText=item.name+' – '+item.price+'t';
-        const sellBtn=document.createElement('button'); sellBtn.innerText=`Продать (${item.price}t)`; sellBtn.onclick=()=>{balance+=item.price;inventory.splice(index,1);renderInventory();updateBalance();localStorage.setItem('inventory',JSON.stringify(inventory));};
-        const withdrawBtn=document.createElement('button'); withdrawBtn.innerText='Вывести'; withdrawBtn.onclick=()=>{alert('Вывод реализуем позже');};
+        const info=document.createElement('div'); info.innerText=item.name+' – '+item.price; 
+        const tonIcon=document.createElement('img'); tonIcon.src='ton.svg'; tonIcon.style.width='16px'; tonIcon.style.verticalAlign='middle';
+        info.appendChild(tonIcon);
+        const sellBtn=document.createElement('button'); sellBtn.innerText=`Продать`; sellBtn.onclick=()=>{balance+=item.price;inventory.splice(index,1);renderInventory();updateBalance();};
+        const withdrawBtn=document.createElement('button'); withdrawBtn.innerText='Вывести'; withdrawBtn.onclick=()=>{alert('Вывод позже');};
         div.appendChild(info); div.appendChild(sellBtn); div.appendChild(withdrawBtn);
         list.appendChild(div);
     });
@@ -125,8 +127,6 @@ function renderInventory(){
 
 // ---- Шахта ----
 const oreTypes=[{name:'Coal',min:1,max:3,img:'images/ores/coal.png'},{name:'Iron',min:3,max:6,img:'images/ores/iron.png'},{name:'Gold',min:7,max:10,img:'images/ores/gold.png'},{name:'Diamond',min:11,max:15,img:'images/ores/diamond.png'},{name:'Emerald',min:15,max:20,img:'images/ores/emerald.png'}];
-let mineBlocks=JSON.parse(localStorage.getItem('mineBlocks')||'[]');
-if(mineBlocks.length===0) mineBlocks=Array.from({length:16},()=>+(1+Math.random()*19).toFixed(2));
 
 function getGiftByBlockPrice(blockPrice){
     const min=blockPrice*0.7,max=blockPrice*1.3;
@@ -137,35 +137,36 @@ function getGiftByBlockPrice(blockPrice){
 
 function spawnBlock(cell,basePrice=2){
     const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
-    const price=+(basePrice*(0.8+Math.random()*0.4)).toFixed(2);
-    cell.dataset.price=price; cell.className='block'; cell.style.backgroundImage=`url(${ore.img})`; cell.innerHTML='';
-    const priceLabel=document.createElement('div'); priceLabel.className='block-price'; priceLabel.innerText=price+'t'; cell.appendChild(priceLabel);
-    let stage=0, decayTimer=null;
+    const price=+(basePrice*(0.7+Math.random()*0.6)).toFixed(2);
+    cell.className='block'; cell.style.backgroundImage=`url(${ore.img})`;
+    cell.innerHTML='';
+    const priceLabel=document.createElement('div'); priceLabel.className='block-price'; priceLabel.innerHTML=price+' <img src="ton.svg" style="width:12px;vertical-align:middle">'; cell.appendChild(priceLabel);
+    let stage=0; let ready=false; setTimeout(()=>ready=true,500); // небольшая задержка появления
     cell.onclick=()=>{
-        stage++; cell.style.filter=`brightness(${1-stage*0.15})`;
-        if(decayTimer) clearTimeout(decayTimer);
-        decayTimer=setTimeout(()=>{stage=Math.max(0,stage-1);cell.style.filter=`brightness(${1-stage*0.15})`;},3000);
+        if(!ready) return;
+        stage++;
+        cell.style.filter=`brightness(${1-stage*0.15})`;
         if(stage>=5){
-            const gift=getGiftByBlockPrice(price);
-            inventory.push(gift); renderInventory(); localStorage.setItem('inventory',JSON.stringify(inventory));
-            cell.innerHTML=''; cell.style.background='transparent'; cell.onclick=null;
-            setTimeout(()=>spawnBlock(cell, +(price*(1+Math.random()*0.2)).toFixed(2)),2000);
+            const gift=getGiftByBlockPrice(price); inventory.push(gift); renderInventory();
+            cell.onclick=null; cell.innerHTML='';
+            setTimeout(()=>spawnBlock(cell,price*1.05),2000);
         }
     };
 }
 
 function generateMineGrid(){
     const grid=document.getElementById('mineGrid'); grid.innerHTML='';
-    mineBlocks.forEach(p=>{ const cell=document.createElement('div'); spawnBlock(cell,p); grid.appendChild(cell); });
+    for(let i=0;i<16;i++){
+        const cell=document.createElement('div'); spawnBlock(cell,2+Math.random()*5); grid.appendChild(cell);
+    }
 }
 
 // ---- Мины ----
-let minesGrid=[], minesActive=false, mineMultiplier=1, currentStakeValue=0, minesLost=false;
+let minesGrid=[]; let minesActive=false; let minesLost=false; let mineMultiplier=1; let currentStakeValue=0;
 
 function generateMines(){
-    const grid=document.getElementById('minesGrid'); grid.innerHTML=''; minesGrid=[]; minesLost=false;
-    let mineIndexes=[];
-    while(mineIndexes.length<5){let idx=Math.floor(Math.random()*25); if(!mineIndexes.includes(idx)) mineIndexes.push(idx);}
+    const grid=document.getElementById('minesGrid'); grid.innerHTML=''; minesGrid=[];
+    let mineIndexes=[]; while(mineIndexes.length<5){let idx=Math.floor(Math.random()*25); if(!mineIndexes.includes(idx)) mineIndexes.push(idx);}
     for(let i=0;i<25;i++){
         const cell=document.createElement('div'); cell.className='mine-cell disabled';
         const isMine=mineIndexes.includes(i); cell.dataset.mine=isMine?'1':'0';
@@ -175,14 +176,8 @@ function generateMines(){
 }
 
 function revealMine(cell){
-    if(cell.dataset.mine==='1'){
-        cell.classList.add('revealed','mine'); minesActive=false; minesLost=true;
-        document.getElementById('mineReward').innerText='Выигрыш: ПРОИГРЫШ';
-        document.querySelectorAll('.mine-cell').forEach(c=>c.classList.remove('disabled'));
-    } else {
-        cell.classList.add('revealed','safe'); mineMultiplier+=0.1;
-        document.getElementById('mineReward').innerText=`Выигрыш: ${currentStakeValue} × ${mineMultiplier.toFixed(1)} ≈ ${(currentStakeValue*mineMultiplier).toFixed(2)}t`;
-    }
+    if(cell.dataset.mine==='1'){cell.classList.add('revealed','mine'); minesActive=false; minesLost=true; document.getElementById('mineReward').innerText='Выигрыш: ПРОИГРЫШ'; document.querySelectorAll('.mine-cell').forEach(c=>c.classList.remove('disabled'));}
+    else{cell.classList.add('revealed','safe'); mineMultiplier+=0.1; document.getElementById('mineReward').innerText=`Выигрыш: ${currentStakeValue} × ${mineMultiplier.toFixed(1)} ≈ ${(currentStakeValue*mineMultiplier).toFixed(2)}`;}
 }
 
 // ---- Ставки ----
@@ -200,9 +195,8 @@ function startMines(){
         balance-=stake; updateBalance(); currentStakeValue=stake;
     } else {
         if(!inventory.length){alert('Нет подарков');return;}
-        document.getElementById('giftStake').innerHTML=inventory.map((g,i)=>`<option value="${i}">${g.name} (${g.price}t)</option>`).join('');
-        const idx=document.getElementById('giftStake').value;
-        const gift=inventory.splice(idx,1)[0]; renderInventory(); currentStakeValue=gift.price;
+        document.getElementById('giftStake').innerHTML=inventory.map((g,i)=>`<option value="${i}">${g.name} (${g.price})</option>`).join('');
+        const idx=document.getElementById('giftStake').value; const gift=inventory.splice(idx,1)[0]; renderInventory(); currentStakeValue=gift.price;
     }
     mineMultiplier=1; minesActive=true; minesLost=false;
     document.querySelectorAll('.mine-cell').forEach(c=>c.classList.remove('disabled'));
@@ -215,7 +209,7 @@ function collectReward(){
     if(!currentStakeValue||mineMultiplier<=1){alert('Нет выигрыша'); return;}
     const rewardValue=currentStakeValue*mineMultiplier;
     const gift=getGiftByBlockPrice(rewardValue); inventory.push(gift); renderInventory(); localStorage.setItem('inventory',JSON.stringify(inventory));
-    alert(`Вы получили ${gift.name} (~${gift.price}t)`);
+    alert(`Вы получили ${gift.name} (~${gift.price} TON)`);
     minesActive=false; mineMultiplier=1; currentStakeValue=0;
     generateMines();
     document.getElementById('mineReward').innerText='Выигрыш: –';
