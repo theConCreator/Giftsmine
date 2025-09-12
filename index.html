@@ -115,10 +115,36 @@ let inventory=[];
 
 // --- Предзагрузка анимаций ---
 function preloadAssets(){
-  gifts.forEach(g=>{
-    fetch(`animations/${g.name}.json`).catch(()=>{});
+  const promises = gifts.map(g => 
+    fetch(`animations/${g.name}.json`)
+      .then(res => {
+        if (!res.ok) throw new Error(`Ошибка загрузки ${g.name}`);
+        return res.json();
+      })
+      .catch(() => null) // если файла нет — игнорируем
+  );
+
+  Promise.all(promises).then(() => {
+    document.getElementById('loader').style.display='none';
+    updateBalance();
+    renderMine();
+    renderMines();
   });
 }
+
+// --- Лоадер ---
+lottie.loadAnimation({
+  container:document.getElementById('loaderAnimation'),
+  renderer:'svg',
+  loop:true,
+  autoplay:true,
+  path:'animations/myLoader.json'
+});
+
+window.onload = () => {
+  preloadAssets();
+};
+
 
 // --- Подбор подарка ---
 function getGiftByPrice(blockPrice){
