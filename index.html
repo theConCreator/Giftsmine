@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
-body{margin:0;font-family:Segoe UI,sans-serif;color:#fff;display:flex;flex-direction:column;height:100vh;user-select:none;overflow:hidden;background-size:cover;background-position:center;background-repeat:no-repeat;}
+body{margin:0;font-family:Segoe UI,sans-serif;color:#fff;display:flex;flex-direction:column;height:100vh;user-select:none;overflow:hidden;background:#111;background-size:cover;background-position:center;}
 #balance{padding:15px;text-align:right;font-size:1.2em;font-weight:bold;background:rgba(0,0,0,0.15);backdrop-filter:blur(5px);}
 main{flex:1;overflow-y:auto;padding:10px;display:none;background:rgba(0,0,0,0.2);}
 main.active{display:block;}
@@ -13,7 +13,6 @@ main.active{display:block;}
 .tab-bar button{flex:1;margin:0 5px;padding:10px;border:none;background:linear-gradient(135deg,#ff9a9e,#fad0c4);color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;}
 .tab-bar button.active{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 .grid{display:grid;gap:5px;justify-content:center;}
-.mines-grid{grid-template-columns:repeat(5,minmax(50px,1fr));}
 .mine-cell,.block{aspect-ratio:1/1;background:#333;display:flex;align-items:center;justify-content:center;font-size:0.9em;font-weight:bold;cursor:pointer;transition:0.2s;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,0.2);position:relative;overflow:hidden;background-size:cover;background-position:center;}
 .mine-cell.disabled{pointer-events:none;opacity:0.6;}
 .mine-cell.revealed.safe{background:#4caf50;}
@@ -22,12 +21,9 @@ main.active{display:block;}
 .inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
 .gift-item{background:#222;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.5);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;}
 .gift-anim{width:50px;height:50px;}
-.stake-options{margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-#mineReward{border:2px dashed #aaa;padding:10px;margin-left:10px;border-radius:10px;min-width:150px;text-align:center;font-weight:bold;}
-button#collectReward{padding:10px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;margin-left:10px;}
 .flying{position:absolute;width:60px;height:60px;pointer-events:none;z-index:1000;}
-#loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background:#111;}
-#loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
+#loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background:#000;}
+#loaderAnimation{width:180px;height:180px;margin-bottom:20px;}
 </style>
 </head>
 <body>
@@ -44,28 +40,14 @@ button#collectReward{padding:10px;background:linear-gradient(135deg,#ff9a9e,#fad
 <p>Выбирай режим и зарабатывай подарки!</p>
 </main>
 
-<main id="mines">
-<h2>Мины 💣</h2>
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-<div class="stake-options">
-<label><input type="radio" name="stakeType" value="ton" checked onchange="updateStakeInput()"> TON</label>
-<label><input type="radio" name="stakeType" value="gift" onchange="updateStakeInput()"> Подарок</label>
-<input type="number" id="tonStake" min="0.5" step="0.1" placeholder="Ставка TON">
-<select id="giftStake" style="display:none"></select>
-<button onclick="startMines()">Играть</button>
-</div>
-<div>
-<div id="mineReward">Выигрыш: –</div>
-<button id="collectReward" onclick="collectReward()">Забрать</button>
-</div>
-</div>
-<div class="grid mines-grid" id="minesGrid"></div>
-<p id="minesStatus"></p>
-</main>
-
 <main id="mine">
 <h2>Шахта ⛏️</h2>
 <div class="grid" id="mineGrid" style="grid-template-columns:repeat(4,minmax(60px,1fr))"></div>
+</main>
+
+<main id="mines">
+<h2>Мины 💣</h2>
+<div class="grid mines-grid" id="minesGrid" style="grid-template-columns:repeat(5,minmax(50px,1fr))"></div>
 </main>
 
 <main id="inventory">
@@ -75,24 +57,37 @@ button#collectReward{padding:10px;background:linear-gradient(135deg,#ff9a9e,#fad
 
 <div class="tab-bar">
 <button onclick="showTab('menu')" id="tab-menu" class="active">Меню</button>
-<button onclick="showTab('mines')" id="tab-mines">Мины</button>
 <button onclick="showTab('mine')" id="tab-mine">Шахта</button>
+<button onclick="showTab('mines')" id="tab-mines">Мины</button>
 <button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
 // --- Лоадер ---
-lottie.loadAnimation({container:document.getElementById('loaderAnimation'),renderer:'svg',loop:true,autoplay:true,path:'animations/loading.json'});
-window.onload=()=>{setTimeout(()=>{document.getElementById('loader').style.display='none';},1500);};
+lottie.loadAnimation({
+  container:document.getElementById('loaderAnimation'),
+  renderer:'svg',
+  loop:true,
+  autoplay:true,
+  path:'animations/myLoader.json'
+});
+window.onload=()=>{setTimeout(()=>{document.getElementById('loader').style.display='none';preloadAssets();},2000);};
 
 // --- Баланс ---
 let balance=10000; 
-function updateBalance(){document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;}
+function updateBalance(){
+  document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
+}
 
 // --- Вкладки ---
-const backgrounds={menu:'url(images/menu.jpg)',mines:'url(images/mines.jpg)',mine:'url(images/mine.jpg)',inventory:'url(images/inventory.jpg)'};
-function showTab(id){document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');document.body.style.backgroundImage=backgrounds[id]||'none';if(id==='inventory') renderInventory();}
+function showTab(id){
+  document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='inventory') renderInventory();
+}
 
 // --- Подарки ---
 const gifts=[
@@ -118,70 +113,82 @@ const gifts=[
 
 let inventory=[];
 
-// --- Выбор подарка по цене блока ---
+// --- Предзагрузка анимаций ---
+function preloadAssets(){
+  gifts.forEach(g=>{
+    fetch(`animations/${g.name}.json`).catch(()=>{});
+  });
+}
+
+// --- Подбор подарка ---
 function getGiftByPrice(blockPrice){
-    let min=blockPrice*0.5, max=blockPrice*1.3;
-    let pool=gifts.filter(g=>g.price>=min && g.price<=max);
-    if(pool.length===0) pool=gifts;
-    return pool[Math.floor(Math.random()*pool.length)];
+  let min=blockPrice*0.5, max=blockPrice*1.3;
+  let pool=gifts.filter(g=>g.price>=min && g.price<=max);
+  if(pool.length===0) pool=gifts;
+  return pool[Math.floor(Math.random()*pool.length)];
 }
 
 // --- Шахта ---
 function renderMine(){
-    const grid=document.getElementById('mineGrid'); grid.innerHTML='';
-    for(let i=0;i<12;i++){
-        let block=document.createElement('div'); block.className='block';
-        let price=(1+Math.random()*5).toFixed(2);
-        block.dataset.price=price;
-        block.innerHTML=`<div class="block-price">${price} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-        block.onclick=()=>breakBlock(block);
-        grid.appendChild(block);
-    }
+  const grid=document.getElementById('mineGrid'); grid.innerHTML='';
+  for(let i=0;i<16;i++){ // 4x4
+    let block=document.createElement('div'); block.className='block';
+    let price=(1+Math.random()*5).toFixed(2);
+    block.dataset.price=price;
+    block.innerHTML=`<div class="block-price">${price} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+    block.onclick=()=>breakBlock(block);
+    grid.appendChild(block);
+  }
 }
 
 function breakBlock(block){
-    if(block.classList.contains('broken')) return;
-    let price=parseFloat(block.dataset.price);
-    if(balance<price){alert("Недостаточно средств!");return;}
-    balance-=price; updateBalance();
-    block.classList.add('broken'); block.style.background='#111'; block.innerHTML='';
-    let gift=getGiftByPrice(price); inventory.push(gift); flyGift(gift);
-    setTimeout(()=>{renderMine();},1000);
+  if(block.classList.contains('broken')) return;
+  let price=parseFloat(block.dataset.price);
+  if(balance<price){alert("Недостаточно средств!");return;}
+  balance-=price; updateBalance();
+  block.classList.add('broken'); block.style.background='#111'; block.innerHTML='';
+  let gift=getGiftByPrice(price); inventory.push(gift); flyGift(gift,block);
+  setTimeout(()=>{renderMine();},1000);
 }
 
 // --- Анимация подарка ---
-function flyGift(gift){
-    let flying=document.createElement('div'); flying.className='flying';
-    document.body.appendChild(flying);
-    lottie.loadAnimation({container:flying,renderer:'svg',loop:true,autoplay:true,path:`animations/${gift.name}.json`});
-    let rect=event.target.getBoundingClientRect();
-    flying.style.left=rect.left+'px'; flying.style.top=rect.top+'px';
-    let inv=document.getElementById('inventoryList').getBoundingClientRect();
-    flying.animate([{transform:`translate(0,0)`},{transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],{duration:1000,easing:'ease-in-out'});
-    setTimeout(()=>{document.body.removeChild(flying);renderInventory();},1000);
+function flyGift(gift,block){
+  let flying=document.createElement('div'); flying.className='flying';
+  document.body.appendChild(flying);
+  lottie.loadAnimation({container:flying,renderer:'svg',loop:true,autoplay:true,path:`animations/${gift.name}.json`});
+  let rect=block.getBoundingClientRect();
+  flying.style.left=rect.left+'px'; flying.style.top=rect.top+'px';
+  let inv=document.getElementById('inventoryList').getBoundingClientRect();
+  flying.animate([{transform:`translate(0,0)`},{transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],{duration:1000,easing:'ease-in-out'});
+  setTimeout(()=>{document.body.removeChild(flying);renderInventory();},1000);
 }
 
 // --- Инвентарь ---
 function renderInventory(){
-    let list=document.getElementById('inventoryList'); list.innerHTML='';
-    inventory.forEach(gift=>{
-        let div=document.createElement('div'); div.className='gift-item';
-        let anim=document.createElement('div'); anim.className='gift-anim';
-        lottie.loadAnimation({container:anim,renderer:'svg',loop:true,autoplay:true,path:`animations/${gift.name}.json`});
-        let info=document.createElement('span'); info.innerText=`${gift.name} (${gift.price} TON)`;
-        div.appendChild(anim); div.appendChild(info);
-        list.appendChild(div);
-    });
+  let list=document.getElementById('inventoryList'); list.innerHTML='';
+  inventory.forEach(gift=>{
+    let div=document.createElement('div'); div.className='gift-item';
+    let anim=document.createElement('div'); anim.className='gift-anim';
+    lottie.loadAnimation({container:anim,renderer:'svg',loop:true,autoplay:true,path:`animations/${gift.name}.json`});
+    let info=document.createElement('span'); info.innerText=`${gift.name} (${gift.price} TON)`;
+    div.appendChild(anim); div.appendChild(info);
+    list.appendChild(div);
+  });
 }
 
-// --- Мины (упрощённая версия) ---
-function updateStakeInput(){let type=document.querySelector('input[name="stakeType"]:checked').value;document.getElementById('tonStake').style.display=type==='ton'?'inline-block':'none';document.getElementById('giftStake').style.display=type==='gift'?'inline-block':'none';}
-function startMines(){const grid=document.getElementById('minesGrid'); grid.innerHTML=''; for(let i=0;i<25;i++){let c=document.createElement('div'); c.className='mine-cell'; c.onclick=()=>revealMine(c); grid.appendChild(c);} }
+// --- Мины ---
+function renderMines(){
+  const grid=document.getElementById('minesGrid'); grid.innerHTML='';
+  for(let i=0;i<25;i++){
+    let cell=document.createElement('div'); cell.className='mine-cell';
+    cell.onclick=()=>revealMine(cell);
+    grid.appendChild(cell);
+  }
+}
 function revealMine(cell){cell.classList.add('revealed','safe');}
-function collectReward(){alert("Награда собрана!");}
 
 // --- Запуск ---
-updateBalance(); renderMine();
+updateBalance(); renderMine(); renderMines();
 </script>
 </body>
 </html>
