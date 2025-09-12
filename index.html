@@ -19,6 +19,7 @@ main.active{display:block;}
 .mine-cell.revealed.safe{background:#4caf50;}
 .mine-cell.revealed.mine{background:#f44336;}
 .block-price{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.5);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
+.block.cooldown{filter:brightness(0.5);cursor:not-allowed;}
 .inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
 .gift-item{background:#222;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.5);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;position:relative;color:#fff;}
 .gift-preview{width:50px;height:50px;}
@@ -147,16 +148,20 @@ const oreTypes=[
   {img:"images/ores/emerald.png",hits:7}
 ];
 
-function getGiftByPrice(price){
-  let min=price*0.5, max=price*1.3;
+function getGiftByPrice(price,isFirst=false){
+  let min=price*0.5, max=price*1.4; // +10% к верхней границе
   let possible=gifts.filter(g=>g.price>=min&&g.price<=max);
+  if(isFirst){ // первый блок → шанс дороже
+    possible=gifts.filter(g=>g.price>=price);
+    if(possible.length===0) possible=gifts;
+  }
   if(possible.length===0) possible=gifts;
   return possible[Math.floor(Math.random()*possible.length)];
 }
 
-function spawnBlock(cell){
+function spawnBlock(cell,index=0){
   const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
-  let price=+(1+Math.random()*10).toFixed(2);
+  let price=+(1+Math.random()*11).toFixed(2); // max увеличена
   cell.className="block";
   cell.style.backgroundImage=`url(${ore.img})`;
   cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
@@ -166,14 +171,15 @@ function spawnBlock(cell){
     if(hits>=ore.hits){
       if(balance>=price){
         balance-=price; updateBalance();
-        let gift=getGiftByPrice(price);
+        let gift=getGiftByPrice(price,index===0);
         inventory.push(gift); renderInventory();
         flyGift(gift,cell);
       }
-      let respawn=(60+Math.random()*1740)*1000; // 1–30 min
+      let respawn=(60+Math.random()*1740)*1000; // 1–30 мин
+      cell.classList.add("cooldown");
       cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
       cell.onclick=null;
-      setTimeout(()=>spawnBlock(cell),respawn);
+      setTimeout(()=>{cell.classList.remove("cooldown"); spawnBlock(cell,index);},respawn);
     }
   };
 }
@@ -182,7 +188,7 @@ function generateMineGrid(){
   const grid=document.getElementById("mineGrid"); grid.innerHTML="";
   for(let i=0;i<16;i++){
     let cell=document.createElement("div");
-    spawnBlock(cell);
+    spawnBlock(cell,i);
     grid.appendChild(cell);
   }
 }
@@ -205,7 +211,7 @@ function flyGift(gift,fromCell){
 function renderInventory(){
   let list=document.getElementById("inventoryList");
   list.innerHTML="";
-  inventory.forEach((gift,i)=>{
+  inventory.forEach(gift=>{
     let div=document.createElement("div");
     div.className="gift-item";
     let prev=document.createElement("div");
@@ -227,20 +233,18 @@ function generateMines(){
   for(let i=0;i<25;i++){
     let cell=document.createElement("div");
     cell.className="mine-cell disabled";
-    cell.dataset.mine=mines.includes(i)?"1":"0";
-    cell.onclick=()=>{if(minesActive) revealMine(cell)};
+    cell.dataset.mine=mines.includes(i);
+    cell.onclick=()=>clickMine(cell);
     grid.appendChild(cell);
   }
 }
-function revealMine(cell){
-  if(cell.dataset.mine==="1"){
-    cell.classList.add("revealed","mine");
-    minesActive=false; minesLost=true;
-    document.getElementById("mineReward").innerText="Выигрыш: ПРОИГРЫШ";
+function clickMine(cell){
+  if(!minesActive||cell.classList.contains("revealed")) return;
+  cell.classList.add("revealed");
+  if(cell.dataset.mine==="true"){
+    cell.classList.add("mine"); document.getElementById("minesStatus").innerText="💥 Вы проиграли!"; minesLost=true; minesActive=false;
   } else {
-    cell.classList.add("revealed","safe");
-    mineMultiplier+=0.5;
-    document.getElementById("mineReward").innerText="Выигрыш: "+(currentStake*mineMultiplier).toFixed(2);
+    cell.classList.add("safe"); mineMultiplier+=0.5; document.getElementById("mineReward").innerText="Выигрыш: "+(currentStake*mineMultiplier).toFixed(2);
   }
 }
 function startMines(){
@@ -248,21 +252,18 @@ function startMines(){
   let stake=stakeType==="ton"?parseFloat(document.getElementById("tonStake").value):null;
   if(stakeType==="ton"&&!stake){alert("Введите ставку"); return;}
   if(stakeType==="ton"&&balance<stake){alert("Недостаточно средств"); return;}
-  if(stakeType==="ton") balance-=stake; updateBalance();
+  if(stakeType==="ton"){balance-=stake; updateBalance();}
   currentStake=stake; mineMultiplier=1; minesLost=false; minesActive=true;
   generateMines(); document.querySelectorAll(".mine-cell").forEach(c=>c.classList.remove("disabled"));
-  document.getElementById("mineReward").innerText="Выигрыш: –";
+  document.getElementById("mineReward").innerText="Выигрыш: –"; document.getElementById("minesStatus").innerText="";
 }
 function collectReward(){
   if(!minesActive&&!minesLost&&currentStake>0){
     let win=currentStake*mineMultiplier;
     if(win>=1.5){
-      let gift=getGiftByPrice(win);
-      inventory.push(gift); renderInventory();
-      alert("Вы выиграли подарок: "+gift.name);
+      let gift=getGiftByPrice(win); inventory.push(gift); renderInventory(); alert("Вы выиграли подарок: "+gift.name);
     } else {
-      balance+=win; updateBalance();
-      alert("Вы выиграли "+win.toFixed(2)+" TON");
+      balance+=win; updateBalance(); alert("Вы выиграли "+win.toFixed(2)+" TON");
     }
   }
   minesActive=false; currentStake=0; document.getElementById("mineReward").innerText="Выигрыш: –";
@@ -284,6 +285,12 @@ function preloadAssets(){
   });
 }
 window.onload=()=>{preloadAssets();};
+
+function updateStakeInput(){
+  let type=document.querySelector('input[name="stakeType"]:checked').value;
+  document.getElementById('tonStake').style.display=type==="ton"?"inline-block":"none";
+  document.getElementById('giftStake').style.display=type==="gift"?"inline-block":"none";
+}
 </script>
 </body>
 </html>
