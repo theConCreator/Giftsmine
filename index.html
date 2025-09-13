@@ -5,13 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
-@font-face {
-  font-family: 'Minecraft';
-  src: url('minecraft.ttf') format('truetype');
-}
+@font-face { font-family: 'Minecraft'; src: url('minecraft.ttf') format('truetype'); }
 body, html {
   margin:0; padding:0; height:100%;
-  font-family:'Minecraft',Segoe UI,sans-serif;
+  font-family: 'Minecraft', Segoe UI, sans-serif;
   color:#fff; overflow:hidden;
   display:flex; flex-direction:column;
   background:#000; background-size:cover; background-position:center;
@@ -148,50 +145,28 @@ function showTab(id){
 
 // --- Подарки ---
 const gifts=[
-  {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
-  {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
-  {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},
-  {name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
-  {name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},
-  {name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
-  {name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},
-  {name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
-  {name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},
-  {name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
-  {name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},
-  {name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
-  {name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},
-  {name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
-  {name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},
-  {name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
-  {name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},
-  {name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
-  {name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},
-  {name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
-  {name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},
-  {name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
-  {name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},
-  {name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
-  {name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},
-  {name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
-  {name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},
-  {name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
-  {name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},
-  {name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
-  {name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},
-  {name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
-  {name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},
-  {name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
-  {name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},
-  {name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
-  {name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},
-  {name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
-  {name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},
-  {name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
-  {name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},
-  {name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
-  {name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},
-  {name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
+  {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
+  {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},{name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
+  {name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},{name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
+  {name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},{name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
+  {name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},{name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
+  {name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},{name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
+  {name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},{name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
+  {name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},{name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
+  {name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},{name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
+  {name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},{name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
+  {name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},{name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
+  {name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},{name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
+  {name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},{name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
+  {name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},{name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
+  {name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},{name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
+  {name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},{name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
+  {name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},{name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
+  {name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},{name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
+  {name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},{name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
+  {name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},{name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
+  {name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},{name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
+  {name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},{name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
   {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
 ];
 let inventory=[];
@@ -204,7 +179,6 @@ const oreTypes=[
   {img:"images/ores/diamond.png",hits:6},
   {img:"images/ores/emerald.png",hits:7}
 ];
-
 function getGiftByPrice(price,isFirst=false){
   let min=price*0.5, max=price*1.45;
   let possible=gifts.filter(g=>g.price>=min&&g.price<=max);
@@ -212,7 +186,6 @@ function getGiftByPrice(price,isFirst=false){
   if(possible.length===0) possible=gifts;
   return possible[Math.floor(Math.random()*possible.length)];
 }
-
 function spawnBlock(cell,index=0){
   const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
   let price=+(1+Math.random()*10).toFixed(2);
@@ -235,7 +208,6 @@ function spawnBlock(cell,index=0){
     }
   };
 }
-
 function generateMineGrid(){
   const grid=document.getElementById("mineGrid"); grid.innerHTML="";
   for(let i=0;i<16;i++){
@@ -243,7 +215,7 @@ function generateMineGrid(){
   }
 }
 
-// --- Анимация полёта подарка ---
+// --- Анимация подарка ---
 function flyGift(gift,fromCell){
   const rect=fromCell.getBoundingClientRect();
   const fly=document.createElement("div");
@@ -265,29 +237,60 @@ function renderInventory(){
   let list=document.getElementById("inventoryList"); list.innerHTML="";
   inventory.forEach((gift,idx)=>{
     let div=document.createElement("div"); div.className="gift-item";
-    div.innerHTML=`<div class="gift-preview"><img src="emoji/${gift.name}.png" style="width:50px"></div>
-      <div>${gift.name} <br>${gift.price} TON</div>`;
+    let prev=document.createElement("div"); prev.className="gift-preview";
+    lottie.loadAnimation({container:prev,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
+    let info=document.createElement("div");
+    info.innerHTML=`${gift.name} – ${gift.price} <img src="ton.svg" style="width:14px;vertical-align:middle">`;
+    let actions=document.createElement("div"); actions.className="gift-actions";
+    let sellBtn=document.createElement("button");
+    sellBtn.textContent="Продать";
+    sellBtn.onclick=()=>{balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory();};
+    let withdrawBtn=document.createElement("button");
+    withdrawBtn.textContent="Вывести";
+    withdrawBtn.onclick=()=>{alert("Вывод пока не реализован");};
+    actions.appendChild(sellBtn); actions.appendChild(withdrawBtn);
+    div.appendChild(prev); div.appendChild(info); div.appendChild(actions);
     list.appendChild(div);
   });
 }
 
 // --- Мины ---
-let minesGrid=[];
-function startMines(){
+let minesActive=false, minesLost=false, mineMultiplier=1, currentStake=0;
+function generateMines(){
   const grid=document.getElementById("minesGrid"); grid.innerHTML="";
-  minesGrid=[];
+  let mines=[]; while(mines.length<5){let idx=Math.floor(Math.random()*25); if(!mines.includes(idx)) mines.push(idx);}
   for(let i=0;i<25;i++){
-    let cell=document.createElement("div"); cell.className="mine-cell";
-    cell.dataset.revealed="false"; cell.dataset.mine=Math.random()<0.2?"1":"0";
-    grid.appendChild(cell); minesGrid.push(cell);
-    cell.onclick=()=>revealMine(cell);
+    let cell=document.createElement("div"); cell.className="mine-cell disabled"; cell.dataset.mine=mines.includes(i); cell.onclick=()=>clickMine(cell); grid.appendChild(cell);
   }
 }
-function revealMine(cell){
-  if(cell.dataset.revealed==="true") return;
-  cell.dataset.revealed="true";
-  if(cell.dataset.mine==="1"){cell.classList.add("revealed","mine"); alert("Бум!");}
-  else cell.classList.add("revealed","safe");
+function clickMine(cell){
+  if(!minesActive||cell.classList.contains("revealed")) return;
+  cell.classList.add("revealed");
+  if(cell.dataset.mine==="true"){
+    cell.classList.add("mine"); document.getElementById("minesStatus").innerText="💥 Вы проиграли!";
+    minesLost=true; minesActive=false;
+  } else {
+    cell.classList.add("safe"); mineMultiplier+=0.5;
+    document.getElementById("mineReward").innerText="Выигрыш: "+(currentStake*mineMultiplier).toFixed(2);
+  }
+}
+function startMines(){
+  const stakeType=document.querySelector('input[name="stakeType"]:checked').value;
+  let stake=stakeType==="ton"?parseFloat(document.getElementById("tonStake").value):null;
+  if(stakeType==="ton"&&!stake){alert("Введите ставку"); return;}
+  if(stakeType==="ton"&&balance<stake){alert("Недостаточно средств"); return;}
+  if(stakeType==="ton"){balance-=stake; updateBalance();}
+  currentStake=stake; mineMultiplier=1; minesLost=false; minesActive=true;
+  generateMines(); document.querySelectorAll(".mine-cell").forEach(c=>c.classList.remove("disabled"));
+  document.getElementById("mineReward").innerText="Выигрыш: –"; document.getElementById("minesStatus").innerText="";
+}
+function collectReward(){
+  if(!minesActive&&!minesLost&&currentStake>0){
+    let win=currentStake*mineMultiplier;
+    if(win>=1.5){let gift=getGiftByPrice(win); inventory.push(gift); renderInventory(); alert("Вы выиграли подарок: "+gift.name);}
+    else{balance+=win; updateBalance(); alert("Вы выиграли "+win.toFixed(2)+" TON");}
+  }
+  minesActive=false; currentStake=0; document.getElementById("mineReward").innerText="Выигрыш: –";
 }
 
 // --- Рулетка Мобы ---
@@ -312,7 +315,10 @@ function renderMobs(){
     grid.appendChild(div);
   });
 }
-function selectMob(mob){selectedMob=mob; drawRoulette();}
+function selectMob(mob){
+  selectedMob=mob;
+  drawRoulette();
+}
 function drawRoulette(){
   if(!selectedMob) return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -357,15 +363,47 @@ function spinRoulette(){
 function finishSpin(result){
   if(result===0){alert("Вы проиграли!");}
   else if(result===1){balance+=selectedMob.price; updateBalance(); alert("Вы выиграли "+selectedMob.price+" TON");}
-  else if(result===2){const gift=gifts.find(g=>g.name===selectedMob.epicGift); if(gift){inventory.push(gift); renderInventory(); alert("Эпический приз: "+gift.name);}}
+  else if(result===2){
+    const gift=gifts.find(g=>g.name===selectedMob.epicGift);
+    if(gift){inventory.push(gift); renderInventory(); alert("Эпический приз: "+gift.name);}
+  }
 }
 document.getElementById("spinButton").onclick=spinRoulette;
 
-// --- Предзагрузка ---
-window.onload=()=>{
-  setTimeout(()=>document.getElementById('loader').classList.add('hidden'),1000);
-  generateMineGrid(); updateBalance();
-};
+// --- Предзагрузка и запуск игры ---
+async function preloadImages(urls){
+  return Promise.all(urls.map(url=>new Promise(res=>{
+    const img=new Image(); img.onload=img.onerror=res; img.src=url;
+  })));
+}
+async function initGame(){
+  const imagePaths=[
+    ...Object.values(backgrounds),
+    "ton.svg",
+    ...oreTypes.map(o=>o.img),
+    ...mobsData.map(m=>"mobs/"+m.name+".png"),
+    ...gifts.map(g=>"emoji/"+g.name+".png")
+  ];
+  await preloadImages(imagePaths);
+
+  document.getElementById('loader').classList.add('hidden');
+  updateBalance();
+  generateMineGrid();
+  generateMines();
+  renderMobs();
+
+  const sel=document.getElementById('giftStake'); gifts.forEach(g=>{
+    const o=document.createElement('option'); o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`; sel.appendChild(o);
+  });
+}
+initGame();
+
+// --- Ставка ---
+function updateStakeInput(){
+  const type=document.querySelector('input[name="stakeType"]:checked').value;
+  document.getElementById("tonStake").style.display=type==="ton"?"inline-block":"none";
+  document.getElementById("giftStake").style.display=type==="gift"?"inline-block":"none";
+}
 </script>
 </body>
 </html>
