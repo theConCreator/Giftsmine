@@ -5,132 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
+@font-face {
+  font-family: 'Minecraft';
+  src: url('minecraft.ttf') format('truetype');
+}
 body, html {
   margin:0; padding:0; height:100%;
-  font-family:Segoe UI,sans-serif;
+  font-family:'Minecraft', sans-serif;
   color:#fff; overflow:hidden;
   display:flex; flex-direction:column;
-  background:#000; background-size:cover; background-position:center;
+  background:#000 center/cover no-repeat;
 }
-#balance{padding:15px;text-align:right;font-size:1.2em;font-weight:bold;background:rgba(0,0,0,0.15);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,0.3);}
-main{flex:1;overflow-y:auto;padding:10px;margin-bottom:60px;display:none;background: rgba(0,0,0,0.2);}
+#balance{padding:15px;text-align:right;font-size:1.2em;font-weight:bold;background:rgba(0,0,0,0.2);}
+main{flex:1;overflow-y:auto;padding:10px;margin-bottom:60px;display:none;background:rgba(0,0,0,0.2);}
 main.active{display:block;}
-.tab-bar{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:rgba(0,0,0,0.2);padding:10px;border-top:2px solid #fff;z-index:1000;}
-.tab-bar button{flex:1;margin:0 5px;padding:10px;border:none;background:linear-gradient(135deg,#ff9a9e,#fad0c4);color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;font-size:1em;}
-.tab-bar button.active{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
+.tab-bar{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:rgba(0,0,0,0.2);padding:10px;border-top:2px solid #fff;}
+.tab-bar button{flex:1;margin:0 5px;padding:10px;border:none;background:#444;color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;}
+.tab-bar button.active{background:#888;}
 .grid{display:grid;gap:5px;justify-content:center;}
-.mines-grid{grid-template-columns: repeat(5, minmax(50px,1fr));}
-#mineGrid{grid-template-columns: repeat(4, minmax(60px,1fr));}
-.mine-cell,.block{aspect-ratio:1/1;background:#333;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.2s;position: relative;overflow:hidden;background-size:cover;background-position:center;border-radius:6px;}
+.mines-grid{grid-template-columns:repeat(5,minmax(50px,1fr));}
+#mineGrid{grid-template-columns:repeat(4,minmax(60px,1fr));}
+.mine-cell,.block{aspect-ratio:1/1;background:#333;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;border-radius:6px;}
 .mine-cell.disabled{pointer-events:none;opacity:0.6;}
 .mine-cell.revealed.safe{background:#4caf50;}
 .mine-cell.revealed.mine{background:#f44336;}
-.block-price{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.5);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
+.block-price{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.5);padding:2px 4px;font-size:0.7em;border-radius:2px;}
 .block.cooldown{filter:brightness(0.5);cursor:not-allowed;}
 .inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
-.gift-item{background:#222;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.5);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;position:relative;color:#fff;}
+.gift-item{background:#222;padding:10px;font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;color:#fff;border-radius:8px;}
 .gift-preview{width:50px;height:50px;}
 .gift-actions{display:flex;flex-direction:column;gap:4px;}
-.gift-actions button{padding:4px 6px;font-size:0.75em;cursor:pointer;border:none;border-radius:4px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);color:#fff;}
+.gift-actions button{padding:4px 6px;font-size:0.75em;cursor:pointer;border:none;border-radius:4px;background:#666;color:#fff;}
 .stake-options{margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-#mineReward{border:2px dashed #aaa;padding:10px;margin-left:10px;border-radius:10px;min-width:150px;text-align:center;font-weight:bold;position:relative;color:#fff;}
-button#collectReward{padding:10px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;margin-left:10px;transition:0.3s;}
-button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
-#loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background:#000;transition:opacity 0.6s ease;}
-#loader.hidden{opacity:0;pointer-events:none;}
+#mineReward{border:2px dashed #aaa;padding:10px;margin-left:10px;border-radius:10px;min-width:150px;text-align:center;font-weight:bold;color:#fff;}
+button#collectReward{padding:10px;background:#666;border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;margin-left:10px;}
+#loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background:#000;}
+#loader.hidden{display:none;}
 #loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
+/* Мобы */
+.mob-selection{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin-top:20px;}
+.mob-card{background:rgba(0,0,0,0.4);padding:15px;border-radius:10px;text-align:center;cursor:pointer;}
+.mob-card img{width:80px;height:80px;}
+#rouletteContainer{display:none;flex-direction:column;align-items:center;gap:20px;margin-top:20px;}
+#rouletteCanvas{width:300px;height:300px;}
+.spin-btn{padding:12px 20px;font-size:1.1em;border:none;border-radius:10px;background:#666;color:#fff;cursor:pointer;font-weight:bold;}
 .flying{position:absolute;width:80px;height:80px;pointer-events:none;z-index:10000;}
-.mobs-grid{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;}
-.mob-card{background:#222;padding:10px;border-radius:8px;flex:1 1 100px;text-align:center;cursor:pointer;transition:0.3s;}
-.mob-card:hover{background:#444;}
-#rouletteCanvas{background:#222;border-radius:50%;}
-#spinButton{padding:10px;margin-top:10px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;}
-@media (max-width:500px){.tab-bar button{font-size:0.85em;padding:8px;}#balance{font-size:1em;padding:10px;}#mineGrid,.mines-grid{gap:3px;}}
 </style>
 </head>
 <body>
 
 <div id="loader">
   <div id="loaderAnimation"></div>
-  <p style="color:#fff;font-size:1.2em;">Загрузка ресурсов...</p>
+  <p style="color:#fff">Загрузка...</p>
 </div>
 
-<div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
+<div id="balance">Баланс: 10000 <img src="ton.svg" width="16"></div>
 
-<main id="menu" class="active">
-<h2>Главное меню</h2>
-<p>Выбирай режим и зарабатывай подарки!</p>
-</main>
+<main id="menu" class="active"><h2>Меню</h2></main>
 
 <main id="mines">
-<h2>Мины 💣</h2>
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+<h2>Мины</h2>
 <div class="stake-options">
 <label><input type="radio" name="stakeType" value="ton" checked onchange="updateStakeInput()"> TON</label>
 <label><input type="radio" name="stakeType" value="gift" onchange="updateStakeInput()"> Подарок</label>
 <input type="number" id="tonStake" min="0.5" step="0.1" placeholder="Ставка TON">
 <select id="giftStake" style="display:none"></select>
 <button onclick="startMines()">Играть</button>
-</div>
-<div>
 <div id="mineReward">Выигрыш: –</div>
 <button id="collectReward" onclick="collectReward()">Забрать</button>
-</div>
 </div>
 <div class="grid mines-grid" id="minesGrid"></div>
 <p id="minesStatus"></p>
 </main>
 
 <main id="mine">
-<h2>Шахта ⛏️</h2>
+<h2>Шахта</h2>
 <div class="grid" id="mineGrid"></div>
 </main>
 
-<main id="inventory">
-<h2>Инвентарь 🎒</h2>
-<div class="inventory-list" id="inventoryList"></div>
+<main id="mobs">
+<h2>Мобы</h2>
+<div id="mobSelect" class="mob-selection"></div>
+<div id="rouletteContainer">
+  <canvas id="rouletteCanvas" width="300" height="300"></canvas>
+  <button id="spinButton" class="spin-btn">Крутить</button>
+</div>
 </main>
 
-<main id="mobs">
-<h2>Мобы 🐾</h2>
-<div class="mobs-grid" id="mobsGrid"></div>
-<canvas id="rouletteCanvas" width="400" height="400"></canvas>
-<div style="text-align:center;">
-  <button id="spinButton">Раскрутить</button>
-</div>
+<main id="inventory">
+<h2>Инвентарь</h2>
+<div class="inventory-list" id="inventoryList"></div>
 </main>
 
 <div class="tab-bar">
 <button onclick="showTab('menu')" id="tab-menu" class="active">Меню</button>
 <button onclick="showTab('mines')" id="tab-mines">Мины</button>
 <button onclick="showTab('mine')" id="tab-mine">Шахта</button>
-<button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
 <button onclick="showTab('mobs')" id="tab-mobs">Мобы</button>
+<button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
-// --- Лоадер ---
-let loaderAnim = lottie.loadAnimation({
-  container:document.getElementById('loaderAnimation'),
-  renderer:'svg', loop:true, autoplay:true,
-  path:'animations/myLoader.json'
-});
-
-// --- Баланс ---
-let balance = 10000;
+/* --- Баланс --- */
+let balance=10000;
 function updateBalance(){
-  document.getElementById('balance').innerHTML =
-    `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
+  document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" width="16">`;
 }
 
-// --- Вкладки ---
+/* --- Фоны --- */
 const backgrounds={
-  menu:'images/menu.jpg',
-  mines:'images/mines.jpg',
-  mine:'images/mine.jpg',
-  inventory:'images/inventory.jpg',
-  mobs:'images/mobs.jpg'
+  menu:'images/menu.jpg',mines:'images/mines.jpg',mine:'images/mine.jpg',
+  mobs:'images/mobs.jpg',inventory:'images/inventory.jpg'
 };
 function showTab(id){
   document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
@@ -139,10 +125,9 @@ function showTab(id){
   document.getElementById('tab-'+id).classList.add('active');
   document.body.style.backgroundImage=`url(${backgrounds[id]})`;
   if(id==='inventory') renderInventory();
-  if(id==='mobs') renderMobs();
 }
 
-// --- Подарки ---
+/* --- Подарки (полный список) --- */
 const gifts=[
   {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
   {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
@@ -191,248 +176,49 @@ const gifts=[
   {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
 ];
 let inventory=[];
-
-// --- Шахта ---
-const oreTypes=[
-  {img:"images/ores/coal.png",hits:3},
-  {img:"images/ores/iron.png",hits:4},
-  {img:"images/ores/gold.png",hits:5},
-  {img:"images/ores/diamond.png",hits:6},
-  {img:"images/ores/emerald.png",hits:7}
-];
-function getGiftByPrice(price,isFirst=false){
-  let min=price*0.5, max=price*1.45;
-  let possible=gifts.filter(g=>g.price>=min&&g.price<=max);
-  if(isFirst){possible=gifts.filter(g=>g.price>=price);if(possible.length===0) possible=gifts;}
-  if(possible.length===0) possible=gifts;
-  return possible[Math.floor(Math.random()*possible.length)];
-}
-function spawnBlock(cell,index=0){
-  const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
-  let price=+(1+Math.random()*10).toFixed(2);
-  cell.className="block";
-  cell.style.backgroundImage=`url(${ore.img})`;
-  cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-  let hits=0;
-  cell.onclick=()=>{
-    hits++;
-    if(hits>=ore.hits){
-      if(balance>=price){balance-=price; updateBalance();}
-      let gift=getGiftByPrice(price,index===0);
-      inventory.push(gift); renderInventory();
-      flyGift(gift,cell);
-      let respawn=(60+Math.random()*1740)*1000;
-      cell.classList.add("cooldown");
-      cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
-      cell.onclick=null;
-      setTimeout(()=>{cell.classList.remove("cooldown"); spawnBlock(cell,index);},respawn);
-    }
-  };
-}
-function generateMineGrid(){
-  const grid=document.getElementById("mineGrid"); grid.innerHTML="";
-  for(let i=0;i<16;i++){
-    let cell=document.createElement("div"); spawnBlock(cell,i); grid.appendChild(cell);
-  }
-}
-
-// --- Анимация подарка ---
-function flyGift(gift,fromCell){
-  const rect=fromCell.getBoundingClientRect();
-  const fly=document.createElement("div");
-  fly.className="flying";
-  fly.style.left=rect.left+"px"; fly.style.top=rect.top+"px";
-  document.body.appendChild(fly);
-  lottie.loadAnimation({container:fly,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
-  const inv=document.getElementById("tab-inventory").getBoundingClientRect();
-  fly.animate(
-    [{transform:`translate(0,0)`},
-     {transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],
-    {duration:1000,easing:"ease-in-out"}
-  );
-  setTimeout(()=>fly.remove(),1000);
-}
-
-// --- Инвентарь ---
 function renderInventory(){
-  let list=document.getElementById("inventoryList"); list.innerHTML="";
+  const c=document.getElementById("inventoryList"); c.innerHTML="";
   inventory.forEach((gift,idx)=>{
     let div=document.createElement("div"); div.className="gift-item";
-    let prev=document.createElement("div"); prev.className="gift-preview";
-    lottie.loadAnimation({container:prev,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
-    let info=document.createElement("div");
-    info.innerHTML=`${gift.name} – ${gift.price} <img src="ton.svg" style="width:14px;vertical-align:middle">`;
+    let prev=document.createElement("div"); prev.className="gift-preview"; prev.textContent=gift.name;
+    let info=document.createElement("div"); info.textContent=`${gift.price} TON`;
     let actions=document.createElement("div"); actions.className="gift-actions";
-    let sellBtn=document.createElement("button");
-    sellBtn.textContent="Продать";
-    sellBtn.onclick=()=>{balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory();};
-    let withdrawBtn=document.createElement("button");
-    withdrawBtn.textContent="Вывести";
-    withdrawBtn.onclick=()=>{alert("Вывод пока не реализован");};
-    actions.appendChild(sellBtn); actions.appendChild(withdrawBtn);
-    div.appendChild(prev); div.appendChild(info); div.appendChild(actions);
-    list.appendChild(div);
+    let sell=document.createElement("button"); sell.textContent="Продать";
+    sell.onclick=()=>{balance+=gift.price;updateBalance();inventory.splice(idx,1);renderInventory();};
+    let withdraw=document.createElement("button"); withdraw.textContent="Вывести";
+    withdraw.onclick=()=>alert("Вывод недоступен");
+    actions.appendChild(sell);actions.appendChild(withdraw);
+    div.appendChild(prev);div.appendChild(info);div.appendChild(actions);
+    c.appendChild(div);
   });
 }
 
-// --- Мины ---
-let minesActive=false, minesLost=false, mineMultiplier=1, currentStake=0;
-function generateMines(){
-  const grid=document.getElementById("minesGrid"); grid.innerHTML="";
-  let mines=[]; while(mines.length<5){let idx=Math.floor(Math.random()*25); if(!mines.includes(idx)) mines.push(idx);}
-  for(let i=0;i<25;i++){
-    let cell=document.createElement("div"); cell.className="mine-cell disabled"; cell.dataset.mine=mines.includes(i); cell.onclick=()=>clickMine(cell); grid.appendChild(cell);
-  }
-}
-function clickMine(cell){
-  if(!minesActive||cell.classList.contains("revealed")) return;
-  cell.classList.add("revealed");
-  if(cell.dataset.mine==="true"){
-    cell.classList.add("mine"); document.getElementById("minesStatus").innerText="💥 Вы проиграли!";
-    minesLost=true; minesActive=false;
-  } else {
-    cell.classList.add("safe"); mineMultiplier+=0.5;
-    document.getElementById("mineReward").innerText="Выигрыш: "+(currentStake*mineMultiplier).toFixed(2);
-  }
-}
-function startMines(){
-  const stakeType=document.querySelector('input[name="stakeType"]:checked').value;
-  let stake=stakeType==="ton"?parseFloat(document.getElementById("tonStake").value):null;
-  if(stakeType==="ton"&&!stake){alert("Введите ставку"); return;}
-  if(stakeType==="ton"&&balance<stake){alert("Недостаточно средств"); return;}
-  if(stakeType==="ton"){balance-=stake; updateBalance();}
-  currentStake=stake; mineMultiplier=1; minesLost=false; minesActive=true;
-  generateMines(); document.querySelectorAll(".mine-cell").forEach(c=>c.classList.remove("disabled"));
-  document.getElementById("mineReward").innerText="Выигрыш: –"; document.getElementById("minesStatus").innerText="";
-}
-function collectReward(){
-  if(!minesActive&&!minesLost&&currentStake>0){
-    let win=currentStake*mineMultiplier;
-    if(win>=1.5){let gift=getGiftByPrice(win); inventory.push(gift); renderInventory(); alert("Вы выиграли подарок: "+gift.name);}
-    else{balance+=win; updateBalance(); alert("Вы выиграли "+win.toFixed(2)+" TON");}
-  }
-  minesActive=false; currentStake=0; document.getElementById("mineReward").innerText="Выигрыш: –";
-}
+/* --- Шахта --- */
+const oreTypes=[{img:"images/ores/coal.png",hits:3},{img:"images/ores/iron.png",hits:4},{img:"images/ores/gold.png",hits:5},{img:"images/ores/diamond.png",hits:6},{img:"images/ores/emerald.png",hits:7}];
+function getGiftByPrice(price){let possible=gifts.filter(g=>g.price>=price*0.5&&g.price<=price*1.5);return possible.length?possible[Math.floor(Math.random()*possible.length)]:gifts[0];}
+function spawnBlock(cell){const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];let price=+(1+Math.random()*10).toFixed(2);cell.className="block";cell.style.backgroundImage=`url(${ore.img})`;cell.innerHTML=`<div class="block-price">${price}</div>`;let hits=0;cell.onclick=()=>{if(++hits>=ore.hits){if(balance>=price){balance-=price;updateBalance();}let gift=getGiftByPrice(price);inventory.push(gift);renderInventory();let respawn=(30+Math.random()*60)*1000;cell.classList.add("cooldown");cell.onclick=null;setTimeout(()=>spawnBlock(cell),respawn);}};}
+function generateMineGrid(){const grid=document.getElementById("mineGrid");grid.innerHTML="";for(let i=0;i<16;i++){let cell=document.createElement("div");spawnBlock(cell);grid.appendChild(cell);}}
 
-// --- Рулетка Мобы ---
-const mobsData=[
-  {name:"Зомби",price:1,lose:0.4,win:0.4,epicGift:"Restless Jar",color:"#0a5a0a"},
-  {name:"Паук",price:2,lose:0.3,win:0.6,epicGift:"Witch Hat",color:"#111111"},
-  {name:"Скелет",price:3,lose:0.9,win:0,epicGift:"Crystal Ball",color:"#aaaaaa"},
-  {name:"Крипер",price:5,lose:0.7,win:0.25,epicGift:"Mad Pumpkin",color:"#7fff7f"}
-];
-let selectedMob=null, spinning=false;
-const canvas=document.getElementById("rouletteCanvas");
-const ctx=canvas.getContext("2d");
-const center=canvas.width/2;
-const radius=canvas.width/2-10;
-function renderMobs(){
-  const grid=document.getElementById("mobsGrid");
-  if(grid.childElementCount>0) return;
-  mobsData.forEach(mob=>{
-    const div=document.createElement("div"); div.className="mob-card";
-    div.innerHTML=`<img src="mobs/${mob.name}.png" style="width:80px"><br>${mob.name} (${mob.price} TON)`;
-    div.onclick=()=>selectMob(mob);
-    grid.appendChild(div);
-  });
-}
-function selectMob(mob){
-  selectedMob=mob;
-  drawRoulette();
-}
-function drawRoulette(){
-  if(!selectedMob) return;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  let startAngle=0;
-  const segments=[
-    {label:"Проигрыш",value:selectedMob.lose,color:"#f44336"},
-    {label:"Выигрыш",value:selectedMob.win,color:selectedMob.color},
-    {label:"Эпик",value:1-selectedMob.lose-selectedMob.win,color:"#ffd700"}
-  ];
-  segments.forEach(seg=>{
-    const endAngle=startAngle+seg.value*2*Math.PI;
-    ctx.beginPath(); ctx.moveTo(center,center); ctx.arc(center,center,radius,startAngle,endAngle); ctx.fillStyle=seg.color; ctx.fill(); ctx.closePath();
-    startAngle=endAngle;
-  });
-  // Центр с мобом
-  const img=new Image(); img.src=`mobs/${selectedMob.name}.png`;
-  img.onload=()=>{ctx.drawImage(img,center-40,center-40,80,80);};
-}
-function spinRoulette(){
-  if(!selectedMob||spinning) return;
-  spinning=true;
-  const segments=[
-    {label:"Проигрыш",value:selectedMob.lose,color:"#f44336"},
-    {label:"Выигрыш",value:selectedMob.win,color:selectedMob.color},
-    {label:"Эпик",value:1-selectedMob.lose-selectedMob.win,color:"#ffd700"}
-  ];
-  // Определяем результат заранее
-  let rand=Math.random(), result;
-  if(rand<segments[0].value) result=0;
-  else if(rand<segments[0].value+segments[1].value) result=1;
-  else result=2;
-  // Анимация вращения
-  let rotation=0, target=Math.random()*Math.PI*2+(5*Math.PI*2); // несколько оборотов
-  const targetSegment=segments.slice(0,result).reduce((acc,s)=>acc+s.value*2*Math.PI,0)+segments[result].value*Math.PI;
-  const finalRotation=target-targetSegment;
-  const step=()=>{ 
-    rotation+=(finalRotation-rotation)*0.1; 
-    ctx.save();
-    ctx.translate(center,center); ctx.rotate(rotation); ctx.translate(-center,-center); drawRoulette(); ctx.restore();
-    if(Math.abs(finalRotation-rotation)<0.001){ finishSpin(result); spinning=false; }
-    else requestAnimationFrame(step);
-  };
-  step();
-}
-function finishSpin(result){
-  if(result===0){alert("Вы проиграли!");}
-  else if(result===1){balance+=selectedMob.price; updateBalance(); alert("Вы выиграли "+selectedMob.price+" TON");}
-  else if(result===2){
-    const gift=gifts.find(g=>g.name===selectedMob.epicGift);
-    if(gift){inventory.push(gift); renderInventory(); alert("Эпический приз: "+gift.name);}
-  }
-}
+/* --- Мины --- */
+let minesActive=false,minesLost=false,mineMultiplier=1,currentStake=0;
+function generateMines(){const grid=document.getElementById("minesGrid");grid.innerHTML="";let mines=[];while(mines.length<5){let idx=Math.floor(Math.random()*25);if(!mines.includes(idx))mines.push(idx);}for(let i=0;i<25;i++){let cell=document.createElement("div");cell.className="mine-cell disabled";cell.dataset.mine=mines.includes(i);cell.onclick=()=>clickMine(cell);grid.appendChild(cell);}}
+function clickMine(cell){if(!minesActive||cell.classList.contains("revealed"))return;cell.classList.add("revealed");if(cell.dataset.mine==="true"){cell.classList.add("mine");document.getElementById("minesStatus").innerText="💥 Проигрыш";minesLost=true;minesActive=false;}else{cell.classList.add("safe");mineMultiplier+=0.5;document.getElementById("mineReward").innerText="Выигрыш: "+(currentStake*mineMultiplier).toFixed(2);}}
+function startMines(){let stake=parseFloat(document.getElementById("tonStake").value);if(!stake||balance<stake){alert("Недостаточно средств");return;}balance-=stake;updateBalance();currentStake=stake;mineMultiplier=1;minesLost=false;minesActive=true;generateMines();document.querySelectorAll(".mine-cell").forEach(c=>c.classList.remove("disabled"));document.getElementById("mineReward").innerText="Выигрыш: –";document.getElementById("minesStatus").innerText="";}
+function collectReward(){if(!minesActive&&!minesLost&&currentStake>0){let win=currentStake*mineMultiplier;if(win>=1.5){let gift=getGiftByPrice(win);inventory.push(gift);renderInventory();alert("Вы выиграли подарок: "+gift.name);}else{balance+=win;updateBalance();alert("Выигрыш: "+win.toFixed(2)+" TON");}}minesActive=false;currentStake=0;document.getElementById("mineReward").innerText="Выигрыш: –";}
 
+/* --- Мобы с рулеткой --- */
+const mobsConfig=[{name:"Зомби",img:"mobs/zombie.png",price:1,lose:0.4,win:0.4,epicGift:"Restless Jar",colors:["#c00","#030"]},{name:"Паук",img:"mobs/spider.png",price:2,lose:0.3,win:0.6,epicGift:"Witch Hat",colors:["#c00","#333"]},{name:"Скелет",img:"mobs/skeleton.png",price:3,lose:0.9,win:0,epicGift:"Crystal Ball",colors:["#c00","#ccc"]},{name:"Крипер",img:"mobs/creeper.png",price:5,lose:0.7,win:0.25,epicGift:"Mad Pumpkin",colors:["#c00","#0f0"]}];
+let selectedMob=null,angle=0,spinning=false;
+const canvas=document.getElementById("rouletteCanvas");const ctx=canvas.getContext("2d");
+function renderMobSelection(){const c=document.getElementById("mobSelect");c.innerHTML="";mobsConfig.forEach(m=>{let card=document.createElement("div");card.className="mob-card";card.innerHTML=`<img src="${m.img}"><p>${m.name}<br>${m.price} TON</p>`;card.onclick=()=>selectMob(m);c.appendChild(card);});}
+function selectMob(mob){selectedMob=mob;document.getElementById("mobSelect").style.display="none";document.getElementById("rouletteContainer").style.display="flex";document.getElementById("spinButton").textContent=`Крутить (${mob.price} TON)`;drawRoulette();}
+function drawRoulette(){if(!selectedMob)return;const {lose,win,epicGift,colors}=selectedMob;const w=canvas.width,h=canvas.height,r=w/2;ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(r,r);ctx.rotate(angle);const sectors=[{prob:lose,color:colors[0],label:"×",outcome:"lose"},{prob:win,color:colors[1],label:`${selectedMob.price} TON`,outcome:"win"},{prob:1-lose-win,color:colors[1],label:selectedMob.epicGift,outcome:"epic"}].filter(s=>s.prob>0);let start=0;sectors.forEach(sec=>{const arc=sec.prob*2*Math.PI;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r,start,start+arc);ctx.fillStyle=sec.color;ctx.fill();ctx.save();ctx.rotate(start+arc/2);ctx.fillStyle="#fff";ctx.font="16px Minecraft";ctx.textAlign="center";ctx.fillText(sec.label,r/2,0);ctx.restore();sec.start=start;sec.end=start+arc;start+=arc;});ctx.restore();selectedMob._sectors=sectors;}
+function spinRoulette(){if(!selectedMob||spinning)return;if(balance<selectedMob.price){alert("Нет TON");return;}balance-=selectedMob.price;updateBalance();spinning=true;const rnd=Math.random()*2*Math.PI;const sec=selectedMob._sectors.find(s=>rnd>=s.start&&rnd<s.end);const finalOutcome=sec.outcome;const stopAngle=2*Math.PI-rnd;const finalAngle=10*Math.PI+stopAngle;const duration=4000,start=performance.now();function anim(t){const p=Math.min((t-start)/duration,1);angle=finalAngle*(1-Math.pow(1-p,3));drawRoulette();if(p<1)requestAnimationFrame(anim);else{spinning=false;if(finalOutcome==="win"){balance+=selectedMob.price*2;updateBalance();alert("Вы выиграли удвоение!");}if(finalOutcome==="epic"){let g=gifts.find(x=>x.name===selectedMob.epicGift);if(g){inventory.push(g);renderInventory();alert("Эпик: "+g.name);}}if(finalOutcome==="lose"){alert("Проигрыш");}}}requestAnimationFrame(anim);}
 document.getElementById("spinButton").onclick=spinRoulette;
 
-// --- Предзагрузка ---
-function preloadImages(paths){
-  return Promise.all(paths.map(src=>new Promise(res=>{
-    const img=new Image(); img.onload=res; img.onerror=res; img.src=src;
-  })));
-}
-function preloadAssets(){
-  const startTime=Date.now();
-  const imagePaths=[
-    ...Object.values(backgrounds),
-    "ton.svg",
-    ...oreTypes.map(o=>o.img),
-    ...mobsData.map(m=>"mobs/"+m.name+".png")
-  ];
-  preloadImages(imagePaths).then(()=>{
-    const elapsed = Date.now()-startTime;
-    const delay = Math.max(2000-elapsed,0);
-    setTimeout(()=>{
-      document.getElementById('loader').classList.add('hidden');
-      document.body.style.opacity='1';
-      updateBalance(); generateMineGrid(); generateMines();
-      let sel=document.getElementById('giftStake');
-      gifts.forEach(g=>{
-        let o=document.createElement('option');
-        o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`;
-        sel.appendChild(o);
-      });
-    },delay);
-  });
-}
-preloadAssets();
-
-// --- Ставка ---
-function updateStakeInput(){
-  const type=document.querySelector('input[name="stakeType"]:checked').value;
-  document.getElementById("tonStake").style.display=type==="ton"?"inline-block":"none";
-  document.getElementById("giftStake").style.display=type==="gift"?"inline-block":"none";
-}
+/* --- Лоадер и ассеты --- */
+function preload(){const imgs=[...Object.values(backgrounds),...mobsConfig.map(m=>m.img),...oreTypes.map(o=>o.img),"ton.svg"];let promises=imgs.map(src=>new Promise(r=>{let i=new Image();i.onload=r;i.onerror=r;i.src=src;}));Promise.all(promises).then(()=>{document.getElementById("loader").classList.add("hidden");updateBalance();generateMineGrid();generateMines();renderMobSelection();});}
+window.onload=preload;
 </script>
 </body>
 </html>
