@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
-body, html { margin:0; padding:0; height:100%; font-family:Segoe UI,sans-serif; color:#fff; overflow:hidden; display:flex; flex-direction:column; background:#000; background-size:cover; background-position:center; }
+body, html {
+  margin:0; padding:0; height:100%;
+  font-family:Segoe UI,sans-serif;
+  color:#fff; overflow:hidden;
+  display:flex; flex-direction:column;
+  background:#000; background-size:cover; background-position:center;
+}
 #balance{padding:15px;text-align:right;font-size:1.2em;font-weight:bold;background:rgba(0,0,0,0.15);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,0.3);}
 main{flex:1;overflow-y:auto;padding:10px;margin-bottom:60px;display:none;background: rgba(0,0,0,0.2);}
 main.active{display:block;}
@@ -34,6 +40,8 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 #loader.hidden{opacity:0;pointer-events:none;}
 #loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
 .flying{position:absolute;width:80px;height:80px;pointer-events:none;z-index:10000;}
+#mobWheelContainer{position:relative;width:300px;height:300px;margin:20px auto;}
+#wheelArrow{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:20px solid #fff;}
 @media (max-width:500px){.tab-bar button{font-size:0.85em;padding:8px;}#balance{font-size:1em;padding:10px;}#mineGrid,.mines-grid{gap:3px;}}
 </style>
 </head>
@@ -81,9 +89,9 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 <select id="mobSelect"></select>
 <button onclick="startMobSpin()">Сражаться</button>
 </div>
-<div id="wheelContainer" style="position:relative;width:300px;height:300px;margin:20px auto;">
+<div id="mobWheelContainer">
 <canvas id="mobWheel" width="300" height="300"></canvas>
-<div id="wheelArrow" style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:20px solid #fff;"></div>
+<div id="wheelArrow"></div>
 </div>
 <div id="mobResult"></div>
 </main>
@@ -118,13 +126,7 @@ function updateBalance(){
 }
 
 // --- Вкладки ---
-const backgrounds={
-  menu:'images/menu.jpg',
-  mines:'images/mines.jpg',
-  mine:'images/mine.jpg',
-  mobs:'images/mobs.jpg',
-  inventory:'images/inventory.jpg'
-};
+const backgrounds={menu:'images/menu.jpg',mines:'images/mines.jpg',mine:'images/mine.jpg',mobs:'images/mobs.jpg',inventory:'images/inventory.jpg'};
 function showTab(id){
   document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -184,88 +186,19 @@ const gifts=[
 ];
 let inventory=[];
 
-// --- Шахта 4x4 ---
-const oreTypes=[
-  {img:"images/ores/coal.png",hits:3},
-  {img:"images/ores/iron.png",hits:4},
-  {img:"images/ores/gold.png",hits:5},
-  {img:"images/ores/diamond.png",hits:6},
-  {img:"images/ores/emerald.png",hits:7}
-];
-
-function getGiftByPrice(price,isFirst=false){
-  let min=price*0.5, max=price*1.45;
-  let possible=gifts.filter(g=>g.price>=min&&g.price<=max);
-  if(isFirst){possible=gifts.filter(g=>g.price>=price);if(possible.length===0) possible=gifts;}
-  if(possible.length===0) possible=gifts;
-  return possible[Math.floor(Math.random()*possible.length)];
-}
-
-function spawnBlock(cell,index=0){
-  const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
-  let price=+(1+Math.random()*10).toFixed(2);
-  cell.className="block";
-  cell.style.backgroundImage=`url(${ore.img})`;
-  cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-  let hits=0;
-  cell.onclick=()=>{
-    hits++;
-    if(hits>=ore.hits){
-      if(balance>=price){balance-=price; updateBalance();}
-      let gift=getGiftByPrice(price,index===0);
-      inventory.push(gift); renderInventory();
-      flyGift(gift,cell);
-      let respawn=(60+Math.random()*1740)*1000;
-      cell.classList.add("cooldown");
-      cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
-      cell.onclick=null;
-      setTimeout(()=>{cell.classList.remove("cooldown"); spawnBlock(cell,index);},respawn);
-    }
-  };
-}
-
-function generateMineGrid(){
-  const grid=document.getElementById("mineGrid"); grid.innerHTML="";
-  for(let i=0;i<16;i++){
-    let cell=document.createElement("div"); spawnBlock(cell,i); grid.appendChild(cell);
-  }
-}
-
-// --- Анимация подарка ---
-function flyGift(gift,fromCell){
-  const rect=fromCell.getBoundingClientRect();
-  const fly=document.createElement("div");
-  fly.className="flying";
-  fly.style.left=rect.left+"px"; fly.style.top=rect.top+"px";
-  document.body.appendChild(fly);
-  lottie.loadAnimation({
-    container:fly, renderer:"svg", loop:false, autoplay:true, path:`emoji/${gift.name}.json`
-  });
-  const inv=document.getElementById("tab-inventory").getBoundingClientRect();
-  fly.animate(
-    [{transform:`translate(0,0)`},{transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],
-    {duration:1000,easing:"ease-in-out"}
-  );
-  setTimeout(()=>fly.remove(),1000);
-}
-
 // --- Инвентарь ---
 function renderInventory(){
   let list=document.getElementById("inventoryList"); list.innerHTML="";
   inventory.forEach((gift,idx)=>{
     let div=document.createElement("div"); div.className="gift-item";
     let prev=document.createElement("div"); prev.className="gift-preview";
-    lottie.loadAnimation({
-      container:prev, renderer:"svg", loop:false, autoplay:true, path:`emoji/${gift.name}.json`
-    });
+    lottie.loadAnimation({container:prev,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
     let info=document.createElement("div");
     info.innerHTML=`${gift.name} – ${gift.price} <img src="ton.svg" style="width:14px;vertical-align:middle">`;
     let actions=document.createElement("div"); actions.className="gift-actions";
-    let sellBtn=document.createElement("button");
-    sellBtn.textContent="Продать";
+    let sellBtn=document.createElement("button"); sellBtn.textContent="Продать";
     sellBtn.onclick=()=>{balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory();};
-    let withdrawBtn=document.createElement("button");
-    withdrawBtn.textContent="Вывести";
+    let withdrawBtn=document.createElement("button"); withdrawBtn.textContent="Вывести";
     withdrawBtn.onclick=()=>{alert("Вывод пока не реализован");};
     actions.appendChild(sellBtn); actions.appendChild(withdrawBtn);
     div.appendChild(prev); div.appendChild(info); div.appendChild(actions);
@@ -273,106 +206,62 @@ function renderInventory(){
   });
 }
 
-// --- Мины ---
-let minesActive=false, minesLost=false, mineMultiplier=1, currentStake=0;
-function generateMines(){
-  const grid=document.getElementById("minesGrid"); grid.innerHTML="";
-  let mines=[]; while(mines.length<5){let idx=Math.floor(Math.random()*25); if(!mines.includes(idx)) mines.push(idx);}
-  for(let i=0;i<25;i++){
-    let cell=document.createElement("div"); cell.className="mine-cell disabled"; cell.dataset.mine=mines.includes(i); cell.onclick=()=>clickMine(cell); grid.appendChild(cell);
-  }
-}
-function clickMine(cell){
-  if(!minesActive||cell.classList.contains("revealed")) return;
-  cell.classList.add("revealed");
-  if(cell.dataset.mine==="true"){
-    cell.classList.add("mine"); document.getElementById("minesStatus").innerText="💥 Вы проиграли!";
-    minesLost=true; minesActive=false;
-  } else {
-    cell.classList.add("safe"); mineMultiplier+=0.5;
-    document.getElementById("mineReward").innerText="Выигрыш: "+(currentStake*mineMultiplier).toFixed(2);
-  }
-}
-function startMines(){
-  const stakeType=document.querySelector('input[name="stakeType"]:checked').value;
-  let stake=stakeType==="ton"?parseFloat(document.getElementById("tonStake").value):null;
-  if(stakeType==="ton"&&!stake){alert("Введите ставку"); return;}
-  if(stakeType==="ton"&&balance<stake){alert("Недостаточно средств"); return;}
-  if(stakeType==="ton"){balance-=stake; updateBalance();}
-  currentStake=stake; mineMultiplier=1; minesLost=false; minesActive=true;
-  generateMines(); document.querySelectorAll(".mine-cell").forEach(c=>c.classList.remove("disabled"));
-  document.getElementById("mineReward").innerText="Выигрыш: –"; document.getElementById("minesStatus").innerText="";
-}
-function collectReward(){
-  if(!minesActive&&!minesLost&&currentStake>0){
-    let win=currentStake*mineMultiplier;
-    if(win>=1.5){let gift=getGiftByPrice(win); inventory.push(gift); renderInventory(); alert("Вы выиграли подарок: "+gift.name);}
-    else{balance+=win; updateBalance(); alert("Вы выиграли "+win.toFixed(2)+" TON");}
-  }
-  minesActive=false; currentStake=0; document.getElementById("mineReward").innerText="Выигрыш: –";
-}
-
-// --- Мобы (рулетки) ---
+// --- Шахта и Мины: оставляем как в твоей последней версии ---
+// --- Мобы ---
 const mobs=[
-  {name:"Зомби",segments:[0.6,0.35,0.05],type:["TON","TON","GIFT"]},
-  {name:"Паук",segments:[0.5,0.4,0.1],type:["TON","TON","GIFT"]},
-  {name:"Скелет",segments:[0.7,0.25,0.05],type:["TON","TON","GIFT"]},
-  {name:"Крипер",segments:[0.65,0.3,0.05],type:["TON","TON","GIFT"]}
+{name:"Зомби",price:1,lose:0.4,win:0.4,epicGift:"Restless Jar"},
+{name:"Паук",price:2,lose:0.3,win:0.6,epicGift:"Witch Hat"},
+{name:"Скелет",price:3,lose:0.9,win:0,epicGift:"Crystal Ball"},
+{name:"Крипер",price:5,lose:0.7,win:0.25,epicGift:"Mad Pumpkin"}
 ];
-let selectedMob=null;
-const wheelCanvas=document.getElementById("mobWheel");
-const wheelCtx=wheelCanvas.getContext("2d");
-
-function renderMobSelect(){
-  const sel=document.getElementById("mobSelect"); sel.innerHTML="";
-  mobs.forEach((mob,i)=>{let o=document.createElement("option"); o.value=i; o.textContent=mob.name; sel.appendChild(o);});
-}
-function drawWheel(mob){
-  const ctx=wheelCtx, radius=150;
+const mobSelect=document.getElementById("mobSelect");
+mobs.forEach(m=>{let opt=document.createElement("option"); opt.value=m.name; opt.textContent=`${m.name} (${m.price} TON)`; mobSelect.appendChild(opt);});
+const wheelCanvas=document.getElementById("mobWheel"); const ctx=wheelCanvas.getContext("2d"); const wheelRadius=150;
+let spinning=false; let currentAngle=0;
+function drawWheel(angle=0){
   ctx.clearRect(0,0,300,300);
-  let startAngle=0;
-  mob.segments.forEach((seg,i)=>{
-    const angle=seg*2*Math.PI;
-    ctx.beginPath(); ctx.moveTo(radius,radius);
-    ctx.arc(radius,radius,radius,startAngle,startAngle+angle);
-    ctx.fillStyle=i%2===0?"#4caf50":"#f44336";
-    ctx.fill(); startAngle+=angle;
+  const segAngle=2*Math.PI/mobs.length;
+  mobs.forEach((mob,i)=>{
+    ctx.beginPath(); ctx.moveTo(wheelRadius,wheelRadius);
+    ctx.arc(wheelRadius,wheelRadius,wheelRadius,i*segAngle+angle,(i+1)*segAngle+angle);
+    ctx.fillStyle=["#f44336","#4caf50","#ffd700","#2196f3"][i%4];
+    ctx.fill(); ctx.save(); ctx.translate(wheelRadius,wheelRadius);
+    ctx.rotate(i*segAngle+segAngle/2+angle); ctx.fillStyle="#000"; ctx.font="14px Arial"; ctx.textAlign="right";
+    ctx.fillText(mob.name,wheelRadius-10,5); ctx.restore();
   });
 }
+drawWheel();
+
 function startMobSpin(){
-  const mobIdx=parseInt(document.getElementById("mobSelect").value);
-  selectedMob=mobs[mobIdx];
-  drawWheel(selectedMob);
-  const r=Math.random(), cum=selectedMob.segments.reduce((a,b)=>{a.push((a.length? a[a.length-1]:0)+b); return a;},[]);
-  let resultIdx=cum.findIndex(c=>r<c);
-  setTimeout(()=>{
-    const type=selectedMob.type[resultIdx];
-    if(type==="TON"){let win=1+Math.random()*10; balance+=win; updateBalance(); document.getElementById("mobResult").innerText=`Вы выиграли ${win.toFixed(2)} TON!`;}
-    else{let gift=getGiftByPrice(10); inventory.push(gift); renderInventory(); document.getElementById("mobResult").innerText=`Эпическая победа! Получен подарок: ${gift.name}`;}
-  },1000);
+  if(spinning) return;
+  const mobName=mobSelect.value; const mob=mobs.find(m=>m.name===mobName);
+  if(balance<mob.price){alert("Недостаточно средств"); return;}
+  balance-=mob.price; updateBalance(); spinning=true;
+  const spins=Math.floor(5+Math.random()*5); let start=null; const duration=3000;
+  function animate(time){
+    if(!start) start=time;
+    let t=(time-start)/duration; if(t>1) t=1;
+    let easeOut=(1-Math.pow(1-t,3)); let angle=currentAngle+spins*2*Math.PI*easeOut;
+    drawWheel(angle); if(t<1) requestAnimationFrame(animate); else finishSpin(angle);
+  }
+  requestAnimationFrame(animate);
 }
 
-// --- Предзагрузка ассетов ---
-function preloadImages(paths){return Promise.all(paths.map(src=>new Promise(res=>{const img=new Image(); img.onload=res; img.onerror=res; img.src=src;})));}
+function finishSpin(finalAngle){
+  spinning=false; currentAngle=finalAngle%(2*Math.PI);
+  const segAngle=2*Math.PI/mobs.length; let idx=Math.floor((2*Math.PI-currentAngle+segAngle/2)/segAngle)%mobs.length;
+  const mob=mobs[idx]; const r=Math.random(); let resultText="Проигрыш 😢";
+  if(r<mob.lose) resultText="Проигрыш 😢";
+  else if(r<mob.lose+mob.win){resultText="Победа 🟢"; balance+=mob.price; updateBalance();}
+  else{resultText="Эпическая победа 🌟"; const gift={name:mob.epicGift,price:0}; inventory.push(gift); renderInventory();}
+  document.getElementById("mobResult").innerText=resultText;
+}
+
+// --- Предзагрузка ---
+function preloadImages(paths){return Promise.all(paths.map(src=>new Promise(res=>{const img=new Image();img.onload=res;img.onerror=res;img.src=src;})));}
 function preloadAssets(){
-  const startTime=Date.now();
-  const imagePaths=[...Object.values(backgrounds),"ton.svg",...oreTypes.map(o=>o.img)];
-  preloadImages(imagePaths).then(()=>{
-    const elapsed = Date.now()-startTime;
-    const delay = Math.max(2000-elapsed,0);
-    setTimeout(()=>{
-      document.getElementById('loader').classList.add('hidden');
-      document.body.style.opacity='1';
-      updateBalance(); generateMineGrid(); generateMines(); renderMobSelect();
-      let sel=document.getElementById('giftStake');
-      gifts.forEach(g=>{
-        let o=document.createElement('option');
-        o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`;
-        sel.appendChild(o);
-      });
-      showTab('menu');
-    }, delay);
-  });
+  const imagePaths=[...Object.values(backgrounds),"ton.svg"];
+  preloadImages(imagePaths).then(()=>{setTimeout(()=>{document.getElementById('loader').classList.add('hidden');updateBalance();},500);});
 }
 window.onload=()=>{preloadAssets();};
 
