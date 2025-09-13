@@ -371,22 +371,79 @@ function preloadImages(paths){
     img.src=src;
   })));
 }
-function preloadAssets(){
-  const imagePaths=[...Object.values(backgrounds),"ton.svg",...oreTypes.map(o=>o.img),...mobsData.map(m=>"mobs/"+m.name+".png")];
-  preloadImages(imagePaths).then(()=>{
-    setTimeout(()=>{
-      document.getElementById('loader').classList.add('hidden');
-      document.body.style.opacity='1';
-      updateBalance(); generateMineGrid(); generateMines();
-      const sel=document.getElementById('giftStake');
-      gifts.forEach(g=>{
-        const o=document.createElement('option');
-        o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`;
-        sel.appendChild(o);
-      });
-    },300);
+function preloadAssets() {
+  const startTime = Date.now();
+
+  const imagePaths = [
+    ...Object.values(backgrounds),
+    "ton.svg",
+    ...oreTypes.map(o => o.img),
+    ...mobsData.map(m => "mobs/" + m.name + ".png")
+  ];
+
+  // Создаем прогрессбар
+  const loader = document.getElementById('loader');
+  const progressBar = document.createElement('div');
+  progressBar.style.position = 'absolute';
+  progressBar.style.bottom = '50px';
+  progressBar.style.left = '50%';
+  progressBar.style.transform = 'translateX(-50%)';
+  progressBar.style.width = '70%';
+  progressBar.style.height = '10px';
+  progressBar.style.background = 'rgba(255,255,255,0.2)';
+  progressBar.style.borderRadius = '5px';
+  loader.appendChild(progressBar);
+
+  const progressFill = document.createElement('div');
+  progressFill.style.width = '0%';
+  progressFill.style.height = '100%';
+  progressFill.style.background = '#ff9a9e';
+  progressFill.style.borderRadius = '5px';
+  progressBar.appendChild(progressFill);
+
+  let loadedCount = 0;
+
+  // Прогрузка изображений
+  imagePaths.forEach(src => {
+    const img = new Image();
+    img.onload = img.onerror = () => {
+      loadedCount++;
+      progressFill.style.width = ((loadedCount / imagePaths.length) * 100).toFixed(2) + '%';
+    };
+    img.src = src;
   });
+
+  // Ждем пока все изображения загрузятся
+  const checkLoaded = setInterval(() => {
+    if (loadedCount >= imagePaths.length) {
+      clearInterval(checkLoaded);
+
+      const elapsed = Date.now() - startTime;
+      const delay = Math.max(1000 - elapsed, 0); // минимум 1 сек на прогрессбар
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        document.body.style.opacity = '1';
+
+        // Устанавливаем фон главного меню сразу
+        document.body.style.backgroundImage = `url(${backgrounds['menu']})`;
+        void document.body.offsetHeight; // форсируем перерисовку
+
+        updateBalance();
+        generateMineGrid();
+        generateMines();
+
+        const sel = document.getElementById('giftStake');
+        gifts.forEach(g => {
+          const o = document.createElement('option');
+          o.value = g.name;
+          o.textContent = `${g.name} (${g.price} TON)`;
+          sel.appendChild(o);
+        });
+      }, delay);
+    }
+  }, 50);
 }
+
 preloadAssets();
 
 // --- Ставка ---
