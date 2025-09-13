@@ -27,7 +27,7 @@ main.active{display:block;}
 .mine-cell.revealed.mine{background:#f44336;}
 .block-price{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.5);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
 .block.cooldown{filter:brightness(0.5);cursor:not-allowed;}
-.inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
+.inventory-list{display:flex;flex-wrap:wrap;gap:10px;position:fixed;bottom:70px;right:10px;max-width:300px;}
 .gift-item{background:#222;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.5);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;position:relative;color:#fff;}
 .gift-preview{width:50px;height:50px;}
 .gift-actions{display:flex;flex-direction:column;gap:4px;}
@@ -40,6 +40,9 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 #loader.hidden{opacity:0;pointer-events:none;}
 #loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
 .flying{position:absolute;width:80px;height:80px;pointer-events:none;z-index:10000;}
+.mob-wheel{width:300px;height:300px;border-radius:50%;border:4px solid #fff;position:relative;margin:20px auto;background:#222;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;}
+.mob-segment{position:absolute;width:50%;height:50%;top:0;left:50%;transform-origin:0% 100%;display:flex;align-items:flex-end;justify-content:center;text-align:center;color:#fff;}
+#mobResult{margin-top:10px;font-size:1.2em;font-weight:bold;text-align:center;}
 @media (max-width:500px){.tab-bar button{font-size:0.85em;padding:8px;}#balance{font-size:1em;padding:10px;}#mineGrid,.mines-grid{gap:3px;}}
 </style>
 </head>
@@ -52,11 +55,13 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 
 <div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
 
+<!-- Главное меню -->
 <main id="menu" class="active">
 <h2>Главное меню</h2>
 <p>Выбирай режим и зарабатывай подарки!</p>
 </main>
 
+<!-- Мины -->
 <main id="mines">
 <h2>Мины 💣</h2>
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
@@ -76,21 +81,36 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 <p id="minesStatus"></p>
 </main>
 
+<!-- Шахта -->
 <main id="mine">
 <h2>Шахта ⛏️</h2>
 <div class="grid" id="mineGrid"></div>
 </main>
 
+<!-- Инвентарь -->
 <main id="inventory">
 <h2>Инвентарь 🎒</h2>
 <div class="inventory-list" id="inventoryList"></div>
 </main>
 
+<!-- Мобы -->
+<main id="mobs">
+<h2>Сражения с мобами ⚔️</h2>
+<div class="stake-options">
+<select id="mobSelect"></select>
+<button onclick="startMobFight()">Сражаться</button>
+</div>
+<div class="mob-wheel" id="wheel">🎲</div>
+<div id="mobResult"></div>
+</main>
+
+<!-- Вкладки -->
 <div class="tab-bar">
 <button onclick="showTab('menu')" id="tab-menu" class="active">Меню</button>
 <button onclick="showTab('mines')" id="tab-mines">Мины</button>
 <button onclick="showTab('mine')" id="tab-mine">Шахта</button>
 <button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
+<button onclick="showTab('mobs')" id="tab-mobs">Мобы</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
@@ -114,7 +134,8 @@ const backgrounds={
   menu:'images/menu.jpg',
   mines:'images/mines.jpg',
   mine:'images/mine.jpg',
-  inventory:'images/inventory.jpg'
+  inventory:'images/inventory.jpg',
+  mobs:'images/mobs.jpg'
 };
 function showTab(id){
   document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
@@ -125,7 +146,7 @@ function showTab(id){
   if(id==='inventory') renderInventory();
 }
 
-// --- Подарки (полный список сюда вставь свой) ---
+// --- Подарки ---
 const gifts=[
   {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
   {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
@@ -175,7 +196,7 @@ const gifts=[
 ];
 let inventory=[];
 
-// --- Шахта 4x4 ---
+// --- Шахта ---
 const oreTypes=[
   {img:"images/ores/coal.png",hits:3},
   {img:"images/ores/iron.png",hits:4},
@@ -300,13 +321,38 @@ function collectReward(){
   minesActive=false; currentStake=0; document.getElementById("mineReward").innerText="Выигрыш: –";
 }
 
-// --- Предзагрузка только нужных ассетов ---
+// --- Мини-игра Мобы ---
+const mobs=[
+  {name:"Зомби",price:1,lose:0.4,win:0.4,epic:0.2,epicGift:"Restless Jar"},
+  {name:"Паук",price:2,lose:0.3,win:0.6,epic:0.1,epicGift:"Witch Hat"},
+  {name:"Скелет",price:3,lose:0.9,win:0,epic:0.1,epicGift:"Crystal Ball"},
+  {name:"Крипер",price:5,lose:0.7,win:0.25,epic:0.05,epicGift:"Mad Pumpkin"}
+];
+const mobSelect=document.getElementById("mobSelect");
+mobs.forEach(m=>{
+  let o=document.createElement("option"); o.value=m.name; o.textContent=`${m.name} (${m.price} TON)`; mobSelect.appendChild(o);
+});
+
+function startMobFight(){
+  const mobName=mobSelect.value;
+  const mob=mobs.find(m=>m.name===mobName);
+  if(balance<mob.price){alert("Недостаточно средств"); return;}
+  balance-=mob.price; updateBalance();
+  // Рулетка
+  const r=Math.random();
+  let resultText="Проигрыш 😢"; let gift=null;
+  if(r<mob.lose){resultText="Проигрыш 😢";}
+  else if(r<mob.lose+mob.win){resultText="Победа 🟢"; balance+=mob.price; updateBalance();}
+  else{resultText="Эпическая победа 🌟"; gift={name:mob.epicGift,price:0}; inventory.push(gift); renderInventory();}
+  document.getElementById("mobResult").innerText=resultText;
+}
+  
+// --- Предзагрузка ---
 function preloadImages(paths){
   return Promise.all(paths.map(src=>new Promise(res=>{
     const img=new Image(); img.onload=res; img.onerror=res; img.src=src;
   })));
 }
-
 function preloadAssets(){
   const startTime=Date.now();
   const imagePaths=[
@@ -321,12 +367,6 @@ function preloadAssets(){
       document.getElementById('loader').classList.add('hidden');
       document.body.style.opacity='1';
       updateBalance(); generateMineGrid(); generateMines();
-      let sel=document.getElementById('giftStake');
-      gifts.forEach(g=>{
-        let o=document.createElement('option');
-        o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`;
-        sel.appendChild(o);
-      });
       showTab('menu');
     }, delay);
   });
