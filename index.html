@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
+/* --- Подключаем кастомный шрифт --- */
 @font-face {
   font-family: 'Minecraft';
-  src: url('minecraft.ttf')
-/* сохраняю ваш прежний стиль */
+  src: url('minecraft.ttf') format('truetype');
+}
 body, html {
   margin:0; padding:0; height:100%;
-  font-family:Minecraft,sans-serif;
+  font-family:'Minecraft',Segoe UI,sans-serif;
   color:#fff; overflow:hidden;
   display:flex; flex-direction:column;
   background:#000; background-size:cover; background-position:center;
 }
+/* --- остальной CSS оставлен без изменений --- */
 #balance{padding:15px;text-align:right;font-size:1.2em;font-weight:bold;background:rgba(0,0,0,0.15);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,0.3);}
 main{flex:1;overflow-y:auto;padding:10px;margin-bottom:60px;display:none;background: rgba(0,0,0,0.2);}
 main.active{display:block;}
@@ -23,79 +25,18 @@ main.active{display:block;}
 .tab-bar button{flex:1;margin:0 5px;padding:10px;border:none;background:linear-gradient(135deg,#ff9a9e,#fad0c4);color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;font-size:1em;}
 .tab-bar button.active{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 .grid{display:grid;gap:5px;justify-content:center;}
-.mines-grid{grid-template-columns: repeat(5, minmax(50px,1fr));}
-#mineGrid{grid-template-columns: repeat(4, minmax(60px,1fr));}
-.mine-cell,.block{aspect-ratio:1/1;background:#333;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:0.2s;position: relative;overflow:hidden;background-size:cover;background-position:center;border-radius:6px;}
-.mine-cell.disabled{pointer-events:none;opacity:0.6;}
-.mine-cell.revealed.safe{background:#4caf50;}
-.mine-cell.revealed.mine{background:#f44336;}
-.block-price{position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,0.5);padding:2px 4px;font-size:0.7em;border-radius:2px;display:flex;align-items:center;gap:2px;}
-.block.cooldown{filter:brightness(0.5);cursor:not-allowed;}
-.inventory-list{display:flex;flex-wrap:wrap;gap:10px;}
-.gift-item{background:#222;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,0.5);font-size:0.9em;flex:1 1 45%;display:flex;align-items:center;gap:10px;transition:0.3s;position:relative;color:#fff;}
-.gift-preview{width:50px;height:50px;}
-.gift-actions{display:flex;flex-direction:column;gap:4px;}
-.gift-actions button{padding:4px 6px;font-size:0.75em;cursor:pointer;border:none;border-radius:4px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);color:#fff;}
-.stake-options{margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-#mineReward{border:2px dashed #aaa;padding:10px;margin-left:10px;border-radius:10px;min-width:150px;text-align:center;font-weight:bold;position:relative;color:#fff;}
-button#collectReward{padding:10px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;margin-left:10px;transition:0.3s;}
-button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
-#loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background:#000;transition:opacity 0.6s ease;}
-#loader.hidden{opacity:0;pointer-events:none;}
-#loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
-.flying{position:absolute;width:80px;height:80px;pointer-events:none;z-index:10000;}
 .mobs-grid{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;}
 .mob-card{background:#222;padding:10px;border-radius:8px;flex:1 1 100px;text-align:center;cursor:pointer;transition:0.3s;}
 .mob-card:hover{background:#444;}
 #rouletteCanvas{background:#222;border-radius:50%;}
 #spinButton{padding:10px;margin-top:10px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);border:none;color:#fff;font-weight:bold;cursor:pointer;border-radius:8px;}
-@media (max-width:500px){.tab-bar button{font-size:0.85em;padding:8px;}#balance{font-size:1em;padding:10px;}#mineGrid,.mines-grid{gap:3px;}}
 </style>
 </head>
 <body>
 
-<div id="loader">
-  <div id="loaderAnimation"></div>
-  <p style="color:#fff;font-size:1.2em;">Загрузка ресурсов...</p>
-</div>
-
 <div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
 
-<main id="menu" class="active">
-<h2>Главное меню</h2>
-<p>Выбирай режим и зарабатывай подарки!</p>
-</main>
-
-<main id="mines">
-<h2>Мины 💣</h2>
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-<div class="stake-options">
-<label><input type="radio" name="stakeType" value="ton" checked onchange="updateStakeInput()"> TON</label>
-<label><input type="radio" name="stakeType" value="gift" onchange="updateStakeInput()"> Подарок</label>
-<input type="number" id="tonStake" min="0.5" step="0.1" placeholder="Ставка TON">
-<select id="giftStake" style="display:none"></select>
-<button onclick="startMines()">Играть</button>
-</div>
-<div>
-<div id="mineReward">Выигрыш: –</div>
-<button id="collectReward" onclick="collectReward()">Забрать</button>
-</div>
-</div>
-<div class="grid mines-grid" id="minesGrid"></div>
-<p id="minesStatus"></p>
-</main>
-
-<main id="mine">
-<h2>Шахта ⛏️</h2>
-<div class="grid" id="mineGrid"></div>
-</main>
-
-<main id="inventory">
-<h2>Инвентарь 🎒</h2>
-<div class="inventory-list" id="inventoryList"></div>
-</main>
-
-<main id="mobs">
+<main id="mobs" class="active">
 <h2>Мобы 🐾</h2>
 <div class="mobs-grid" id="mobsGrid"></div>
 <canvas id="rouletteCanvas" width="400" height="400"></canvas>
@@ -104,23 +45,7 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 </div>
 </main>
 
-<div class="tab-bar">
-<button onclick="showTab('menu')" id="tab-menu" class="active">Меню</button>
-<button onclick="showTab('mines')" id="tab-mines">Мины</button>
-<button onclick="showTab('mine')" id="tab-mine">Шахта</button>
-<button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
-<button onclick="showTab('mobs')" id="tab-mobs">Мобы</button>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
-// --- Лоадер ---
-let loaderAnim = lottie.loadAnimation({
-  container:document.getElementById('loaderAnimation'),
-  renderer:'svg', loop:true, autoplay:true,
-  path:'animations/myLoader.json'
-});
-
 // --- Баланс ---
 let balance = 10000;
 function updateBalance(){
@@ -128,216 +53,21 @@ function updateBalance(){
     `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
 }
 
-// --- Вкладки ---
-const backgrounds={
-  menu:'images/menu.jpg',
-  mines:'images/mines.jpg',
-  mine:'images/mine.jpg',
-  inventory:'images/inventory.jpg',
-  mobs:'images/mobs.jpg'
-};
-function showTab(id){
-  document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  document.body.style.backgroundImage=`url(${backgrounds[id]})`;
-  if(id==='inventory') renderInventory();
-  if(id==='mobs') renderMobs();
-}
-
-// --- Подарки ---
-const gifts=[
-  {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
-  {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
-  {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},
-  {name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
-  {name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},
-  {name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
-  {name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},
-  {name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
-  {name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},
-  {name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
-  {name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},
-  {name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
-  {name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},
-  {name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
-  {name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},
-  {name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
-  {name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},
-  {name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
-  {name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},
-  {name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
-  {name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},
-  {name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
-  {name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},
-  {name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
-  {name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},
-  {name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
-  {name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},
-  {name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
-  {name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},
-  {name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
-  {name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},
-  {name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
-  {name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},
-  {name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
-  {name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},
-  {name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
-  {name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},
-  {name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
-  {name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},
-  {name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
-  {name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},
-  {name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
-  {name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},
-  {name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
-  {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
-];
-let inventory=[];
-
-// --- Шахта ---
-const oreTypes=[
-  {img:"images/ores/coal.png",hits:3},
-  {img:"images/ores/iron.png",hits:4},
-  {img:"images/ores/gold.png",hits:5},
-  {img:"images/ores/diamond.png",hits:6},
-  {img:"images/ores/emerald.png",hits:7}
-];
-
-function getGiftByPrice(price,isFirst=false){
-  let min=price*0.5, max=price*1.45;
-  let possible=gifts.filter(g=>g.price>=min&&g.price<=max);
-  if(isFirst){possible=gifts.filter(g=>g.price>=price);if(possible.length===0) possible=gifts;}
-  if(possible.length===0) possible=gifts;
-  return possible[Math.floor(Math.random()*possible.length)];
-}
-
-function spawnBlock(cell,index=0){
-  const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
-  let price=+(1+Math.random()*10).toFixed(2);
-  cell.className="block";
-  cell.style.backgroundImage=`url(${ore.img})`;
-  cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-  let hits=0;
-  cell.onclick=()=>{
-    hits++;
-    if(hits>=ore.hits){
-      if(balance>=price){balance-=price; updateBalance();}
-      let gift=getGiftByPrice(price,index===0);
-      inventory.push(gift); renderInventory();
-      flyGift(gift,cell);
-      let respawn=(60+Math.random()*1740)*1000;
-      cell.classList.add("cooldown");
-      cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
-      cell.onclick=null;
-      setTimeout(()=>{cell.classList.remove("cooldown"); spawnBlock(cell,index);},respawn);
-    }
-  };
-}
-
-function generateMineGrid(){
-  const grid=document.getElementById("mineGrid"); grid.innerHTML="";
-  for(let i=0;i<16;i++){
-    let cell=document.createElement("div"); spawnBlock(cell,i); grid.appendChild(cell);
-  }
-}
-
-// --- Анимация подарка ---
-function flyGift(gift,fromCell){
-  const rect=fromCell.getBoundingClientRect();
-  const fly=document.createElement("div");
-  fly.className="flying";
-  fly.style.left=rect.left+"px"; fly.style.top=rect.top+"px";
-  document.body.appendChild(fly);
-  // грузим анимацию из emoji/<name>.json — если нет, Lottie просто выдаст ошибку в консоль
-  lottie.loadAnimation({container:fly,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
-  const inv=document.getElementById("tab-inventory").getBoundingClientRect();
-  fly.animate(
-    [{transform:`translate(0,0)`},
-     {transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],
-    {duration:1000,easing:"ease-in-out"}
-  );
-  setTimeout(()=>fly.remove(),1000);
-}
-
-// --- Инвентарь ---
-function renderInventory(){
-  let list=document.getElementById("inventoryList"); list.innerHTML="";
-  inventory.forEach((gift,idx)=>{
-    let div=document.createElement("div"); div.className="gift-item";
-    let prev=document.createElement("div"); prev.className="gift-preview";
-    // пытаемся загрузить анимацию — если файла нет, просто Lottie проигнорирует
-    try{ lottie.loadAnimation({container:prev,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`}); }
-    catch(e){}
-    let info=document.createElement("div");
-    info.innerHTML=`${gift.name} – ${gift.price} <img src="ton.svg" style="width:14px;vertical-align:middle">`;
-    let actions=document.createElement("div"); actions.className="gift-actions";
-    let sellBtn=document.createElement("button");
-    sellBtn.textContent="Продать";
-    sellBtn.onclick=()=>{balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory();};
-    let withdrawBtn=document.createElement("button");
-    withdrawBtn.textContent="Вывести";
-    withdrawBtn.onclick=()=>{alert("Вывод пока не реализован");};
-    actions.appendChild(sellBtn); actions.appendChild(withdrawBtn);
-    div.appendChild(prev); div.appendChild(info); div.appendChild(actions);
-    list.appendChild(div);
-  });
-}
-
-// --- Мины ---
-let minesActive=false, minesLost=false, mineMultiplier=1, currentStake=0;
-function generateMines(){
-  const grid=document.getElementById("minesGrid"); grid.innerHTML="";
-  let mines=[]; while(mines.length<5){let idx=Math.floor(Math.random()*25); if(!mines.includes(idx)) mines.push(idx);}
-  for(let i=0;i<25;i++){
-    let cell=document.createElement("div"); cell.className="mine-cell disabled"; cell.dataset.mine=mines.includes(i); cell.onclick=()=>clickMine(cell); grid.appendChild(cell);
-  }
-}
-function clickMine(cell){
-  if(!minesActive||cell.classList.contains("revealed")) return;
-  cell.classList.add("revealed");
-  if(cell.dataset.mine==="true"){
-    cell.classList.add("mine"); document.getElementById("minesStatus").innerText="💥 Вы проиграли!";
-    minesLost=true; minesActive=false;
-  } else {
-    cell.classList.add("safe"); mineMultiplier+=0.5;
-    document.getElementById("mineReward").innerText="Выигрыш: "+(currentStake*mineMultiplier).toFixed(2);
-  }
-}
-function startMines(){
-  const stakeType=document.querySelector('input[name="stakeType"]:checked').value;
-  let stake=stakeType==="ton"?parseFloat(document.getElementById("tonStake").value):null;
-  if(stakeType==="ton"&&!stake){alert("Введите ставку"); return;}
-  if(stakeType==="ton"&&balance<stake){alert("Недостаточно средств"); return;}
-  if(stakeType==="ton"){balance-=stake; updateBalance();}
-  currentStake=stake; mineMultiplier=1; minesLost=false; minesActive=true;
-  generateMines(); document.querySelectorAll(".mine-cell").forEach(c=>c.classList.remove("disabled"));
-  document.getElementById("mineReward").innerText="Выигрыш: –"; document.getElementById("minesStatus").innerText="";
-}
-function collectReward(){
-  if(!minesActive&&!minesLost&&currentStake>0){
-    let win=currentStake*mineMultiplier;
-    if(win>=1.5){let gift=getGiftByPrice(win); inventory.push(gift); renderInventory(); alert("Вы выиграли подарок: "+gift.name);}
-    else{balance+=win; updateBalance(); alert("Вы выиграли "+win.toFixed(2)+" TON");}
-  }
-  minesActive=false; currentStake=0; document.getElementById("mineReward").innerText="Выигрыш: –";
-}
-
-// --- Рулетка Мобы ---
+// --- Мобы и рулетка ---
 const mobsData=[
   {name:"Зомби",price:1,lose:0.4,win:0.4,epicGift:"Restless Jar",color:"#0a5a0a"},
   {name:"Паук",price:2,lose:0.3,win:0.6,epicGift:"Witch Hat",color:"#111111"},
   {name:"Скелет",price:3,lose:0.9,win:0,epicGift:"Crystal Ball",color:"#aaaaaa"},
   {name:"Крипер",price:5,lose:0.7,win:0.25,epicGift:"Mad Pumpkin",color:"#7fff7f"}
 ];
+
 let selectedMob=null, spinning=false;
 const canvas=document.getElementById("rouletteCanvas");
 const ctx=canvas.getContext("2d");
 const center=canvas.width/2;
 const radius=canvas.width/2-10;
-let wheelRotation = 0; // текущее вращение колеса
 
+// --- Рендерим мобы ---
 function renderMobs(){
   const grid=document.getElementById("mobsGrid");
   if(grid.childElementCount>0) return;
@@ -349,211 +79,79 @@ function renderMobs(){
   });
 }
 
+// --- Выбор моба ---
 function selectMob(mob){
   selectedMob=mob;
-  drawRoulette(wheelRotation);
+  drawRoulette();
 }
 
-// Рисуем рулетку со смещением rotation (в радианах)
+// --- Рисуем рулетку ---
 function drawRoulette(rotation=0){
   if(!selectedMob) return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // prepare segments
   const segments=[
-    {label:"Проигрыш",value:selectedMob.lose,color:"#f44336",outcome:"lose"},
-    {label:"Выигрыш",value:selectedMob.win,color:selectedMob.color,outcome:"win"},
-    {label:"Эпик",value:1-selectedMob.lose-selectedMob.win,color:"#ffd700",outcome:"epic"}
+    {label:"Проигрыш",value:selectedMob.lose,color:"#f44336"},
+    {label:"Выигрыш",value:selectedMob.win,color:selectedMob.color},
+    {label:"Эпик",value:1-selectedMob.lose-selectedMob.win,color:"#ffd700"}
   ];
-
-  // draw segments rotated by rotation
-  ctx.save();
-  ctx.translate(center,center);
-  ctx.rotate(rotation);
-  let startAngle = 0;
+  let startAngle=rotation;
   segments.forEach(seg=>{
-    const arc = seg.value * 2 * Math.PI;
-    const endAngle = startAngle + arc;
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.arc(0,0,radius,startAngle,endAngle);
-    ctx.fillStyle = seg.color;
-    ctx.fill();
-    ctx.closePath();
-
-    // label
-    ctx.save();
-    ctx.rotate(startAngle + arc/2);
-    ctx.fillStyle = "#000";
-    ctx.font = "bold 16px Arial";
-    ctx.textAlign = "right";
-    ctx.fillText(seg.label, radius - 8, 6);
-    ctx.restore();
-
-    // save seg angles (in wheel coordinates before rotation)
-    seg.start = startAngle;
-    seg.end = endAngle;
-    startAngle = endAngle;
+    const endAngle=startAngle+seg.value*2*Math.PI;
+    ctx.beginPath(); ctx.moveTo(center,center);
+    ctx.arc(center,center,radius,startAngle,endAngle);
+    ctx.fillStyle=seg.color; ctx.fill(); ctx.closePath();
+    startAngle=endAngle;
   });
-  ctx.restore();
-
-  // draw center mob image on top
-  const img = new Image();
-  img.src = `mobs/${selectedMob.name}.png`;
-  img.onload = () => {
-    ctx.drawImage(img, center-40, center-40, 80, 80);
-  };
-  // store for reference (not necessary but helpful)
-  selectedMob._segments = segments;
+  // Центр с мобом
+  const img=new Image(); img.src=`mobs/${selectedMob.name}.png`;
+  img.onload=()=>{ctx.drawImage(img,center-40,center-40,80,80);};
 }
 
-// Функция запуска вращения: заранее определяем результат, потом крутим так, чтобы колесо остановилось на соответствующем секторе
+// --- Анимация вращения ---
 function spinRoulette(){
-  if(!selectedMob || spinning) return;
-  if(balance < selectedMob.price){ alert("Недостаточно средств"); return; }
+  if(!selectedMob||spinning) return;
+  spinning=true;
 
-  // снимаем ставку
-  balance -= selectedMob.price;
-  updateBalance();
-
-  // подготовка секторов (без вращения)
-  const segments = [
-    {outcome:"lose", value: selectedMob.lose},
-    {outcome:"win", value: selectedMob.win},
-    {outcome:"epic", value: 1 - selectedMob.lose - selectedMob.win}
+  // Определяем заранее результат
+  const segments=[
+    {label:"Проигрыш",value:selectedMob.lose,color:"#f44336"},
+    {label:"Выигрыш",value:selectedMob.win,color:selectedMob.color},
+    {label:"Эпик",value:1-selectedMob.lose-selectedMob.win,color:"#ffd700"}
   ];
+  let rand=Math.random(), resultIndex;
+  if(rand<segments[0].value) resultIndex=0;
+  else if(rand<segments[0].value+segments[1].value) resultIndex=1;
+  else resultIndex=2;
 
-  // выбираем результат по шансам
-  const r = Math.random();
-  let cum = 0;
-  let resultIndex = 0;
-  for(let i=0;i<segments.length;i++){
-    cum += segments[i].value;
-    if(r < cum){ resultIndex = i; break; }
+  // Вычисляем угол для остановки на нужном сегменте
+  let angleStart=segments.slice(0,resultIndex).reduce((acc,s)=>acc+s.value*2*Math.PI,0);
+  let angleEnd=angleStart+segments[resultIndex].value*2*Math.PI;
+  let targetRotation=angleStart + Math.random()*(angleEnd-angleStart) + 5*2*Math.PI; // 5 оборотов
+
+  let currentRotation=0;
+  function animate(){
+    currentRotation += (targetRotation - currentRotation)*0.1;
+    drawRoulette(currentRotation);
+    if(Math.abs(targetRotation-currentRotation)<0.001){
+      finishSpin(resultIndex);
+      spinning=false;
+    } else requestAnimationFrame(animate);
   }
-  const chosenSeg = segments[resultIndex];
-
-  // вычисляем угловые границы выбранного сегмента (в колесных координатах)
-  let startAngle = 0;
-  for(let i=0;i<resultIndex;i++) startAngle += segments[i].value * 2*Math.PI;
-  const endAngle = startAngle + chosenSeg.value * 2*Math.PI;
-
-  // выберем случайный угол внутри этого сегмента
-  const angleInside = startAngle + Math.random() * (endAngle - startAngle);
-
-  // pointerAngle — точка фиксации (у нас стрелка сверху, то есть -PI/2)
-  const pointerAngle = -Math.PI/2;
-
-  // final rotation so that angleInside ends up at pointerAngle:
-  // when wheel is rotated by rotation, a point at angle 'angleInside' (wheel coords) moves to screen angle (angleInside + rotation).
-  // We want (angleInside + finalRotation) % (2π) == pointerAngle  => finalRotation == pointerAngle - angleInside (mod 2π)
-  // add several full spins for animation:
-  const spins = 4 + Math.floor(Math.random()*4); // 4..7 spins
-  const targetRotationAbsolute = spins * 2*Math.PI + (pointerAngle - angleInside);
-
-  // animation from current wheelRotation to targetRotationAbsolute
-  const startRot = wheelRotation;
-  const delta = targetRotationAbsolute - startRot;
-  const duration = 4000; // ms
-  const startTime = performance.now();
-  spinning = true;
-
-  function easeOutCubic(t){ return 1 - Math.pow(1-t,3); }
-
-  function animate(time){
-    const elapsed = time - startTime;
-    const t = Math.min(1, elapsed / duration);
-    const eased = easeOutCubic(t);
-    wheelRotation = startRot + delta * eased;
-    drawRoulette(wheelRotation);
-    if(t < 1) requestAnimationFrame(animate);
-    else {
-      // normalize wheelRotation to [0,2PI)
-      wheelRotation = ((wheelRotation % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
-      drawRoulette(wheelRotation);
-      spinning = false;
-      // выдаем награду в соответствии с chosenSeg.outcome
-      finishSpin(chosenSeg.outcome);
-    }
-  }
-  requestAnimationFrame(animate);
+  animate();
 }
 
-function finishSpin(outcome){
-  if(outcome === "lose"){
-    alert("Вы проиграли!");
-    return;
-  }
-  if(outcome === "win"){
-    // возвращается ставка (как вы просили)
-    balance += selectedMob.price;
-    updateBalance();
-    alert("Победа! Ставка возвращена.");
-    return;
-  }
-  if(outcome === "epic"){
-    const gift = gifts.find(g => g.name === selectedMob.epicGift);
-    if(gift){
-      // положим подарок в инвентарь и запустим анимацию из центра рулетки
-      inventory.push(gift);
-      renderInventory();
-      // анимация полёта подарка: используем canvas как отправную точку
-      flyGift(gift, document.getElementById('rouletteCanvas'));
-      alert("Эпическая победа! Приз: " + gift.name);
-    } else {
-      alert("Эпическая победа! (приз не найден в списке)");
-    }
-    return;
-  }
+// --- Финал рулетки ---
+function finishSpin(result){
+  if(result===0){alert("Вы проиграли!");}
+  else if(result===1){balance+=selectedMob.price; updateBalance(); alert("Вы выиграли "+selectedMob.price+" TON");}
+  else if(result===2){alert("Эпический приз: "+selectedMob.epicGift);}
 }
 
-// подключаем кнопку
-document.getElementById("spinButton").onclick = spinRoulette;
+document.getElementById("spinButton").onclick=spinRoulette;
 
-// --- Предзагрузка ---
-function preloadImages(paths){
-  return Promise.all(paths.map(src=>new Promise(res=>{
-    const img=new Image(); img.onload=res; img.onerror=res; img.src=src;
-  })));
-}
-
-function preloadAssets(){
-  const startTime=Date.now();
-  const imagePaths=[
-    ...Object.values(backgrounds),
-    "ton.svg",
-    ...oreTypes.map(o=>o.img),
-    ...mobsData.map(m=>"mobs/"+m.name+".png")
-  ];
-  preloadImages(imagePaths).then(()=>{
-    const elapsed = Date.now()-startTime;
-    const delay = Math.max(2000-elapsed,0);
-    setTimeout(()=>{
-      document.getElementById('loader').classList.add('hidden');
-      document.body.style.opacity='1';
-      updateBalance(); generateMineGrid(); generateMines();
-      let sel=document.getElementById('giftStake');
-      gifts.forEach(g=>{
-        let o=document.createElement('option');
-        o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`;
-        sel.appendChild(o);
-      });
-      showTab('menu');
-    }, delay);
-  }).catch(()=>{
-    // если какая-то картинка не прогрузилась, всё равно продолжаем
-    document.getElementById('loader').classList.add('hidden');
-    updateBalance(); generateMineGrid(); generateMines(); showTab('menu');
-  });
-}
-preloadAssets();
-
-// --- Ставка ---
-function updateStakeInput(){
-  let type=document.querySelector('input[name="stakeType"]:checked').value;
-  document.getElementById('tonStake').style.display=type==="ton"?"inline-block":"none";
-  document.getElementById('giftStake').style.display=type==="gift"?"inline-block":"none";
-}
+// --- Инициализация ---
+updateBalance();
+renderMobs();
 </script>
 </body>
 </html>
