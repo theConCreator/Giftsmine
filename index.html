@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
-@font-face { font-family: 'Minecraft'; src: url('minecraft.ttf') format('truetype'); }
+@font-face { font-family: 'Minecraft'; src: url('minecraft.ttf'); }
 body, html {
   margin:0; padding:0; height:100%;
   font-family: 'Minecraft', Segoe UI, sans-serif;
@@ -40,6 +40,9 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 #loader{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;background:#000;transition:opacity 0.6s ease;}
 #loader.hidden{opacity:0;pointer-events:none;}
 #loaderAnimation{width:150px;height:150px;margin-bottom:20px;}
+#progressBar{width:80%;height:20px;background:#333;border-radius:10px;margin-top:20px;overflow:hidden;}
+#progressFill{width:0%;height:100%;background:red;border-radius:10px;}
+#progressText{color:#fff;font-size:1.2em;margin-top:10px;}
 .flying{position:absolute;width:80px;height:80px;pointer-events:none;z-index:10000;}
 .mobs-grid{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;}
 .mob-card{background:#222;padding:10px;border-radius:8px;flex:1 1 100px;text-align:center;cursor:pointer;transition:0.3s;}
@@ -53,7 +56,10 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 
 <div id="loader">
   <div id="loaderAnimation"></div>
-  <p style="color:#fff;font-size:1.2em;">Загрузка ресурсов...</p>
+  <div id="progressBar">
+    <div id="progressFill"></div>
+  </div>
+  <p id="progressText">Загрузка: 0%</p>
 </div>
 
 <div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
@@ -111,104 +117,20 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
-<!-- Loader -->
-<div id="loader">
-  <div id="loaderAnimation"></div>
-  <div id="progressBar" style="width:80%;height:20px;background:#333;border-radius:10px;margin-top:20px;overflow:hidden;">
-    <div id="progressFill" style="width:0%;height:100%;background:red;border-radius:10px;"></div>
-  </div>
-  <p id="progressText" style="color:#fff;font-size:1.2em;margin-top:10px;">Загрузка: 0%</p>
-</div>
+let loaderAnim = lottie.loadAnimation({
+  container: document.getElementById('loaderAnimation'),
+  renderer: 'svg',
+  loop: true,
+  autoplay: true,
+  path: 'animations/myLoader.json'
+});
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
-<script>
-  // --- Лоадер ---
-  let loaderAnim = lottie.loadAnimation({
-    container: document.getElementById('loaderAnimation'),
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
-    path: 'animations/myLoader.json'
-  });
-
-  // --- Прогрессбар ---
-  function updateProgress(percent) {
-    const fill = document.getElementById("progressFill");
-    fill.style.width = percent + "%";
-
-    // Градиент от красного к жёлтому к зелёному
-    if (percent < 50) {
-      let g = Math.round((percent / 50) * 255);
-      fill.style.backgroundColor = `rgb(255, ${g}, 0)`;
-    } else {
-      let r = Math.round(255 - ((percent - 50) / 50) * 255);
-      fill.style.backgroundColor = `rgb(${r}, 255, 0)`;
-    }
-
-    document.getElementById("progressText").innerText = "Загрузка: " + percent + "%";
-  }
-
-  // --- Предзагрузка ---
-  function preloadImages(paths) {
-    let loaded = 0;
-    const total = paths.length;
-    return Promise.all(paths.map(src => new Promise(res => {
-      const img = new Image();
-      img.onload = img.onerror = () => {
-        loaded++;
-        updateProgress(Math.round((loaded / total) * 100));
-        res();
-      };
-      img.src = src;
-    })));
-  }
-
-  function preloadAssets() {
-    const imagePaths = [
-      ...Object.values(backgrounds),
-      "ton.svg",
-      ...oreTypes.map(o => o.img),
-      ...mobsData.map(m => "mobs/" + m.name + ".png")
-    ];
-
-    preloadImages(imagePaths).then(() => {
-      setTimeout(() => {
-        document.getElementById('loader').classList.add('hidden');
-        document.body.style.opacity = '1';
-        updateBalance();
-        generateMineGrid();
-        generateMines();
-
-        const sel = document.getElementById('giftStake');
-        gifts.forEach(g => {
-          const o = document.createElement('option');
-          o.value = g.name;
-          o.textContent = `${g.name} (${g.price} TON)`;
-          sel.appendChild(o);
-        });
-      }, 300); // небольшая задержка, чтобы прогрессбар успел дойти до 100%
-    });
-  }
-
-  preloadAssets();
-</script>
-
-
-// --- Баланс ---
 let balance = 10000;
 function updateBalance(){
-  document.getElementById('balance').innerHTML =
-    `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
+  document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
 }
 
-// --- Вкладки ---
-const backgrounds={
-  menu:'images/menu.jpg',
-  mines:'images/mines.jpg',
-  mine:'images/mine.jpg',
-  inventory:'images/inventory.jpg',
-  mobs:'images/mobs.jpg'
-};
+const backgrounds = { menu:'images/menu.jpg', mines:'images/mines.jpg', mine:'images/mine.jpg', inventory:'images/inventory.jpg', mobs:'images/mobs.jpg' };
 function showTab(id){
   document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -219,7 +141,6 @@ function showTab(id){
   if(id==='mobs') renderMobs();
 }
 
-// --- Подарки ---
 const gifts=[
   {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
   {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},{name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
@@ -247,14 +168,12 @@ const gifts=[
 ];
 let inventory=[];
 
-// --- Шахта ---
 const oreTypes=[
-  {img:"images/ores/coal.png",hits:3},
-  {img:"images/ores/iron.png",hits:4},
-  {img:"images/ores/gold.png",hits:5},
-  {img:"images/ores/diamond.png",hits:6},
+  {img:"images/ores/coal.png",hits:3},{img:"images/ores/iron.png",hits:4},
+  {img:"images/ores/gold.png",hits:5},{img:"images/ores/diamond.png",hits:6},
   {img:"images/ores/emerald.png",hits:7}
 ];
+
 function getGiftByPrice(price,isFirst=false){
   let min=price*0.5, max=price*1.45;
   let possible=gifts.filter(g=>g.price>=min&&g.price<=max);
@@ -262,6 +181,7 @@ function getGiftByPrice(price,isFirst=false){
   if(possible.length===0) possible=gifts;
   return possible[Math.floor(Math.random()*possible.length)];
 }
+
 function spawnBlock(cell,index=0){
   const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
   let price=+(1+Math.random()*10).toFixed(2);
@@ -284,6 +204,7 @@ function spawnBlock(cell,index=0){
     }
   };
 }
+
 function generateMineGrid(){
   const grid=document.getElementById("mineGrid"); grid.innerHTML="";
   for(let i=0;i<16;i++){
@@ -291,7 +212,6 @@ function generateMineGrid(){
   }
 }
 
-// --- Анимация подарка ---
 function flyGift(gift,fromCell){
   const rect=fromCell.getBoundingClientRect();
   const fly=document.createElement("div");
@@ -300,15 +220,10 @@ function flyGift(gift,fromCell){
   document.body.appendChild(fly);
   lottie.loadAnimation({container:fly,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
   const inv=document.getElementById("tab-inventory").getBoundingClientRect();
-  fly.animate(
-    [{transform:`translate(0,0)`},
-     {transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],
-    {duration:1000,easing:"ease-in-out"}
-  );
+  fly.animate([{transform:`translate(0,0)`},{transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],{duration:1000,easing:"ease-in-out"});
   setTimeout(()=>fly.remove(),1000);
 }
 
-// --- Инвентарь ---
 function renderInventory(){
   let list=document.getElementById("inventoryList"); list.innerHTML="";
   inventory.forEach((gift,idx)=>{
@@ -318,11 +233,9 @@ function renderInventory(){
     let info=document.createElement("div");
     info.innerHTML=`${gift.name} – ${gift.price} <img src="ton.svg" style="width:14px;vertical-align:middle">`;
     let actions=document.createElement("div"); actions.className="gift-actions";
-    let sellBtn=document.createElement("button");
-    sellBtn.textContent="Продать";
+    let sellBtn=document.createElement("button"); sellBtn.textContent="Продать";
     sellBtn.onclick=()=>{balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory();};
-    let withdrawBtn=document.createElement("button");
-    withdrawBtn.textContent="Вывести";
+    let withdrawBtn=document.createElement("button"); withdrawBtn.textContent="Вывести";
     withdrawBtn.onclick=()=>{alert("Вывод пока не реализован");};
     actions.appendChild(sellBtn); actions.appendChild(withdrawBtn);
     div.appendChild(prev); div.appendChild(info); div.appendChild(actions);
@@ -369,7 +282,7 @@ function collectReward(){
   minesActive=false; currentStake=0; document.getElementById("mineReward").innerText="Выигрыш: –";
 }
 
-// --- Рулетка Мобы ---
+// --- Мобы ---
 const mobsData=[
   {name:"Зомби",price:1,lose:0.4,win:0.4,epicGift:"Restless Jar",color:"#0a5a0a"},
   {name:"Паук",price:2,lose:0.3,win:0.6,epicGift:"Witch Hat",color:"#111111"},
@@ -377,10 +290,7 @@ const mobsData=[
   {name:"Крипер",price:5,lose:0.7,win:0.25,epicGift:"Mad Pumpkin",color:"#7fff7f"}
 ];
 let selectedMob=null, spinning=false;
-const canvas=document.getElementById("rouletteCanvas");
-const ctx=canvas.getContext("2d");
-const center=canvas.width/2;
-const radius=canvas.width/2-10;
+const canvas=document.getElementById("rouletteCanvas"); const ctx=canvas.getContext("2d"); const center=canvas.width/2; const radius=canvas.width/2-10;
 function renderMobs(){
   const grid=document.getElementById("mobsGrid");
   if(grid.childElementCount>0) return;
@@ -391,10 +301,7 @@ function renderMobs(){
     grid.appendChild(div);
   });
 }
-function selectMob(mob){
-  selectedMob=mob;
-  drawRoulette();
-}
+function selectMob(mob){selectedMob=mob; drawRoulette();}
 function drawRoulette(){
   if(!selectedMob) return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -446,33 +353,41 @@ function finishSpin(result){
 }
 document.getElementById("spinButton").onclick=spinRoulette;
 
-// --- Предзагрузка и запуск игры ---
-async function preloadImages(urls){
-  return Promise.all(urls.map(url=>new Promise(res=>{
-    const img=new Image(); img.onload=img.onerror=res; img.src=url;
+// --- Прогрессбар и предзагрузка ---
+function updateProgress(percent){
+  const fill=document.getElementById("progressFill");
+  fill.style.width=percent+"%";
+  if(percent<50){let g=Math.round((percent/50)*255); fill.style.backgroundColor=`rgb(255,${g},0)`;}
+  else{let r=Math.round(255-((percent-50)/50)*255); fill.style.backgroundColor=`rgb(${r},255,0)`;}
+  document.getElementById("progressText").innerText="Загрузка: "+percent+"%";
+}
+function preloadImages(paths){
+  let loaded=0; const total=paths.length;
+  return Promise.all(paths.map(src=>new Promise(res=>{
+    const img=new Image();
+    img.onload=img.onerror=()=>{
+      loaded++; updateProgress(Math.round((loaded/total)*100)); res();
+    };
+    img.src=src;
   })));
 }
-async function initGame(){
-  const imagePaths=[
-    ...Object.values(backgrounds),
-    "ton.svg",
-    ...oreTypes.map(o=>o.img),
-    ...mobsData.map(m=>"mobs/"+m.name+".png"),
-    ...gifts.map(g=>"emoji/"+g.name+".png")
-  ];
-  await preloadImages(imagePaths);
-
-  document.getElementById('loader').classList.add('hidden');
-  updateBalance();
-  generateMineGrid();
-  generateMines();
-  renderMobs();
-
-  const sel=document.getElementById('giftStake'); gifts.forEach(g=>{
-    const o=document.createElement('option'); o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`; sel.appendChild(o);
+function preloadAssets(){
+  const imagePaths=[...Object.values(backgrounds),"ton.svg",...oreTypes.map(o=>o.img),...mobsData.map(m=>"mobs/"+m.name+".png")];
+  preloadImages(imagePaths).then(()=>{
+    setTimeout(()=>{
+      document.getElementById('loader').classList.add('hidden');
+      document.body.style.opacity='1';
+      updateBalance(); generateMineGrid(); generateMines();
+      const sel=document.getElementById('giftStake');
+      gifts.forEach(g=>{
+        const o=document.createElement('option');
+        o.value=g.name; o.textContent=`${g.name} (${g.price} TON)`;
+        sel.appendChild(o);
+      });
+    },300);
   });
 }
-initGame();
+preloadAssets();
 
 // --- Ставка ---
 function updateStakeInput(){
