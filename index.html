@@ -111,12 +111,88 @@ button#collectReward:hover{background:linear-gradient(135deg,#a1c4fd,#c2e9fb);}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
-// --- Лоадер ---
-let loaderAnim = lottie.loadAnimation({
-  container:document.getElementById('loaderAnimation'),
-  renderer:'svg', loop:true, autoplay:true,
-  path:'animations/myLoader.json'
-});
+<!-- Loader -->
+<div id="loader">
+  <div id="loaderAnimation"></div>
+  <div id="progressBar" style="width:80%;height:20px;background:#333;border-radius:10px;margin-top:20px;overflow:hidden;">
+    <div id="progressFill" style="width:0%;height:100%;background:red;border-radius:10px;"></div>
+  </div>
+  <p id="progressText" style="color:#fff;font-size:1.2em;margin-top:10px;">Загрузка: 0%</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+<script>
+  // --- Лоадер ---
+  let loaderAnim = lottie.loadAnimation({
+    container: document.getElementById('loaderAnimation'),
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: 'animations/myLoader.json'
+  });
+
+  // --- Прогрессбар ---
+  function updateProgress(percent) {
+    const fill = document.getElementById("progressFill");
+    fill.style.width = percent + "%";
+
+    // Градиент от красного к жёлтому к зелёному
+    if (percent < 50) {
+      let g = Math.round((percent / 50) * 255);
+      fill.style.backgroundColor = `rgb(255, ${g}, 0)`;
+    } else {
+      let r = Math.round(255 - ((percent - 50) / 50) * 255);
+      fill.style.backgroundColor = `rgb(${r}, 255, 0)`;
+    }
+
+    document.getElementById("progressText").innerText = "Загрузка: " + percent + "%";
+  }
+
+  // --- Предзагрузка ---
+  function preloadImages(paths) {
+    let loaded = 0;
+    const total = paths.length;
+    return Promise.all(paths.map(src => new Promise(res => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        loaded++;
+        updateProgress(Math.round((loaded / total) * 100));
+        res();
+      };
+      img.src = src;
+    })));
+  }
+
+  function preloadAssets() {
+    const imagePaths = [
+      ...Object.values(backgrounds),
+      "ton.svg",
+      ...oreTypes.map(o => o.img),
+      ...mobsData.map(m => "mobs/" + m.name + ".png")
+    ];
+
+    preloadImages(imagePaths).then(() => {
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+        document.body.style.opacity = '1';
+        updateBalance();
+        generateMineGrid();
+        generateMines();
+
+        const sel = document.getElementById('giftStake');
+        gifts.forEach(g => {
+          const o = document.createElement('option');
+          o.value = g.name;
+          o.textContent = `${g.name} (${g.price} TON)`;
+          sel.appendChild(o);
+        });
+      }, 300); // небольшая задержка, чтобы прогрессбар успел дойти до 100%
+    });
+  }
+
+  preloadAssets();
+</script>
+
 
 // --- Баланс ---
 let balance = 10000;
