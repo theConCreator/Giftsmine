@@ -1,385 +1,352 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Game App</title>
-  <style>
-    @font-face {
-      font-family: "Minecraft";
-      src: url("minecraft.ttf") format("truetype");
-    }
-    body {
-      margin: 0;
-      font-family: "Minecraft", sans-serif;
-      background-size: cover;
-      background-position: center;
-      color: white;
-    }
-    .hidden { display: none; }
-    #loader {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: black;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 1000;
-    }
-    #loaderProgress {
-      width: 80%;
-      height: 20px;
-      border: 1px solid white;
-      margin-top: 20px;
-    }
-    #loaderProgressBar {
-      width: 0%;
-      height: 100%;
-      background: limegreen;
-    }
-    nav {
-      display: flex;
-      gap: 10px;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-    }
-    nav button {
-      padding: 10px;
-      background: #333;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .section { display: none; padding: 20px; }
-    .section.active { display: block; }
-
-    /* === Баланс === */
-    #balanceSection { text-align: center; }
-    #promoInput {
-      padding: 8px;
-      font-size: 1em;
-      margin-bottom: 10px;
-    }
-    #history {
-      max-height: 200px;
-      overflow-y: auto;
-      margin-top: 15px;
-      background: rgba(0,0,0,0.4);
-      padding: 10px;
-      border-radius: 8px;
-    }
-    .history-item {
-      margin: 5px 0;
-      padding: 5px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 4px;
-    }
-
-    /* === Инвентарь === */
-    #inventoryItems {
-      display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
-      gap: 10px;
-    }
-    .item {
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .item button {
-      margin-top: 5px;
-      display: block;
-      width: 100%;
-      padding: 5px;
-      border: none;
-      background: #555;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    /* === Шахта === */
-    #mineGrid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-    .block {
-      background: #444;
-      aspect-ratio: 1/1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border-radius: 6px;
-      position: relative;
-    }
-    .block.cooldown {
-      filter: brightness(0.5);
-      cursor: not-allowed;
-    }
-    .block-price {
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      background: rgba(0,0,0,0.6);
-      padding: 2px 4px;
-      font-size: 0.8em;
-      border-radius: 3px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GiftsMine 🎁</title>
+<style>
+@font-face {
+    font-family: 'Minecraft';
+    src: url('minecraft.ttf') format('truetype');
+}
+body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Minecraft', sans-serif;
+    color: #fff; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: #000; background-size: cover; background-position: center;
+    transition: background 0.5s;
+}
+#balance {
+    padding: 15px; text-align: right; font-size: 1.2em; font-weight: bold;
+    background: rgba(0,0,0,0.15); backdrop-filter: blur(5px); box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+main {
+    flex: 1; overflow-y: auto; padding: 10px; margin-bottom: 60px;
+    display: none; background: rgba(0,0,0,0.2);
+}
+main.active { display: block; }
+.tab-bar {
+    position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around;
+    background: rgba(0,0,0,0.2); padding: 10px; border-top: 2px solid #fff; z-index: 1000;
+}
+.tab-bar button {
+    flex: 1; margin: 0 5px; padding: 10px; border: none;
+    background: linear-gradient(135deg,#ff9a9e,#fad0c4); color: #fff;
+    font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1em;
+}
+.tab-bar button.active {
+    background: linear-gradient(135deg,#a1c4fd,#c2e9fb);
+}
+.grid { display: grid; gap: 5px; justify-content: center; }
+#mineGrid { grid-template-columns: repeat(4, minmax(60px,1fr)); }
+.block {
+    aspect-ratio: 1/1; background: #333;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
+    background-size: cover; background-position: center; border-radius: 6px;
+}
+.block-price {
+    position: absolute; bottom: 2px; right: 2px;
+    background: rgba(0,0,0,0.5); padding: 2px 4px; font-size: 0.7em;
+    border-radius: 2px; display: flex; align-items: center; gap: 2px;
+}
+.block.cooldown { filter: brightness(0.5); cursor: not-allowed; }
+.inventory-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.gift-item {
+    background: #222; padding: 10px; box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+    font-size: 0.9em; flex: 1 1 45%; display: flex; flex-direction: column; gap: 8px;
+    transition: 0.3s; position: relative; color: #fff; border-radius: 8px;
+}
+.gift-preview { width: 50px; height: 50px; }
+.gift-actions { display: flex; justify-content: space-between; gap: 8px; }
+.gift-actions button {
+    flex: 1; padding: 6px; font-size: 0.75em; cursor: pointer; border: none; border-radius: 6px;
+    background: linear-gradient(135deg,#ff9a9e,#fad0c4); color: #fff;
+}
+#loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    z-index: 9999; background: #000; transition: opacity 0.6s ease;
+}
+#progressContainer {
+    width: 60%; height: 20px; background: #444; border-radius: 10px; overflow: hidden; margin-top: 10px;
+}
+#progressBar { width: 0%; height: 100%; background: #ff9a9e; }
+#progressText { margin-top: 5px; font-size: 1.1em; }
+.flying { position: absolute; width: 80px; height: 80px; pointer-events: none; z-index: 10000; }
+.balance-options { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.balance-options button {
+    flex: 1; padding: 10px; border: none; border-radius: 8px;
+    background: linear-gradient(135deg,#ff9a9e,#fad0c4); color: #fff; font-weight: bold; cursor: pointer;
+}
+.operations-history { margin-top: 15px; background: #111; padding: 10px; border-radius: 8px; }
+@media (max-width:500px) {
+    .tab-bar button { font-size: 0.85em; padding: 8px; }
+    #balance { font-size: 1em; padding: 10px; }
+    #mineGrid{gap:3px;}
+}
+</style>
 </head>
 <body>
-  <!-- Loader -->
-  <div id="loader">
-    <div>Загрузка...</div>
-    <div id="loaderProgress"><div id="loaderProgressBar"></div></div>
-  </div>
 
-  <!-- Навигация -->
-  <nav>
-    <button onclick="showSection('menu')">Меню</button>
-    <button onclick="showSection('mine')">Шахта</button>
-    <button onclick="showSection('inventory')">Инвентарь</button>
-    <button onclick="showSection('balanceSection')">Баланс</button>
-  </nav>
+<!-- Лоадер -->
+<div id="loader">
+  <div id="lottieLoader" style="width:200px;height:200px;margin:0 auto;"></div>
+  <div id="progressContainer"><div id="progressBar"></div></div>
+  <p id="progressText">0%</p>
+</div>
 
-  <!-- Секции -->
-  <div id="menu" class="section active">
-    <h1>Главное меню</h1>
-    <p>Добро пожаловать!</p>
-  </div>
+<div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
 
-  <div id="mine" class="section">
-    <h1>Шахта</h1>
-    <div id="mineGrid"></div>
-  </div>
+<main id="menu" class="active">
+<h2>Главное меню</h2>
+<p>Выбирай режим и зарабатывай подарки!</p>
+</main>
 
-  <div id="inventory" class="section">
-    <h1>Инвентарь</h1>
-    <div id="inventoryItems"></div>
-  </div>
+<main id="mine">
+<h2>Шахта ⛏️</h2>
+<div class="grid" id="mineGrid"></div>
+</main>
 
-  <div id="balanceSection" class="section">
-    <h1>Баланс</h1>
-    <div id="balanceValue"></div>
-    <input id="promoInput" type="text" placeholder="Введите промокод">
-    <button onclick="applyPromo()">Активировать промокод</button>
-    <h3>Пополнение:</h3>
-    <button onclick="addBalance(10)">Пополнить через CryptoBot (+10 TON)</button>
-    <button onclick="addBalance(20)">Пополнить через TON (+20 TON)</button>
-    <button onclick="addBalance(5)">Пополнить через Stars (+5 TON)</button>
-    <h3>История операций</h3>
-    <div id="history"></div>
-  </div>
+<main id="inventory">
+<h2>Инвентарь 🎒</h2>
+<div class="inventory-list" id="inventoryList"></div>
+</main>
 
-  <script>
-    const backgrounds = {
-      menu: "backgrounds/menu.jpg",
-      mine: "backgrounds/mine.jpg",
-      inventory: "backgrounds/inventory.jpg",
-      balanceSection: "backgrounds/mobs.jpg"
-    };
+<main id="balanceTab">
+<h2>Баланс 💰</h2>
+<div>
+  <label>Промокод:</label>
+  <input type="text" id="promoInput" placeholder="Введите промокод">
+  <button onclick="applyPromo()">Активировать</button>
+</div>
+<div class="balance-options">
+  <button onclick="deposit('CryptoBot')">Пополнить через CryptoBot</button>
+  <button onclick="deposit('TON')">Пополнить через TON</button>
+  <button onclick="deposit('Stars')">Пополнить через Звёзды</button>
+</div>
+<div class="operations-history" id="operationsHistory">
+  <h3>История операций</h3>
+  <ul id="historyList"></ul>
+</div>
+</main>
 
-    let balance = 50;
-    let history = [];
-    let inventory = [];
+<div class="tab-bar">
+<button onclick="showTab('menu')" id="tab-menu" class="active">Меню</button>
+<button onclick="showTab('mine')" id="tab-mine">Шахта</button>
+<button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
+<button onclick="showTab('balanceTab')" id="tab-balanceTab">Баланс</button>
+</div>
 
-    const gifts=[
-  {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
-  {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
-  {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},
-  {name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
-  {name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},
-  {name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
-  {name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},
-  {name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
-  {name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},
-  {name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
-  {name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},
-  {name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
-  {name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},
-  {name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
-  {name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},
-  {name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
-  {name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},
-  {name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
-  {name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},
-  {name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
-  {name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},
-  {name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
-  {name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},
-  {name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
-  {name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},
-  {name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
-  {name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},
-  {name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
-  {name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},
-  {name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
-  {name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},
-  {name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
-  {name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},
-  {name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
-  {name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},
-  {name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
-  {name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},
-  {name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
-  {name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},
-  {name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
-  {name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},
-  {name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
-  {name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},
-  {name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
-  {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
-];
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+<script>
+// --- Лоадер ---
+lottie.loadAnimation({
+    container: document.getElementById('lottieLoader'),
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: 'myLoader.json'
+});
 
-
-    const oreTypes = [
-      {img: "ores/coal.png", hits: 2},
-      {img: "ores/iron.png", hits: 3},
-      {img: "ores/gold.png", hits: 4},
-      {img: "ores/diamond.png", hits: 5},
-      {img: "ores/emerald.png", hits: 6}
-    ];
-
-    function preloadImages(sources, progressCallback) {
-      let loaded = 0;
-      return new Promise(resolve=>{
-        sources.forEach(src=>{
-          const img=new Image();
-          img.onload = img.onerror = ()=>{
-            loaded++;
-            progressCallback(loaded/sources.length);
-            if(loaded===sources.length) resolve();
-          };
-          img.src=src;
-        });
-      });
-    }
-
-    function preloadAssets(){
-      const images = Object.values(backgrounds);
-      preloadImages(images, p=>{
-        document.getElementById("loaderProgressBar").style.width=(p*100)+"%";
-      }).then(()=>{
-        document.getElementById("loader").classList.add("hidden");
-        document.body.style.backgroundImage = `url(${backgrounds['menu']})`;
-        updateBalance();
-        generateMine();
-      });
-    }
-
-    function updateBalance() {
-      document.getElementById("balanceValue").innerHTML =
+// --- Баланс ---
+let balance = 10000;
+function updateBalance(){
+    document.getElementById('balance').innerHTML =
         `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
-    }
+}
 
-    function addBalance(amount) {
-      balance += amount;
-      history.push({type: "Пополнение", amount: amount});
-      renderHistory();
-      updateBalance();
-    }
+// --- Вкладки ---
+const backgrounds = {
+    menu: 'images/menu.jpg',
+    mine: 'images/mine.jpg',
+    inventory: 'images/inventory.jpg',
+    balanceTab: 'images/mobs.jpg'
+};
+function showTab(id){
+    document.querySelectorAll('main').forEach(m => m.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-'+id).classList.add('active');
+    document.body.style.backgroundImage = `url(${backgrounds[id]})`;
+    if(id==='inventory') renderInventory();
+}
 
-    function applyPromo() {
-      const code = document.getElementById("promoInput").value.trim();
-      if (!code) return;
-      if (code === "FREE10") {
-        balance += 10;
-        history.push({type: "Промокод", amount: 10});
-        renderHistory();
-        updateBalance();
-        alert("Промокод активирован! +10 TON");
-      } else {
-        alert("Неверный промокод");
-      }
-      document.getElementById("promoInput").value = "";
-    }
+// --- Подарки ---
+const gifts=[
+    {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
+    {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
+    {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},
+    {name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
+    {name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},
+    {name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
+    {name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},
+    {name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
+    {name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},
+    {name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
+    {name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},
+    {name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
+    {name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},
+    {name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
+    {name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},
+    {name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
+    {name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},
+    {name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
+    {name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},
+    {name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
+    {name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},
+    {name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
+    {name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},
+    {name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
+    {name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},
+    {name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
+    {name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},
+    {name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
+    {name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},
+    {name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
+    {name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},
+    {name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
+    {name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},
+    {name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
+    {name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},
+    {name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
+    {name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},
+    {name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
+    {name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},
+    {name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
+    {name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},
+    {name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
+    {name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},
+    {name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
+    {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
+];
+let inventory = [];
 
-    function renderHistory() {
-      const list = document.getElementById("history");
-      list.innerHTML = "";
-      history.slice().reverse().forEach(item => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.textContent = `${item.type}: ${item.amount} TON`;
-        list.appendChild(div);
-      });
-    }
-
-    function showSection(id) {
-      document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      document.body.style.backgroundImage = `url(${backgrounds[id]})`;
-      if (id==="inventory") renderInventory();
-    }
-
-    // === Шахта ===
-    function generateMine() {
-      const grid = document.getElementById("mineGrid");
-      grid.innerHTML = "";
-      for (let i=0;i<16;i++) {
-        const cell = document.createElement("div");
-        spawnBlock(cell);
-        grid.appendChild(cell);
-      }
-    }
-
-    function spawnBlock(cell) {
-      const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
-      const price = +(1 + Math.random()*10).toFixed(2);
-      let hits = 0;
-
-      cell.className="block";
-      cell.style.backgroundImage=`url(${ore.img})`;
-      cell.style.backgroundSize="cover";
-      cell.innerHTML=`<div class="block-price">${price} TON</div>`;
-
-      cell.onclick=()=>{
-        if (balance < price) { alert("Недостаточно средств!"); return; }
+// --- Шахта ---
+const oreTypes=[
+    {img:"images/ores/coal.png",hits:3},
+    {img:"images/ores/iron.png",hits:4},
+    {img:"images/ores/gold.png",hits:5},
+    {img:"images/ores/diamond.png",hits:6},
+    {img:"images/ores/emerald.png",hits:7}
+];
+function getGiftByPrice(price){
+    let min=price*0.5, max=price*1.45;
+    let possible=gifts.filter(g=>g.price>=min && g.price<=max);
+    if(possible.length===0) possible=gifts;
+    return possible[Math.floor(Math.random()*possible.length)];
+}
+function spawnBlock(cell){
+    const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
+    let price = +(1+Math.random()*10).toFixed(2);
+    cell.className="block";
+    cell.style.backgroundImage=`url(${ore.img})`;
+    cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+    let hits = 0;
+    cell.onclick = () => {
         hits++;
-        if (hits >= ore.hits) {
-          balance -= price;
-          updateBalance();
-          const gift = gifts[Math.floor(Math.random()*gifts.length)];
-          inventory.push(gift);
-          renderInventory();
-          startCooldown(cell);
+        if(hits >= ore.hits){
+            if(balance >= price){ balance -= price; updateBalance(); }
+            let gift = getGiftByPrice(price);
+            inventory.push(gift); renderInventory();
+            flyGift(gift,cell);
+            let respawn = (60+Math.random()*1740)*1000;
+            cell.classList.add("cooldown");
+            cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
+            cell.onclick = null;
+            setTimeout(()=>{cell.classList.remove("cooldown"); spawnBlock(cell);},respawn);
         }
-      };
+    };
+}
+function generateMineGrid(){
+    const grid=document.getElementById("mineGrid"); grid.innerHTML="";
+    for(let i=0;i<16;i++){
+        let cell=document.createElement("div"); spawnBlock(cell); grid.appendChild(cell);
     }
+}
 
-    function startCooldown(cell) {
-      cell.classList.add("cooldown");
-      cell.innerHTML="<div class='block-price'>Перезарядка...</div>";
-      cell.onclick=null;
-      setTimeout(()=>{ spawnBlock(cell); cell.classList.remove("cooldown"); },3000);
+// --- Анимация подарка ---
+function flyGift(gift,fromCell){
+    const rect = fromCell.getBoundingClientRect();
+    const fly = document.createElement("div");
+    fly.className="flying";
+    fly.style.left=rect.left+"px"; fly.style.top=rect.top+"px";
+    document.body.appendChild(fly);
+    lottie.loadAnimation({container:fly,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
+    const inv = document.getElementById("tab-inventory").getBoundingClientRect();
+    fly.animate([{transform:`translate(0,0)`},{transform:`translate(${inv.left-rect.left}px,${inv.top-rect.top}px)`}],
+        {duration:1000,easing:"ease-in-out"});
+    setTimeout(()=>fly.remove(),1000);
+}
+
+// --- Инвентарь ---
+function renderInventory(){
+    let list=document.getElementById("inventoryList"); list.innerHTML="";
+    inventory.forEach((gift,idx)=>{
+        let div=document.createElement("div"); div.className="gift-item";
+        let prev=document.createElement("div"); prev.className="gift-preview"; div.appendChild(prev);
+        lottie.loadAnimation({container:prev,renderer:"svg",loop:true,autoplay:true,path:`emoji/${gift.name}.json`});
+        div.innerHTML+=`<b>${gift.name}</b><p>Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></p>`;
+        let actions=document.createElement("div"); actions.className="gift-actions";
+        let sell=document.createElement("button"); sell.textContent="Продать";
+        sell.onclick=()=>{balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory();};
+        let send=document.createElement("button"); send.textContent="Отправить";
+        send.onclick=()=>{alert("Отправлено!"); inventory.splice(idx,1); renderInventory();};
+        actions.appendChild(sell); actions.appendChild(send); div.appendChild(actions); list.appendChild(div);
+    });
+}
+
+// --- Баланс ---
+function applyPromo(){
+    let code=document.getElementById("promoInput").value.trim();
+    if(code==="GIFT100"){balance+=100;updateBalance();addHistory("Промокод +100");alert("Промокод активирован!");}
+    else alert("Неверный промокод!");
+}
+function deposit(method){
+    balance+=500; updateBalance(); addHistory(`Пополнение через ${method} +500`);
+    alert(`Баланс пополнен через ${method}`);
+}
+function addHistory(text){
+    let li=document.createElement("li"); li.textContent=text;
+    document.getElementById("historyList").appendChild(li);
+}
+
+// --- Прелоадер ---
+function preloadAssets(assets,callback){
+    let loaded=0;
+    assets.forEach(src=>{
+        let el;
+        if(src.endsWith(".jpg")||src.endsWith(".png")) el=new Image();
+        else el=new XMLHttpRequest();
+        if(el instanceof Image){
+            el.onload=assetLoaded; el.onerror=assetLoaded; el.src=src;
+        } else {
+            el.onreadystatechange=function(){if(el.readyState===4)assetLoaded();};
+            el.open("GET",src,true); el.send();
+        }
+    });
+    function assetLoaded(){
+        loaded++;
+        let progress=Math.round((loaded/assets.length)*100);
+        document.getElementById("progressBar").style.width=progress+"%";
+        document.getElementById("progressText").innerText=progress+"%";
+        if(loaded===assets.length){setTimeout(()=>{hideLoader();callback();},500);}
     }
+}
+function hideLoader(){
+    const loader=document.getElementById("loader");
+    let op=1; let timer=setInterval(()=>{
+        if(op<=0.1){clearInterval(timer); loader.style.display="none";}
+        loader.style.opacity=op; op-=0.05;
+    },50);
+}
 
-    // === Инвентарь ===
-    function renderInventory() {
-      const list = document.getElementById("inventoryItems");
-      list.innerHTML="";
-      inventory.forEach((gift, idx)=>{
-        const div=document.createElement("div");
-        div.className="item";
-        div.innerHTML=`<strong>${gift.name}</strong><br>${gift.price} TON`;
-        const sell=document.createElement("button");
-        sell.textContent="Продать";
-        sell.onclick=()=>{
-          balance += gift.price;
-          inventory.splice(idx,1);
-          updateBalance();
-          renderInventory();
-        };
-        div.appendChild(sell);
-        list.appendChild(div);
-      });
-    }
-
-    window.onload = preloadAssets;
-  </script>
+// --- Старт ---
+window.addEventListener("load",()=>{
+    const assets=["minecraft.ttf","images/menu.jpg","images/mine.jpg","images/inventory.jpg","images/mobs.jpg","myLoader.json","ton.svg"];
+    preloadAssets(assets,()=>{updateBalance();generateMineGrid();showTab('menu');});
+});
+</script>
 </body>
 </html>
