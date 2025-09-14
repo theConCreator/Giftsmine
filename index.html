@@ -266,18 +266,19 @@ function generateMineGrid(){
     }
 }
 
-// --- Анимация подарка (исправлено) ---
+// --- Анимация подарка (проверенная версия) ---
 function flyGift(gift, fromCell) {
     const rect = fromCell.getBoundingClientRect();
     const fly = document.createElement("div");
     fly.className = "flying";
-    fly.style.left = (rect.left + rect.width/4) + "px";  // смещаем немного внутрь блока
-    fly.style.top = (rect.top + rect.height/4) + "px";
-    fly.style.width = "40px";    // уменьшенный размер
-    fly.style.height = "40px";   // уменьшенный размер
-    fly.style.pointerEvents = "none"; // чтобы не блокировать клики
+    fly.style.left = rect.left + "px";
+    fly.style.top = rect.top + "px";
+    fly.style.width = "50px";
+    fly.style.height = "50px";
+    fly.style.pointerEvents = "none";
     document.body.appendChild(fly);
 
+    // Лоадим анимацию подарка
     lottie.loadAnimation({
         container: fly,
         renderer: "svg",
@@ -287,19 +288,26 @@ function flyGift(gift, fromCell) {
         rendererSettings: { preserveAspectRatio: "xMidYMid meet" }
     });
 
-    const invRect = document.getElementById("tab-inventory").getBoundingClientRect();
+    // Координаты инвентаря
+    const inv = document.getElementById("tab-inventory").getBoundingClientRect();
+
+    // Плавное перемещение
+    const deltaX = inv.left + inv.width/2 - rect.left - rect.width/2;
+    const deltaY = inv.top + inv.height/2 - rect.top - rect.height/2;
 
     fly.animate([
-        { transform: `translate(0,0)` },
-        { transform: `translate(${invRect.left - rect.left}px, ${invRect.top - rect.top}px) scale(0.5)` }
+        { transform: "translate(0,0) scale(1)" },
+        { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.5)` }
     ], {
         duration: 1000,
         easing: "ease-in-out",
         fill: "forwards"
     });
 
+    // Удаляем после анимации
     setTimeout(() => fly.remove(), 1000);
 }
+
 
 
 // --- Инвентарь ---
