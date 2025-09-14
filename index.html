@@ -266,19 +266,41 @@ function generateMineGrid(){
     }
 }
 
-// --- Анимация подарка ---
-function flyGift(gift,fromCell){
+// --- Анимация подарка (исправлено) ---
+function flyGift(gift, fromCell) {
     const rect = fromCell.getBoundingClientRect();
     const fly = document.createElement("div");
-    fly.className="flying";
-    fly.style.left=rect.left+"px"; fly.style.top=rect.top+"px";
+    fly.className = "flying";
+    fly.style.left = (rect.left + rect.width/4) + "px";  // смещаем немного внутрь блока
+    fly.style.top = (rect.top + rect.height/4) + "px";
+    fly.style.width = "40px";    // уменьшенный размер
+    fly.style.height = "40px";   // уменьшенный размер
+    fly.style.pointerEvents = "none"; // чтобы не блокировать клики
     document.body.appendChild(fly);
-    lottie.loadAnimation({container:fly,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
+
+    lottie.loadAnimation({
+        container: fly,
+        renderer: "svg",
+        loop: false,
+        autoplay: true,
+        path: `emoji/${gift.name}.json`,
+        rendererSettings: { preserveAspectRatio: "xMidYMid meet" }
+    });
+
     const invRect = document.getElementById("tab-inventory").getBoundingClientRect();
-    fly.animate([{transform:`translate(0,0)`},{transform:`translate(${invRect.left-rect.left}px,${invRect.top-rect.top}px)`}],
-        {duration:1000,easing:"ease-in-out"});
-    setTimeout(()=>fly.remove(),1000);
+
+    fly.animate([
+        { transform: `translate(0,0)` },
+        { transform: `translate(${invRect.left - rect.left}px, ${invRect.top - rect.top}px) scale(0.5)` }
+    ], {
+        duration: 1000,
+        easing: "ease-in-out",
+        fill: "forwards"
+    });
+
+    setTimeout(() => fly.remove(), 1000);
 }
+
 
 // --- Инвентарь ---
 function renderInventory(){
