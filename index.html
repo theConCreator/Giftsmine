@@ -313,23 +313,74 @@ function flyGift(gift,fromCell){
 
 // --- Инвентарь ---
 function renderInventory(){
-    let list=document.getElementById("inventoryList"); list.innerHTML="";
-    inventory.forEach((gift,idx)=>{
-        let div=document.createElement("div"); div.className="gift-item";
-        let prev=document.createElement("div"); prev.className="gift-preview";
-        lottie.loadAnimation({container:prev,renderer:"svg",loop:false,autoplay:true,path:`emoji/${gift.name}.json`});
-        let info=document.createElement("div");
-        info.innerHTML=`${gift.name} – ${gift.price} <img src="ton.svg" style="width:14px;vertical-align:middle">`;
-        let actions=document.createElement("div"); actions.className="gift-actions";
-        let sellBtn=document.createElement("button"); sellBtn.textContent="Продать";
-        sellBtn.onclick=()=>{ balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory(); };
-        let withdrawBtn=document.createElement("button"); withdrawBtn.textContent="Вывести";
-        withdrawBtn.onclick=()=>{ alert("Вывод пока не реализован"); };
-        actions.appendChild(sellBtn); actions.appendChild(withdrawBtn);
-        div.appendChild(prev); div.appendChild(info); div.appendChild(actions);
+    let list = document.getElementById("inventoryList");
+    list.innerHTML = "";
+    
+    inventory.forEach((gift, idx) => {
+        // Основная карточка подарка
+        let div = document.createElement("div");
+        div.className = "gift-item";
+
+        // Превью подарка
+        let prev = document.createElement("div");
+        prev.className = "gift-preview";
+        lottie.loadAnimation({
+            container: prev,
+            renderer: "svg",
+            loop: false,
+            autoplay: true,
+            path: `emoji/${gift.name}.json`
+        });
+
+        // Информация о подарке
+        let info = document.createElement("div");
+        info.style.marginBottom = "8px"; // Отступ до кнопок
+        info.innerHTML = `${gift.name} – ${gift.price} <img src="ton.svg" style="width:14px;vertical-align:middle">`;
+
+        // Блок кнопок под карточкой
+        let actions = document.createElement("div");
+        actions.style.display = "flex";
+        actions.style.justifyContent = "space-between";
+        actions.style.marginTop = "4px";
+        actions.style.gap = "5px";
+
+        let sellBtn = document.createElement("button");
+        sellBtn.textContent = "Продать";
+        sellBtn.style.flex = "1";
+        sellBtn.style.background = "linear-gradient(135deg,#ff9a9e,#fad0c4)";
+        sellBtn.style.color = "#fff";
+        sellBtn.style.border = "none";
+        sellBtn.style.borderRadius = "6px";
+        sellBtn.style.cursor = "pointer";
+        sellBtn.onclick = () => { 
+            balance += gift.price; 
+            updateBalance(); 
+            inventory.splice(idx, 1); 
+            renderInventory(); 
+        };
+
+        let withdrawBtn = document.createElement("button");
+        withdrawBtn.textContent = "Вывести";
+        withdrawBtn.style.flex = "1";
+        withdrawBtn.style.background = "linear-gradient(135deg,#a1c4fd,#c2e9fb)";
+        withdrawBtn.style.color = "#fff";
+        withdrawBtn.style.border = "none";
+        withdrawBtn.style.borderRadius = "6px";
+        withdrawBtn.style.cursor = "pointer";
+        withdrawBtn.onclick = () => { alert("Вывод пока не реализован"); };
+
+        actions.appendChild(sellBtn);
+        actions.appendChild(withdrawBtn);
+
+        // Собираем карточку
+        div.appendChild(prev);
+        div.appendChild(info);
+        div.appendChild(actions);
+
         list.appendChild(div);
     });
 }
+
 
 // --- Мины ---
 let minesActive=false, minesLost=false, mineMultiplier=1, currentStake=0;
