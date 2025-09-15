@@ -5,84 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
-@font-face {
-    font-family: 'Minecraft';
-    src: url('minecraft.ttf') format('truetype');
-}
+@font-face { font-family: 'Minecraft'; src: url('minecraft.ttf') format('truetype'); }
 body, html {
-    margin: 0; padding: 0; height: 100%;
-    font-family: 'Minecraft', sans-serif;
-    color: #fff; overflow: hidden;
-    display: flex; flex-direction: column;
-    background: #000; background-size: cover; background-position: center;
+    margin:0; padding:0; height:100%; font-family:'Minecraft',sans-serif;
+    color:#fff; overflow:hidden; display:flex; flex-direction:column;
+    background:#000; background-size:cover; background-position:center;
     transition: background 0.5s;
 }
-#balance {
-    padding: 15px; text-align: right; font-size: 1.2em; font-weight: bold;
-    background: rgba(0,0,0,0.15); backdrop-filter: blur(5px); box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-main {
-    flex: 1; overflow-y: auto; padding: 10px; margin-bottom: 60px;
-    display: none; background: rgba(0,0,0,0.2);
-}
-main.active { display: block; }
-.tab-bar {
-    position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around;
-    background: rgba(0,0,0,0.2); padding: 10px; border-top: 2px solid #fff; z-index: 1000;
-}
-.tab-bar button {
-    flex: 1; margin: 0 5px; padding: 10px; border: none;
-    background: linear-gradient(135deg,#ff9a9e,#fad0c4); color: #fff;
-    font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1em;
-}
-.tab-bar button.active {
-    background: linear-gradient(135deg,#a1c4fd,#c2e9fb);
-}
-.grid { display: grid; gap: 5px; justify-content: center; }
+#balance { padding:15px; text-align:right; font-size:1.2em; font-weight:bold;
+    background: rgba(0,0,0,0.15); backdrop-filter:blur(5px); box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+main { flex:1; overflow-y:auto; padding:10px; margin-bottom:60px; display:none; background: rgba(0,0,0,0.2);}
+main.active{display:block;}
+.tab-bar { position:fixed; bottom:0; width:100%; display:flex; justify-content:space-around;
+    background: rgba(0,0,0,0.2); padding:10px; border-top:2px solid #fff; z-index:1000; }
+.tab-bar button { flex:1; margin:0 5px; padding:10px; border:none;
+    background: linear-gradient(135deg,#ff9a9e,#fad0c4); color:#fff; font-weight:bold;
+    cursor:pointer; transition:0.3s; font-size:1em;}
+.tab-bar button.active { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
+.grid { display:grid; gap:5px; justify-content:center; }
 #mineGrid { grid-template-columns: repeat(4, minmax(60px,1fr)); }
-.block {
-    aspect-ratio: 1/1; background: #333;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
-    background-size: cover; background-position: center; border-radius: 6px;
-}
-.block-price {
-    position: absolute; bottom: 2px; right: 2px;
-    background: rgba(0,0,0,0.5); padding: 2px 4px; font-size: 0.7em;
-    border-radius: 2px; display: flex; align-items: center; gap: 2px;
-}
-.block.cooldown { filter: brightness(0.5); cursor: not-allowed; }
-.inventory-list { display: flex; flex-direction: column; gap: 12px; }
-.gift-item {
-    display: flex; flex-direction: column;
-    background: rgba(20,20,20,0.9); border-radius: 10px; padding: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5); color: #fff;
-}
-.gift-top { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-.gift-preview { width: 60px; height: 60px; flex-shrink: 0; border-radius: 6px; overflow: hidden; background: #111; }
-.gift-info { display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; }
-.gift-name { font-size: 1em; font-weight: bold; }
-.gift-price { font-size: 0.9em; color: #ccc; }
-.gift-actions { display: flex; gap: 10px; margin-top: 6px; }
-.gift-actions button {
-    flex: 1; padding: 6px; border: none; border-radius: 6px; font-size: 0.85em; cursor: pointer;
-    color: #fff; background: linear-gradient(135deg,#ff9a9e,#fad0c4); transition: 0.3s;
-}
-.gift-actions button:hover { filter: brightness(1.1); }
-#loader {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center; flex-direction: column;
-    z-index: 9999; background: #000; transition: opacity 0.6s ease;
-}
-#loader.hidden { opacity: 0; pointer-events: none; }
-#loaderAnimation { width: 150px; height: 150px; margin-bottom: 20px; }
-#loaderProgress { width: 60%; height: 20px; background: #444; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-#loaderProgressBar { width: 0%; height: 100%; background: #ff9a9e; }
-@media (max-width:500px) {
-    .tab-bar button { font-size: 0.85em; padding: 8px; }
-    #balance { font-size: 1em; padding: 10px; }
-    #mineGrid{gap:3px;}
-}
+.block { aspect-ratio:1/1; background:#333; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:0.2s; position:relative; overflow:hidden; background-size:cover; background-position:center; border-radius:6px;}
+.block-price { position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.5); padding:2px 4px;
+    font-size:0.7em; border-radius:2px; display:flex; align-items:center; gap:2px;}
+.block.cooldown { filter:brightness(0.5); cursor:not-allowed; }
+.inventory-list { display:flex; flex-direction:column; gap:12px; }
+.gift-item { display:flex; flex-direction:column; background: rgba(20,20,20,0.9); border-radius:10px; padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.5); color:#fff; }
+.gift-top { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+.gift-preview { width:60px; height:60px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#111; }
+.gift-info { display:flex; flex-direction:column; justify-content:center; gap:4px; flex-grow:1; }
+.gift-name { font-size:1em; font-weight:bold; }
+.gift-price { font-size:0.9em; color:#ccc; }
+.gift-actions { display:flex; gap:10px; margin-top:6px; }
+.gift-actions button { flex:1; padding:6px; border:none; border-radius:6px; font-size:0.85em; cursor:pointer;
+    color:#fff; background: linear-gradient(135deg,#ff9a9e,#fad0c4); transition:0.3s;}
+.gift-actions button:hover { filter:brightness(1.1); }
+.flying { position:absolute; width:60px; height:60px; pointer-events:none; z-index:10000; }
+#loader { position:fixed; top:0; left:0; width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    z-index:9999; background:#000; transition:opacity 0.6s ease; }
+#loader.hidden { opacity:0; pointer-events:none; }
+#loaderAnimation { width:150px; height:150px; margin-bottom:20px; }
+#loaderProgress { width:60%; height:20px; background:#444; border-radius:10px; margin-top:10px; overflow:hidden; }
+#loaderProgressBar { width:0%; height:100%; background:#ff9a9e; transition:0.3s; }
+@media (max-width:500px){ .tab-bar button{font-size:0.85em; padding:8px;} #balance{font-size:1em; padding:10px;} #mineGrid{gap:3px;} }
 </style>
 </head>
 <body>
@@ -113,12 +79,12 @@ main.active { display: block; }
 <main id="balanceTab">
 <h2>Баланс 💰</h2>
 <div style="margin-bottom:15px;">
-    <label>Промокод: <input type="text" id="promoCode"><button onclick="redeemPromo()">Активировать</button></label>
+<label>Промокод: <input type="text" id="promoCode"><button onclick="redeemPromo()">Активировать</button></label>
 </div>
 <div style="margin-bottom:15px;">
-    <button onclick="addBalance('crypto')">Пополнить CryptoBot</button>
-    <button onclick="addBalance('ton')">Пополнить TON</button>
-    <button onclick="addBalance('stars')">Пополнить Звёзды</button>
+<button onclick="addBalance('crypto')">Пополнить CryptoBot</button>
+<button onclick="addBalance('ton')">Пополнить TON</button>
+<button onclick="addBalance('stars')">Пополнить Звёзды</button>
 </div>
 <div id="transactionHistory"></div>
 </main>
@@ -135,33 +101,23 @@ main.active { display: block; }
 // --- Лоадер ---
 let loaderAnim = lottie.loadAnimation({
     container: document.getElementById('loaderAnimation'),
-    renderer: 'svg',
-    loop: true,
-    autoplay: true,
+    renderer: 'svg', loop: true, autoplay: true,
     path: 'animations/myLoader.json'
 });
 
 // --- Баланс ---
 let balance = 10000;
 let transactions = [];
-function updateBalance(){
-    document.getElementById('balance').innerHTML =
-        `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
-}
+function updateBalance(){ document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`; }
 
 // --- Вкладки ---
-const backgrounds = {
-    menu: 'images/menu.jpg',
-    mine: 'images/mine.jpg',
-    inventory: 'images/inventory.jpg',
-    balanceTab: 'images/mobs.jpg'
-};
+const backgrounds = { menu:'images/menu.jpg', mine:'images/mine.jpg', inventory:'images/inventory.jpg', balanceTab:'images/mobs.jpg'};
 function showTab(id){
-    document.querySelectorAll('main').forEach(m => m.classList.remove('active'));
+    document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
     document.getElementById('tab-'+id).classList.add('active');
-    document.body.style.backgroundImage = `url(${backgrounds[id]})`;
+    document.body.style.backgroundImage=`url(${backgrounds[id]})`;
     if(id==='inventory') renderInventory();
 }
 
@@ -214,212 +170,123 @@ const gifts=[ /* полный список подарков (как у тебя)
     {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
 ];
 let inventory = [];
-let giftAnimations = {}; // кэш анимаций
 
-// --- Шахта 4x4 ---
-const oreTypes = [
-  { img: "images/ores/coal.png", hits: 3 },
-  { img: "images/ores/iron.png", hits: 4 },
-  { img: "images/ores/gold.png", hits: 5 },
-  { img: "images/ores/diamond.png", hits: 6 },
-  { img: "images/ores/emerald.png", hits: 7 }
-];
-
-function getGiftByPrice(price, isFirst = false) {
-  let min = price * 0.5, max = price * 1.45;
-  let possible = gifts.filter(g => g.price >= min && g.price <= max);
-  if (isFirst) {
-    possible = gifts.filter(g => g.price >= price);
-    if (possible.length === 0) possible = gifts;
-  }
-  if (possible.length === 0) possible = gifts;
-  return possible[Math.floor(Math.random() * possible.length)];
-}
-
-function spawnBlock(cell, index = 0) {
-  const ore = oreTypes[Math.floor(Math.random() * oreTypes.length)];
-  let price = +(1 + Math.random() * 10).toFixed(2);
-
-  cell.className = "block";
-  cell.style.backgroundImage = `url(${ore.img})`;
-  cell.innerHTML = `<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-
-  let hits = 0;
-  cell.onclick = () => {
-    hits++;
-    if (hits >= ore.hits) {
-      if (balance >= price) {
-        balance -= price;
-        updateBalance();
-      }
-      let gift = getGiftByPrice(price, index === 0);
-      inventory.push(gift);
-      renderInventory();
-      flyGift(gift, cell);
-
-      let respawn = (60 + Math.random() * 1740) * 1000;
-      cell.classList.add("cooldown");
-      cell.innerHTML = `<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn / 60000)}m</div>`;
-      cell.onclick = null;
-
-      setTimeout(() => {
-        cell.classList.remove("cooldown");
-        spawnBlock(cell, index);
-      }, respawn);
-    }
-  };
-}
-
-function generateMineGrid() {
-  const grid = document.getElementById("mineGrid");
-  grid.innerHTML = "";
-  for (let i = 0; i < 16; i++) {
-    let cell = document.createElement("div");
-    spawnBlock(cell, i);
-    grid.appendChild(cell);
-  }
-}
-
-// --- Анимация подарка ---
-function flyGift(gift, fromCell) {
-  const rect = fromCell.getBoundingClientRect();
-  const fly = document.createElement("div");
-  fly.className = "flying";
-  fly.style.position = "absolute";
-  fly.style.left = rect.left + "px";
-  fly.style.top = rect.top + "px";
-  fly.style.width = "60px";
-  fly.style.height = "60px";
-  document.body.appendChild(fly);
-
-  lottie.loadAnimation({
-    container: fly,
-    renderer: "svg",
-    loop: false,
-    autoplay: true,
-    animationData: giftAnimations[gift.name]
-  });
-
-  const inv = document.getElementById("tab-inventory").getBoundingClientRect();
-
-  fly.animate(
-    [
-      { transform: `translate(0,0) scale(1)` },
-      { transform: `translate(${inv.left - rect.left}px, ${inv.top - rect.top}px) scale(0.3)` }
-    ],
-    { duration: 1000, easing: "ease-in-out" }
-  );
-
-  setTimeout(() => fly.remove(), 1000);
-}
-
-// --- Рендер инвентаря ---
-function renderInventory() {
-  let list = document.getElementById("inventoryList");
-  list.innerHTML = "";
-  inventory.forEach((gift, i) => {
-    let item = document.createElement("div");
-    item.className = "gift-item";
-    item.innerHTML = `
-      <div class="gift-top">
-        <div class="gift-preview" id="gift-preview-${i}"></div>
-        <div class="gift-info">
-          <div class="gift-name">${gift.name}</div>
-          <div class="gift-price">${gift.price.toFixed(2)} <img src="ton.svg" style="width:14px;vertical-align:middle"></div>
-        </div>
-      </div>
-      <div class="gift-actions">
-        <button onclick="sellGift(${i})">Продать</button>
-        <button onclick="sendGift(${i})">Передать</button>
-        <button onclick="useGift(${i})">Использовать</button>
-      </div>`;
-    list.appendChild(item);
-
-    let container = item.querySelector(`#gift-preview-${i}`);
-    lottie.loadAnimation({
-      container: container,
-      renderer: "svg",
-      loop: true,
-      autoplay: true,
-      animationData: giftAnimations[gift.name]
+// --- Предзагрузка всех анимаций подарков ---
+const giftAnimations = {}; // сюда сохраняем контейнеры
+function preloadGiftAnimations(onProgress){
+    let loaded=0;
+    gifts.forEach(g=>{
+        const container = document.createElement('div');
+        container.style.display='none';
+        document.body.appendChild(container);
+        giftAnimations[g.name] = container;
+        lottie.loadAnimation({container, renderer:'svg', loop:true, autoplay:true, path:`animations/${g.name}.json`, complete: ()=>{}});
+        loaded++;
+        onProgress(loaded/gifts.length);
     });
-  });
 }
 
-function sellGift(i) {
-  let gift = inventory[i];
-  balance += gift.price;
-  transactions.push(`Продажа ${gift.name} за ${gift.price}`);
-  inventory.splice(i, 1);
-  updateBalance(); renderInventory();
-}
-function sendGift(i) {
-  let gift = inventory[i];
-  transactions.push(`Передан ${gift.name}`);
-  inventory.splice(i, 1); renderInventory();
-}
-function useGift(i) {
-  let gift = inventory[i];
-  transactions.push(`Использован ${gift.name}`);
-  inventory.splice(i, 1); renderInventory();
+// --- Шахта ---
+const oreTypes=[{img:"images/ores/coal.png",hits:3},{img:"images/ores/iron.png",hits:4},{img:"images/ores/gold.png",hits:5},{img:"images/ores/diamond.png",hits:6},{img:"images/ores/emerald.png",hits:7}];
+
+function getGiftByPrice(price,isFirst=false){
+    let min=price*0.5,max=price*1.45;
+    let possible=gifts.filter(g=>g.price>=min && g.price<=max);
+    if(isFirst){possible=gifts.filter(g=>g.price>=price); if(possible.length===0) possible=gifts;}
+    if(possible.length===0) possible=gifts;
+    return possible[Math.floor(Math.random()*possible.length)];
 }
 
-// --- Баланс вкладка ---
+function spawnBlock(cell,index=0){
+    const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
+    let price=+(1+Math.random()*10).toFixed(2);
+    cell.className="block"; cell.style.backgroundImage=`url(${ore.img})`;
+    cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+    let hits=0;
+    cell.onclick=()=>{
+        hits++;
+        if(hits>=ore.hits){
+            if(balance>=price){ balance-=price; updateBalance(); }
+            let gift=getGiftByPrice(price,index===0); inventory.push(gift); renderInventory();
+            flyGift(gift,cell);
+            let respawn=(60+Math.random()*1740)*1000;
+            cell.classList.add("cooldown");
+            cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
+            cell.onclick=null;
+            setTimeout(()=>{ cell.classList.remove("cooldown"); spawnBlock(cell,index); },respawn);
+        }
+    };
+}
+
+function generateMineGrid(){
+    const grid=document.getElementById("mineGrid"); grid.innerHTML="";
+    for(let i=0;i<16;i++){ let cell=document.createElement("div"); spawnBlock(cell,i); grid.appendChild(cell); }
+}
+
+// --- Полёт подарка ---
+function flyGift(gift,fromCell){
+    const rect=fromCell.getBoundingClientRect();
+    const fly=document.createElement('div'); fly.className='flying';
+    fly.style.left=rect.left+'px'; fly.style.top=rect.top+'px';
+    document.body.appendChild(fly);
+    const animContainer=giftAnimations[gift.name].cloneNode(true);
+    animContainer.style.display='block';
+    animContainer.style.width='100%'; animContainer.style.height='100%';
+    fly.appendChild(animContainer);
+    const invRect=document.getElementById('tab-inventory').getBoundingClientRect();
+    fly.animate([{transform:'translate(0,0)'},{transform:`translate(${invRect.left-rect.left}px,${invRect.top-rect.top}px)`}],
+        {duration:1000,easing:'ease-in-out'});
+    setTimeout(()=>fly.remove(),1000);
+}
+
+// --- Инвентарь ---
+function renderInventory(){
+    const list=document.getElementById("inventoryList"); list.innerHTML='';
+    inventory.forEach((gift,idx)=>{
+        const div=document.createElement('div'); div.className='gift-item';
+        const top=document.createElement('div'); top.className='gift-top';
+        const prev=document.createElement('div'); prev.className='gift-preview';
+        lottie.loadAnimation({container:prev, renderer:'svg', loop:true, autoplay:true, path:`animations/${gift.name}.json`});
+        const info=document.createElement('div'); info.className='gift-info';
+        info.innerHTML=`<div class="gift-name">${gift.name}</div>
+            <div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+        top.appendChild(prev); top.appendChild(info);
+        const actions=document.createElement('div'); actions.className='gift-actions';
+        const sell=document.createElement('button'); sell.textContent='Продать';
+        sell.onclick=()=>{ balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory(); };
+        const withdraw=document.createElement('button'); withdraw.textContent='Вывести';
+        withdraw.onclick=()=>{ alert("Вывод оформлен!"); inventory.splice(idx,1); renderInventory(); };
+        actions.appendChild(sell); actions.appendChild(withdraw);
+        div.appendChild(top); div.appendChild(actions);
+        list.appendChild(div);
+    });
+}
+
+// --- Баланс ---
 function redeemPromo(){
-    let code=document.getElementById('promoCode').value.trim();
-    if(code==="FREE100"){
-        balance+=100;transactions.push("Активирован промокод FREE100");
-    }
-    updateBalance();document.getElementById('promoCode').value="";
+    const code=document.getElementById('promoCode').value.trim();
+    if(code==='BONUS10'){ balance+=10; updateBalance(); transactions.push('Промокод +10 TON'); alert('Промокод активирован!'); }
+    else{ alert('Неверный промокод'); }
 }
-function addBalance(method){
-    let amt=+(prompt("Сумма пополнения:","100"))||0;
-    if(amt>0){balance+=amt;transactions.push(`Пополнение через ${method}: +${amt}`);}
-    updateBalance();
-}
+function addBalance(method){ let amount=100; balance+=amount; updateBalance(); transactions.push(`Пополнение через ${method} +${amount} TON`); alert(`Баланс пополнен через ${method}: +${amount} TON`); }
 
-// --- Предзагрузка ---
-function preloadImages(paths, onProgress){
-    let loaded=0; return Promise.all(paths.map(src=>new Promise(res=>{
+// --- Предзагрузка ресурсов ---
+function preloadImages(paths,onProgress){
+    let loaded=0;
+    return Promise.all(paths.map(src=>new Promise(res=>{
         const img=new Image(); img.onload=img.onerror=function(){ loaded++; onProgress(loaded/paths.length); res(); }; img.src=src;
     })));
 }
-function preloadGiftAnimations(onProgress) {
-    let loaded = 0;
-    return Promise.all(
-        gifts.map(gift => new Promise(res => {
-            fetch(`animations/${gift.name}.json`)
-                .then(r => r.json())
-                .then(data => {
-                    giftAnimations[gift.name] = data;
-                })
-                .catch(()=>{})
-                .finally(() => {
-                    loaded++;
-                    onProgress(loaded / gifts.length);
-                    res();
-                });
-        }))
-    );
-}
-function preloadAssets(){
-    const imagePaths=[ ...Object.values(backgrounds),"ton.svg", ...oreTypes.map(o=>o.img) ];
-    let totalProgress = 0;
 
-    preloadImages(imagePaths,p=>{
-        totalProgress = p * 0.5;
-        document.getElementById("loaderProgressBar").style.width=(totalProgress*100)+"%";
-    }).then(()=>{
-        return preloadGiftAnimations(p=>{
-            totalProgress = 0.5 + p * 0.5;
-            document.getElementById("loaderProgressBar").style.width=(totalProgress*100)+"%";
+function preloadAssets(){
+    const imagePaths=[...Object.values(backgrounds),'ton.svg', ...oreTypes.map(o=>o.img)];
+    preloadImages(imagePaths,p=>{ document.getElementById('loaderProgressBar').style.width=(p*100)+'%'; })
+        .then(()=>{
+            preloadGiftAnimations(p=>{}); // предзагрузка анимаций
+            setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalance(); },500);
         });
-    }).then(()=>{
-        setTimeout(()=>document.getElementById("loader").classList.add("hidden"),500);
-        generateMineGrid(); 
-        updateBalance();
-    });
 }
+
 preloadAssets();
 </script>
 </body>
