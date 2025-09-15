@@ -220,7 +220,7 @@ function renderInventory(){
         const div=document.createElement('div'); div.className='gift-item';
         const top=document.createElement('div'); top.className='gift-top';
         const prev=document.createElement('div'); prev.className='gift-preview';
-        lottie.loadAnimation({container:prev, renderer:'svg', loop:true, autoplay:true, path:`animations/${gift.name}.json`});
+        lottie.loadAnimation({container:prev, renderer:'svg', loop:true, autoplay:true, path:`emoji/${gift.name}.json`});
         const info=document.createElement('div'); info.className='gift-info';
         info.innerHTML=`<div class="gift-name">${gift.name}</div>
         <div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
