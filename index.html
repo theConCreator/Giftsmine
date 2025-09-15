@@ -5,15 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiftsMine 🎁</title>
 <style>
-@font-face { font-family: 'Minecraft'; src: url('minecraft.ttf') format('truetype'); }
-body, html {
-    margin:0; padding:0; height:100%; font-family:'Minecraft',sans-serif;
+@font-face { font-family:'Minecraft'; src:url('minecraft.ttf') format('truetype'); }
+body, html { margin:0; padding:0; height:100%; font-family:'Minecraft',sans-serif;
     color:#fff; overflow:hidden; display:flex; flex-direction:column;
-    background:#000; background-size:cover; background-position:center;
-    transition: background 0.5s;
-}
+    background:#000; background-size:cover; background-position:center; transition: background 0.5s; }
 #balance { padding:15px; text-align:right; font-size:1.2em; font-weight:bold;
-    background: rgba(0,0,0,0.15); backdrop-filter:blur(5px); box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+    background:rgba(0,0,0,0.15); backdrop-filter:blur(5px); box-shadow:0 2px 8px rgba(0,0,0,0.3);}
 main { flex:1; overflow-y:auto; padding:10px; margin-bottom:60px; display:none; background: rgba(0,0,0,0.2);}
 main.active{display:block;}
 .tab-bar { position:fixed; bottom:0; width:100%; display:flex; justify-content:space-around;
@@ -99,19 +96,14 @@ main.active{display:block;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
 // --- Лоадер ---
-let loaderAnim = lottie.loadAnimation({
-    container: document.getElementById('loaderAnimation'),
-    renderer: 'svg', loop: true, autoplay: true,
-    path: 'animations/myLoader.json'
-});
+let loaderAnim = lottie.loadAnimation({ container: document.getElementById('loaderAnimation'), renderer: 'svg', loop:true, autoplay:true, path:'animations/myLoader.json' });
 
 // --- Баланс ---
-let balance = 10000;
-let transactions = [];
-function updateBalance(){ document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`; }
+let balance=10000; let transactions=[];
+function updateBalance(){ document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`; }
 
 // --- Вкладки ---
-const backgrounds = { menu:'images/menu.jpg', mine:'images/mine.jpg', inventory:'images/inventory.jpg', balanceTab:'images/mobs.jpg'};
+const backgrounds={menu:'images/menu.jpg', mine:'images/mine.jpg', inventory:'images/inventory.jpg', balanceTab:'images/mobs.jpg'};
 function showTab(id){
     document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -169,22 +161,7 @@ const gifts=[ /* полный список подарков (как у тебя)
     {name:"Precious Peach",price:379.99}, {name:"Durov’s Cap",price:794.9}, 
     {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
 ];
-let inventory = [];
-
-// --- Предзагрузка всех анимаций подарков ---
-const giftAnimations = {}; // сюда сохраняем контейнеры
-function preloadGiftAnimations(onProgress){
-    let loaded=0;
-    gifts.forEach(g=>{
-        const container = document.createElement('div');
-        container.style.display='none';
-        document.body.appendChild(container);
-        giftAnimations[g.name] = container;
-        lottie.loadAnimation({container, renderer:'svg', loop:true, autoplay:true, path:`animations/${g.name}.json`, complete: ()=>{}});
-        loaded++;
-        onProgress(loaded/gifts.length);
-    });
-}
+let inventory=[];
 
 // --- Шахта ---
 const oreTypes=[{img:"images/ores/coal.png",hits:3},{img:"images/ores/iron.png",hits:4},{img:"images/ores/gold.png",hits:5},{img:"images/ores/diamond.png",hits:6},{img:"images/ores/emerald.png",hits:7}];
@@ -229,14 +206,11 @@ function flyGift(gift,fromCell){
     const fly=document.createElement('div'); fly.className='flying';
     fly.style.left=rect.left+'px'; fly.style.top=rect.top+'px';
     document.body.appendChild(fly);
-    const animContainer=giftAnimations[gift.name].cloneNode(true);
-    animContainer.style.display='block';
-    animContainer.style.width='100%'; animContainer.style.height='100%';
-    fly.appendChild(animContainer);
+    const anim=lottie.loadAnimation({container:fly, renderer:'svg', loop:true, autoplay:true, path:`animations/${gift.name}.json`});
     const invRect=document.getElementById('tab-inventory').getBoundingClientRect();
     fly.animate([{transform:'translate(0,0)'},{transform:`translate(${invRect.left-rect.left}px,${invRect.top-rect.top}px)`}],
         {duration:1000,easing:'ease-in-out'});
-    setTimeout(()=>fly.remove(),1000);
+    setTimeout(()=>{ fly.remove(); anim.destroy(); },1000);
 }
 
 // --- Инвентарь ---
@@ -249,7 +223,7 @@ function renderInventory(){
         lottie.loadAnimation({container:prev, renderer:'svg', loop:true, autoplay:true, path:`animations/${gift.name}.json`});
         const info=document.createElement('div'); info.className='gift-info';
         info.innerHTML=`<div class="gift-name">${gift.name}</div>
-            <div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+        <div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
         top.appendChild(prev); top.appendChild(info);
         const actions=document.createElement('div'); actions.className='gift-actions';
         const sell=document.createElement('button'); sell.textContent='Продать';
@@ -263,28 +237,19 @@ function renderInventory(){
 }
 
 // --- Баланс ---
-function redeemPromo(){
-    const code=document.getElementById('promoCode').value.trim();
+function redeemPromo(){ const code=document.getElementById('promoCode').value.trim();
     if(code==='BONUS10'){ balance+=10; updateBalance(); transactions.push('Промокод +10 TON'); alert('Промокод активирован!'); }
     else{ alert('Неверный промокод'); }
 }
 function addBalance(method){ let amount=100; balance+=amount; updateBalance(); transactions.push(`Пополнение через ${method} +${amount} TON`); alert(`Баланс пополнен через ${method}: +${amount} TON`); }
 
 // --- Предзагрузка ресурсов ---
-function preloadImages(paths,onProgress){
-    let loaded=0;
-    return Promise.all(paths.map(src=>new Promise(res=>{
-        const img=new Image(); img.onload=img.onerror=function(){ loaded++; onProgress(loaded/paths.length); res(); }; img.src=src;
-    })));
-}
+function preloadImages(paths,onProgress){ let loaded=0; return Promise.all(paths.map(src=>new Promise(res=>{ const img=new Image(); img.onload=img.onerror=function(){ loaded++; onProgress(loaded/paths.length); res(); }; img.src=src; }))); }
 
 function preloadAssets(){
     const imagePaths=[...Object.values(backgrounds),'ton.svg', ...oreTypes.map(o=>o.img)];
     preloadImages(imagePaths,p=>{ document.getElementById('loaderProgressBar').style.width=(p*100)+'%'; })
-        .then(()=>{
-            preloadGiftAnimations(p=>{}); // предзагрузка анимаций
-            setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalance(); },500);
-        });
+        .then(()=>{ setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalance(); },500); });
 }
 
 preloadAssets();
