@@ -15,30 +15,25 @@
     html,body{height:100%;margin:0;padding:0;font-family:'Minecraft',sans-serif;color:#fff;background:#000;background-size:cover;background-position:center;}
     body{display:flex;flex-direction:column;font-size:var(--font-size);overflow:hidden;transition:background .5s}
 
-    /* top balance */
     #balance{padding:10px 14px;text-align:right;font-weight:700;background:rgba(0,0,0,0.14);backdrop-filter:blur(5px);box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 
     main{flex:1;overflow-y:auto;padding:12px;padding-bottom:86px;display:none;background:rgba(0,0,0,0.12)}
     main.active{display:block}
     h2{margin:8px 0 16px 0;text-align:center}
 
-    /* banner */
     .banner{width:100%;aspect-ratio:5/1;background:rgba(255,255,255,0.06);border-radius:10px;margin-bottom:12px;overflow:hidden}
     .banner img{width:100%;height:100%;object-fit:cover;display:block}
 
-    /* tab-bar */
     .tab-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:10px;background:rgba(0,0,0,0.22);border-top:2px solid rgba(255,255,255,0.08);z-index:1000;box-sizing:border-box}
     .tab-bar button{flex:1;padding:10px;border-radius:10px;border:none;cursor:pointer;font-weight:700;background:var(--accent1);color:#fff}
     .tab-bar button.active{background:linear-gradient(135deg,#a1c4fd,#c2e9fb)}
 
-    /* mine grid */
     .grid{display:grid;gap:8px;justify-content:center}
     #mineGrid{grid-template-columns:repeat(4,minmax(60px,1fr))}
     .block{aspect-ratio:1/1;background:#333;border-radius:6px;overflow:hidden;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
     .block-price{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,0.55);padding:3px 6px;font-size:0.72rem;border-radius:4px;display:flex;align-items:center;gap:6px}
     .block.cooldown{filter:brightness(0.5);cursor:not-allowed}
 
-    /* inventory */
     .inventory-list{display:flex;flex-direction:column;gap:12px}
     .gift-item{background:var(--panel-bg);padding:10px;border-radius:10px;box-shadow:0 6px 16px rgba(0,0,0,0.45)}
     .gift-top{display:flex;gap:10px;align-items:center}
@@ -49,17 +44,14 @@
     .gift-actions{display:flex;gap:8px;margin-top:8px}
     .gift-actions button{flex:1;padding:8px;border-radius:8px;border:none;background:var(--accent1);color:#fff;font-weight:700;cursor:pointer}
 
-    /* flying */
-    .flying{position:absolute;width:60px;height:60px;pointer-events:none;z-index:2000}
+    .flying{position:fixed;width:60px;height:60px;pointer-events:none;z-index:2000;will-change:transform}
 
-    /* loader */
     #loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#000;z-index:3000;transition:opacity .35s}
     #loader.hidden{opacity:0;pointer-events:none}
-    #loaderAnimation{width:90px;height:90px;margin-bottom:12px} /* уменьшили размер анимации */
-    #loaderProgress{width:60%;height:12px;background:#222;border-radius:8px;overflow:hidden;margin-top:8px}
+    #loaderAnimation{width:120px;height:120px;margin-bottom:12px} /* увеличено */
+    #loaderProgress{width:50%;height:10px;background:#222;border-radius:8px;overflow:hidden;margin-top:8px} /* уменьшено */
     #loaderProgressBar{height:100%;width:0;background:#ff9a9e;transition:width .25s}
 
-    /* BALANCE tab */
     .balance-wrapper{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
     .balance-section{background:var(--panel-bg);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.45)}
     .balance-section h3{margin:0 0 8px 0;font-size:1rem}
@@ -70,7 +62,8 @@
     .method-left img{width:28px;height:28px;display:block}
     .method-label{font-weight:700}
     .method-right{display:flex;align-items:center;gap:10px}
-    .method-percent{color:#bfc9d9;font-weight:700;min-width:40px;text-align:right}
+    .method-percent{color:#bfc9d9;font-weight:700;min-width:40px;text-align:right;font-size:0.9rem}
+    .method-fee{font-size:0.7rem;color:#aaa}
     .method-action{padding:8px 12px;border-radius:8px;border:none;background:var(--accent2);color:#fff;cursor:pointer;font-weight:700}
 
     .promo-row{display:flex;gap:10px;align-items:center}
@@ -81,7 +74,7 @@
     .tx-item{font-size:0.9rem;color:#ddd;padding:6px 8px;border-radius:6px;background:rgba(0,0,0,0.12)}
 
     @media (max-width:600px){
-      #loaderProgress{width:80%}
+      #loaderProgress{width:70%}
       .tab-bar{padding:8px}
       .method-left span{font-size:0.95rem}
     }
@@ -121,33 +114,30 @@
       <div class="balance-section">
         <h3>Пополнение</h3>
 
-        <!-- TON -->
         <div class="method-row" onclick="addBalance('ton',0)">
           <div class="method-left">
-            <!-- тон иконка; ожидается файл ton.svg в проекте -->
             <img src="ton.svg" alt="TON">
             <span class="method-label">Ton кошелёк</span>
           </div>
           <div class="method-right">
             <span class="method-percent">0%</span>
+            <span class="method-fee">комиссия</span>
             <button class="method-action" onclick="addBalance('ton',0); event.stopPropagation();">Пополнить</button>
           </div>
         </div>
 
-        <!-- Crypto bot (data URI svg embedded) -->
         <div class="method-row" onclick="addBalance('crypto',5)">
           <div class="method-left">
-            <!-- встроенная пиктограмма cryptobot.svg как data-uri -->
-            <img id="icon-crypto" alt="Crypto">
+            <img src="icons/cryptobot.svg" alt="Crypto">
             <span class="method-label">Crypto bot</span>
           </div>
           <div class="method-right">
             <span class="method-percent">5%</span>
+            <span class="method-fee">комиссия</span>
             <button class="method-action" onclick="addBalance('crypto',5); event.stopPropagation();">Пополнить</button>
           </div>
         </div>
 
-        <!-- Telegram Stars -->
         <div class="method-row" onclick="addBalance('stars',20)">
           <div class="method-left">
             <img src="icons/stars.svg" alt="Stars">
@@ -155,6 +145,7 @@
           </div>
           <div class="method-right">
             <span class="method-percent">20%</span>
+            <span class="method-fee">комиссия</span>
             <button class="method-action" onclick="addBalance('stars',20); event.stopPropagation();">Пополнить</button>
           </div>
         </div>
@@ -184,41 +175,23 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
   <script>
-    // --- small inline cryptobot svg as data URI (you can replace with file if you like) ---
-    const cryptoSVG = encodeURIComponent(
-`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
-  <defs><linearGradient id='g' x1='0' x2='1'><stop offset='0' stop-color='#6a11cb'/><stop offset='1' stop-color='#2575fc'/></linearGradient></defs>
-  <rect width='64' height='64' rx='12' fill='url(#g)'/>
-  <g transform='translate(12 12)' fill='#fff'>
-    <circle cx='20' cy='10' r='3'/>
-    <rect x='6' y='22' width='28' height='6' rx='3'/>
-    <path d='M4 6h28v4H4z' />
-  </g>
-</svg>`);
-    document.getElementById('icon-crypto').src = `data:image/svg+xml;utf8,${cryptoSVG}`;
-
-    // --- loader animation (Lottie) small container used ---
     let loaderAnim;
     try{
       loaderAnim = lottie.loadAnimation({ container: document.getElementById('loaderAnimation'), renderer:'svg', loop:true, autoplay:true, path:'animations/myLoader.json' });
-    }catch(e){ /* ignore if missing */ }
+    }catch(e){}
 
-    // --- state ---
     let balance = 10000;
-    let transactions = []; // newest on top (we unshift)
+    let transactions = [];
     let inventory = [];
     let brokenBlocks = 0;
     let firstMineCount = 0;
 
-    // backgrounds
     const backgrounds = { menu:'images/menu.jpg', mine:'images/mine.jpg', inventory:'images/inventory.jpg', balanceTab:'images/mobs.jpg' };
     document.body.style.backgroundImage = `url(${backgrounds.menu})`;
 
-    // helpers
     function updateBalance(){
       document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
     }
-
     function updateTransactionHistory(){
       const el = document.getElementById('transactionHistory');
       el.innerHTML = '';
@@ -229,11 +202,9 @@
         el.appendChild(d);
       });
     }
-
     function updateBrokenBlocks(){
       document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`;
     }
-
     function showTab(id){
       document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
       document.getElementById(id).classList.add('active');
@@ -242,9 +213,8 @@
       document.body.style.backgroundImage = `url(${backgrounds[id]})`;
       if(id==='inventory') renderInventory();
     }
-    window.showTab = showTab; // expose for inline onclick
+    window.showTab = showTab;
 
-    // --- gifts list (full) ---
     const gifts = [
       {name:"Hypno Lollipop",price:1.77}, {name:"Desk Calendar",price:1.31},
       {name:"B-Day Candle",price:1.32}, {name:"Lol Pop",price:1.32},
@@ -292,201 +262,103 @@
       {name:"Precious Peach",price:379.99}, {name:"Durov’s Cap",price:794.9},
       {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
     ];
-
-    const oreTypes = [
-      {img:"images/ores/coal.png",hits:3},
-      {img:"images/ores/iron.png",hits:4},
-      {img:"images/ores/gold.png",hits:5},
-      {img:"images/ores/diamond.png",hits:6},
-      {img:"images/ores/emerald.png",hits:7}
-    ];
-
-    const animationMap = {}; // name -> objectURL
+    const oreTypes=[{img:"images/ores/coal.png",hits:3},{img:"images/ores/iron.png",hits:4},{img:"images/ores/gold.png",hits:5},{img:"images/ores/diamond.png",hits:6},{img:"images/ores/emerald.png",hits:7}];
+    const animationMap={};
 
     function getGiftByPrice(price,isFirst=false){
-      let min = price * 0.5;
-      let max = price * 1.45;
-      if (firstMineCount < 2 && isFirst) max = price * 2; // restriction for first two drops
-      let possible = gifts.filter(g => g.price >= min && g.price <= max);
-      if (isFirst && possible.length === 0) possible = gifts.filter(g => g.price >= price);
-      if (possible.length === 0) possible = gifts;
+      let min=price*0.5,max=price*1.45;
+      if(firstMineCount<2&&isFirst)max=price*2;
+      let possible=gifts.filter(g=>g.price>=min&&g.price<=max);
+      if(isFirst&&possible.length===0)possible=gifts.filter(g=>g.price>=price);
+      if(possible.length===0)possible=gifts;
       return possible[Math.floor(Math.random()*possible.length)];
     }
-
     function spawnBlock(cell,index=0){
-      const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
-      let price = +(1 + Math.random()*10).toFixed(2);
-      cell.className = "block";
-      cell.style.backgroundImage = `url(${ore.img})`;
-      cell.innerHTML = `<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-      let hits = 0;
-      cell.onclick = () => {
+      const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
+      let price=+(1+Math.random()*10).toFixed(2);
+      cell.className="block";
+      cell.style.backgroundImage=`url(${ore.img})`;
+      cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+      let hits=0;
+      cell.onclick=()=>{
         hits++;
-        if (hits >= ore.hits) {
-          brokenBlocks++; updateBrokenBlocks();
-          if (balance >= price) {
-            balance -= price;
-            updateBalance();
-            transactions.unshift(`Оплата за лом блока: -${price.toFixed(2)} TON`);
-            updateTransactionHistory();
-          } else {
-            // still record attempt to break
-            transactions.unshift(`Лом блока (неопл.): цена ${price.toFixed(2)} TON`);
-            updateTransactionHistory();
-          }
-          let gift = getGiftByPrice(price,index===0);
-          inventory.push(gift);
-          renderInventory();
+        if(hits>=ore.hits){
+          brokenBlocks++;updateBrokenBlocks();
+          if(balance>=price){balance-=price;updateBalance();transactions.unshift(`Оплата за ломание блока: -${price.toFixed(2)} TON`);}
+          else{transactions.unshift(`Лом блока (неопл.): цена ${price.toFixed(2)} TON`);}
+          updateTransactionHistory();
+          let gift=getGiftByPrice(price,index===0);
+          inventory.push(gift);renderInventory();
           flyGift(gift,cell);
           firstMineCount++;
-          let respawn = (60 + Math.random()*1740)*1000;
+          let respawn=(60+Math.random()*1740)*1000;
           cell.classList.add("cooldown");
-          cell.innerHTML = `<div style="position:absolute;top:4px;left:4px;font-size:0.7rem;">${Math.round(respawn/60000)}m</div>`;
-          cell.onclick = null;
-          setTimeout(()=>{ cell.classList.remove("cooldown"); spawnBlock(cell,index); }, respawn);
+          cell.innerHTML=`<div style="position:absolute;top:4px;left:4px;font-size:0.7rem;">${Math.round(respawn/60000)}m</div>`;
+          cell.onclick=null;
+          setTimeout(()=>{cell.classList.remove("cooldown");spawnBlock(cell,index);},respawn);
         }
       };
     }
-
     function generateMineGrid(){
-      const grid = document.getElementById('mineGrid'); grid.innerHTML='';
-      for(let i=0;i<16;i++){ const cell=document.createElement('div'); spawnBlock(cell,i); grid.appendChild(cell); }
+      const grid=document.getElementById('mineGrid');grid.innerHTML='';
+      for(let i=0;i<16;i++){const cell=document.createElement('div');spawnBlock(cell,i);grid.appendChild(cell);}
     }
 
-    // fly gift (slower, and target center of inventory button)
-    function flyGift(gift, fromCell){
-      const rect = fromCell.getBoundingClientRect();
-      const invRect = document.getElementById('tab-inventory').getBoundingClientRect();
-
-      const fly = document.createElement('div');
-      fly.className = 'flying';
-      fly.style.left = (rect.left + rect.width/2 - 30) + 'px';
-      fly.style.top  = (rect.top  + rect.height/2 - 30) + 'px';
+    function flyGift(gift,fromCell){
+      const rect=fromCell.getBoundingClientRect();
+      const invRect=document.getElementById('tab-inventory').getBoundingClientRect();
+      const fly=document.createElement('div');
+      fly.className='flying';
       document.body.appendChild(fly);
 
-      // use preloaded animation if exists
-      const animPath = animationMap[gift.name];
-      try {
-        if(animPath){
-          lottie.loadAnimation({ container: fly, renderer: 'svg', loop: true, autoplay: true, path: animPath });
-        } else {
-          // try to load by encoded name (best-effort)
-          const encoded = encodeURIComponent(gift.name) + '.json';
-          lottie.loadAnimation({ container: fly, renderer:'svg', loop:true,autoplay:true, path: `emoji/${encoded}` });
-        }
-      } catch(e){
-        fly.textContent = gift.name;
-        fly.style.display='flex'; fly.style.alignItems='center'; fly.style.justifyContent='center'; fly.style.fontSize='0.75rem';
-      }
+      const startX=rect.left+rect.width/2-30;
+      const startY=rect.top+rect.height/2-30;
+      const targetX=invRect.left+invRect.width/2-30;
+      const targetY=invRect.top+invRect.height/2-30;
+      fly.style.left=startX+"px";fly.style.top=startY+"px";
 
-      const targetX = invRect.left + invRect.width/2 - 30;
-      const targetY = invRect.top  + invRect.height/2 - 30;
-      const dx = targetX - (rect.left + rect.width/2 - 30);
-      const dy = targetY - (rect.top  + rect.height/2 - 30);
+      const animPath=animationMap[gift.name];
+      try{
+        if(animPath){lottie.loadAnimation({container:fly,renderer:'svg',loop:true,autoplay:true,path:animPath});}
+        else{fly.textContent=gift.name;}
+      }catch(e){fly.textContent=gift.name;}
 
-      // slower, smoother animation
-      fly.animate([{transform:'translate(0,0)'},{transform:`translate(${dx}px, ${dy}px)`}],{duration:1400,easing:'cubic-bezier(.22,.8,.18,1)'});
-
-      setTimeout(()=>{ fly.remove(); }, 1450);
+      const dx=targetX-startX,dy=targetY-startY;
+      fly.animate([{transform:'translate(0,0)'},{transform:`translate(${dx}px,${dy}px)`}],{duration:1200,easing:'cubic-bezier(.22,.8,.18,1)',fill:'forwards'}).onfinish=()=>fly.remove();
     }
 
     function renderInventory(){
-      const list = document.getElementById('inventoryList'); list.innerHTML='';
-      inventory.forEach((gift,idx)=>{
-        const div=document.createElement('div'); div.className='gift-item';
-        const top=document.createElement('div'); top.className='gift-top';
-        const prev=document.createElement('div'); prev.className='gift-preview';
-        if(animationMap[gift.name]){
-          try{ lottie.loadAnimation({container:prev,renderer:'svg',loop:true,autoplay:true,path:animationMap[gift.name]}); }catch(e){}
-        } else {
-          prev.textContent = gift.name;
-        }
-        const info=document.createElement('div'); info.className='gift-info';
-        info.innerHTML = `<div class="gift-name">${gift.name}</div><div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-        top.appendChild(prev); top.appendChild(info);
-        const actions=document.createElement('div'); actions.className='gift-actions';
-        const sell=document.createElement('button'); sell.textContent='Продать';
-        sell.onclick = () => {
-          balance += gift.price; updateBalance();
-          inventory.splice(idx,1); renderInventory();
-          transactions.unshift(`Продажа: ${gift.name} +${gift.price.toFixed(2)} TON`);
-          updateTransactionHistory();
-        };
-        const withdraw=document.createElement('button'); withdraw.textContent='Вывести';
-        withdraw.onclick = () => {
-          alert('Вывод оформлен!');
-          inventory.splice(idx,1); renderInventory();
-          transactions.unshift(`Вывод: ${gift.name}`);
-          updateTransactionHistory();
-        };
-        actions.appendChild(sell); actions.appendChild(withdraw);
-        div.appendChild(top); div.appendChild(actions);
-        list.appendChild(div);
+      const list=document.getElementById('inventoryList');list.innerHTML='';
+      inventory.forEach(g=>{
+        const item=document.createElement('div');item.className='gift-item';
+        item.innerHTML=`<div class="gift-top">
+          <div class="gift-preview">${g.name[0]}</div>
+          <div class="gift-info">
+            <div class="gift-name">${g.name}</div>
+            <div class="gift-price">${g.price.toFixed(2)} TON</div>
+          </div>
+        </div>
+        <div class="gift-actions">
+          <button onclick="useGift('${g.name}')">Использовать</button>
+          <button onclick="sellGift('${g.name}',${g.price})">Продать</button>
+        </div>`;
+        list.appendChild(item);
       });
     }
+    function useGift(name){alert(`Вы использовали ${name}!`);}
+    function sellGift(name,price){const i=inventory.findIndex(g=>g.name===name);if(i!==-1){inventory.splice(i,1);balance+=price;updateBalance();transactions.unshift(`Продан ${name} за ${price.toFixed(2)} TON`);updateTransactionHistory();renderInventory();}}
+    function addBalance(method,fee){let add=100;let final=add-add*fee/100;balance+=final;transactions.unshift(`Пополнение через ${method}: +${final.toFixed(2)} TON (комиссия ${fee}%)`);updateBalance();updateTransactionHistory();}
+    function redeemPromo(){const code=document.getElementById('promoInput').value.trim();if(!code)return;balance+=50;transactions.unshift(`Активация промокода ${code}: +50 TON`);updateBalance();updateTransactionHistory();document.getElementById('promoInput').value='';}
 
-    function redeemPromo(){
-      const code = document.getElementById('promoInput') ? document.getElementById('promoInput').value.trim() : '';
-      if(code === 'BONUS10'){
-        balance += 10; updateBalance();
-        transactions.unshift('Промокод: +10 TON');
-        updateTransactionHistory();
-        alert('Промокод активирован!');
-      } else {
-        transactions.unshift(`Промокод: неверный (${code || 'пусто'})`);
-        updateTransactionHistory();
-        alert('Неверный промокод');
-      }
-    }
-
-    function addBalance(method, feePerc){
-      const amount = 100;
-      balance += amount; updateBalance();
-      transactions.unshift(`Пополнение через ${method}: +${amount} TON (комиссия ${feePerc}%)`);
-      updateTransactionHistory();
-      alert(`Баланс пополнен через ${method}: +${amount} TON`);
-    }
-
-    // --- Preload images + lottie JSONs (skip missing) ---
-    function preloadAssets(){
-      const imagePaths = [...Object.values(backgrounds), 'ton.svg', ...oreTypes.map(o=>o.img)];
-      const lottiePaths = gifts.map(g => ({ name: g.name, path: `emoji/${encodeURIComponent(g.name)}.json` }));
-      const total = imagePaths.length + lottiePaths.length;
-      let loaded = 0;
-      const prog = p=>{ document.getElementById('loaderProgressBar').style.width = Math.round(p*100) + '%'; };
-
-      const imgPromises = imagePaths.map(src => new Promise(res=>{
-        const img = new Image();
-        img.onload = img.onerror = function(){ loaded++; prog(loaded/total); res(); };
-        img.src = src;
-      }));
-
-      const lottiePromises = lottiePaths.map(item =>
-        fetch(item.path)
-          .then(r => r.ok ? r.blob() : null)
-          .then(blob => { if(blob){ animationMap[item.name] = URL.createObjectURL(blob); } loaded++; prog(loaded/total); })
-          .catch(()=>{ loaded++; prog(loaded/total); })
-      );
-
-      return Promise.all([...imgPromises, ...lottiePromises]);
-    }
-
-    preloadAssets().then(()=> {
-      setTimeout(()=>{
-        const loader = document.getElementById('loader');
-        loader.classList.add('hidden');
-        generateMineGrid();
-        updateBalance();
-        updateTransactionHistory();
-        updateBrokenBlocks();
-        document.body.style.backgroundImage = `url(${backgrounds.menu})`;
-      },350);
+    window.addEventListener('load',()=>{
+      const images=[...Object.values(backgrounds),...oreTypes.map(o=>o.img),'ton.svg','icons/cryptobot.svg','icons/stars.svg','images/banner.jpg'];
+      let loaded=0;
+      images.forEach(src=>{
+        const img=new Image();
+        img.onload=img.onerror=()=>{loaded++;document.getElementById('loaderProgressBar').style.width=(loaded/images.length*100)+'%';if(loaded===images.length)setTimeout(()=>{document.getElementById('loader').classList.add('hidden');generateMineGrid();updateBalance();updateTransactionHistory();updateBrokenBlocks();},400);}
+        img.src=src;
+      });
     });
-
-    // expose some functions globally for inline onclicks
-    window.addBalance = addBalance;
-    window.redeemPromo = redeemPromo;
-    window.showTab = showTab;
   </script>
 </body>
 </html>
