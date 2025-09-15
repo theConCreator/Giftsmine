@@ -227,84 +227,108 @@ const gifts=[
 let inventory = [];
 
 // --- Шахта ---
-const oreTypes=[
-    {img:"images/ores/coal.png",hits:3},
-    {img:"images/ores/iron.png",hits:4},
-    {img:"images/ores/gold.png",hits:5},
-    {img:"images/ores/diamond.png",hits:6},
-    {img:"images/ores/emerald.png",hits:7}
+const oreTypes = [
+    { img: "images/ores/coal.png", hits: 3 },
+    { img: "images/ores/iron.png", hits: 4 },
+    { img: "images/ores/gold.png", hits: 5 },
+    { img: "images/ores/diamond.png", hits: 6 },
+    { img: "images/ores/emerald.png", hits: 7 }
 ];
 
-function spawnBlock(cell){
-    const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
-    const price = +(1+Math.random()*10).toFixed(2);
-    const hitsRequired = ore.hits;
-    let hits=0;
-    cell.className="block";
-    cell.style.backgroundImage=`url(${ore.img})`;
-    cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+function getGiftByPrice(price, isFirst = false) {
+    let min = price * 0.5, max = price * 1.45;
+    let possible = gifts.filter(g => g.price >= min && g.price <= max);
+
+    if (isFirst) {
+        possible = gifts.filter(g => g.price >= price);
+        if (possible.length === 0) possible = gifts;
+    }
+
+    if (possible.length === 0) possible = gifts;
+    return possible[Math.floor(Math.random() * possible.length)];
+}
+
+function spawnBlock(cell, index = 0) {
+    const ore = oreTypes[Math.floor(Math.random() * oreTypes.length)];
+    let price = +(1 + Math.random() * 10).toFixed(2);
+
+    cell.className = "block";
+    cell.style.backgroundImage = `url(${ore.img})`;
+    cell.innerHTML = `<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+
+    let hits = 0;
     cell.onclick = () => {
         hits++;
-        if(hits >= hitsRequired){
-            if(balance >= price){ balance -= price; updateBalance(); }
-            let gift = gifts[Math.floor(Math.random()*gifts.length)];
-            inventory.push(gift); renderInventory();
-            flyGift(gift,cell);
-            const respawn = (60+Math.random()*1740)*1000;
+        if (hits >= ore.hits) {
+            if (balance >= price) {
+                balance -= price;
+                updateBalance();
+            }
+
+            let gift = getGiftByPrice(price, index === 0);
+            inventory.push(gift);
+            renderInventory();
+
+            // Анимация полёта подарка
+            setTimeout(() => flyGift(gift, cell), 50);
+
+            // Убираем содержимое сразу, чтобы не было "свечения"
+            cell.innerHTML = "";
+
+            // Таймер восстановления блока
+            let respawn = (60 + Math.random() * 1740) * 1000;
             cell.classList.add("cooldown");
-            cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
+            cell.innerHTML = `<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn / 60000)}m</div>`;
             cell.onclick = null;
-            setTimeout(()=>{cell.classList.remove("cooldown"); spawnBlock(cell);},respawn);
+
+            setTimeout(() => {
+                cell.classList.remove("cooldown");
+                spawnBlock(cell, index);
+            }, respawn);
         }
     };
 }
 
-function generateMineGrid(){
-    const grid=document.getElementById("mineGrid"); grid.innerHTML="";
-    for(let i=0;i<16;i++){
-        let cell=document.createElement("div"); spawnBlock(cell); grid.appendChild(cell);
+function generateMineGrid() {
+    const grid = document.getElementById("mineGrid");
+    grid.innerHTML = "";
+    for (let i = 0; i < 16; i++) {
+        let cell = document.createElement("div");
+        spawnBlock(cell, i);
+        grid.appendChild(cell);
     }
 }
 
-// --- Анимация подарка (проверенная версия) ---
+// --- Анимация подарка ---
 function flyGift(gift, fromCell) {
     const rect = fromCell.getBoundingClientRect();
     const fly = document.createElement("div");
     fly.className = "flying";
     fly.style.left = rect.left + "px";
     fly.style.top = rect.top + "px";
-    fly.style.width = "50px";
+    fly.style.width = "50px";   // уменьшили размер, чтобы не перекрывал экран
     fly.style.height = "50px";
-    fly.style.pointerEvents = "none";
+
     document.body.appendChild(fly);
 
-    // Лоадим анимацию подарка
     lottie.loadAnimation({
         container: fly,
         renderer: "svg",
         loop: false,
         autoplay: true,
-        path: `emoji/${gift.name}.json`,
-        rendererSettings: { preserveAspectRatio: "xMidYMid meet" }
+        path: `emoji/${gift.name}.json`
     });
 
-    // Координаты инвентаря
     const inv = document.getElementById("tab-inventory").getBoundingClientRect();
 
-    // Плавное перемещение
-    const deltaX = inv.left + inv.width/2 - rect.left - rect.width/2;
-    const deltaY = inv.top + inv.height/2 - rect.top - rect.height/2;
+    fly.animate(
+        [
+            { transform: `translate(0,0) scale(1)` },
+            { transform: `translate(${inv.left - rect.left}px, ${inv.top - rect.top}px) scale(0.5)` }
+        ],
+        { duration: 1000, easing: "ease-in-out" }
+    );
 
-    fly.animate([
-        { transform: "translate(0,0) scale(1)" },
-        { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.5)` }
-    ], {
-        duration: 1000,
-        easing: "ease-in-out",
-        fill: "forwards"
-    });
-
-    // Удаляем после анимации
     setTimeout(() => fly.remove(), 1000);
 }
 
