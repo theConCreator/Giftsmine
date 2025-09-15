@@ -189,15 +189,31 @@
 
     function generateMineGrid(){ const grid=document.getElementById('mineGrid'); grid.innerHTML=''; for(let i=0;i<16;i++){ let cell=document.createElement('div'); spawnBlock(cell,i); grid.appendChild(cell); }}
 
-    function flyGift(gift,fromCell){
-      const rect=fromCell.getBoundingClientRect();
-      const fly=document.createElement('div'); fly.className='flying'; fly.style.left=rect.left+'px'; fly.style.top=rect.top+'px'; document.body.appendChild(fly);
-      if(animationMap[gift.name]){ try{ lottie.loadAnimation({container:fly,renderer:'svg',loop:true,autoplay:true,path:animationMap[gift.name]}); }catch(e){} }
-      else { fly.textContent = gift.name; fly.style.display='flex'; fly.style.alignItems='center'; fly.style.justifyContent='center'; fly.style.padding='4px'; fly.style.fontSize='0.8em'; }
-      const invRect=document.getElementById('tab-inventory').getBoundingClientRect();
-      fly.animate([{transform:'translate(0,0)'},{transform:`translate(${invRect.left-rect.left}px,${invRect.top-rect.top}px)`}],{duration:1000,easing:'ease-in-out'});
-      setTimeout(()=>{ fly.remove(); },1000);
-    }
+    function flyGift(gift, fromCell) {
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'flying';
+  fly.style.left = rect.left + rect.width / 2 - 30 + 'px'; // центрируем по ширине (30 = половина 60px)
+  fly.style.top = rect.top + rect.height / 2 - 30 + 'px';  // центрируем по высоте
+  document.body.appendChild(fly);
+
+  const anim = lottie.loadAnimation({
+    container: fly,
+    renderer: 'svg',
+    loop: true,
+    autoplay: true,
+    path: `emoji/${gift.name}.json`
+  });
+
+  const invRect = document.getElementById('tab-inventory').getBoundingClientRect();
+  fly.animate([
+    { transform: 'translate(0,0)' },
+    { transform: `translate(${invRect.left - rect.left}px,${invRect.top - rect.top}px)` }
+  ], { duration: 1000, easing: 'ease-in-out' });
+
+  setTimeout(() => { fly.remove(); anim.destroy(); }, 1000);
+}
+
 
     function renderInventory(){
       const list=document.getElementById('inventoryList'); list.innerHTML='';
