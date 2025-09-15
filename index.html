@@ -166,55 +166,55 @@ function showTab(id){
 }
 
 // --- Подарки ---
-const gifts=[
-    {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
-    {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
-    {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},
-    {name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
-    {name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},
-    {name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
-    {name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},
-    {name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
-    {name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},
-    {name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
-    {name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},
-    {name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
-    {name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},
-    {name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
-    {name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},
-    {name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
-    {name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},
-    {name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
-    {name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},
-    {name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
-    {name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},
-    {name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
-    {name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},
-    {name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
-    {name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},
-    {name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
-    {name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},
-    {name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
-    {name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},
-    {name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
-    {name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},
-    {name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
-    {name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},
-    {name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
-    {name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},
-    {name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
-    {name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},
-    {name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
-    {name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},
-    {name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
-    {name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},
-    {name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
-    {name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},
-    {name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
-    {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
+const gifts=[ /* полный список подарков (как у тебя) */ 
+    {name:"Hypno Lollipop",price:1.77}, {name:"Desk Calendar",price:1.31}, 
+    {name:"B-Day Candle",price:1.32}, {name:"Lol Pop",price:1.32}, 
+    {name:"Lunar Snake",price:1.38}, {name:"Snake Box",price:1.36}, 
+    {name:"Xmas Stocking",price:1.38}, {name:"Whip Cupcake",price:1.38}, 
+    {name:"Candy Cane",price:1.48}, {name:"Pet Snake",price:1.58}, 
+    {name:"Jester Hat",price:1.62}, {name:"Snoop Dogg",price:1.64}, 
+    {name:"Homemade Cake",price:1.7}, {name:"Holiday Drink",price:1.7}, 
+    {name:"Jingle Bells",price:1.74}, {name:"Cookie Heart",price:1.75}, 
+    {name:"Big Year",price:1.78}, {name:"Party Sparkler",price:1.8}, 
+    {name:"Winter Wreath",price:1.79}, {name:"Swag Bag",price:1.91}, 
+    {name:"Tama Gadget",price:1.93}, {name:"Ginger Cookie",price:1.95}, 
+    {name:"Moon Pendant",price:1.96}, {name:"Jack-in-the-Box",price:2.01}, 
+    {name:"Spiced Wine",price:2.12}, {name:"Stellar Rocket",price:2.19}, 
+    {name:"Star Notepad",price:2.32}, {name:"Easter Egg",price:2.46}, 
+    {name:"Restless Jar",price:2.5}, {name:"Santa Hat",price:2.6}, 
+    {name:"Snow Globe",price:2.65}, {name:"Hex Pot",price:2.7}, 
+    {name:"Joyful Bundle",price:2.71}, {name:"Lush Bouquet",price:2.84}, 
+    {name:"Witch Hat",price:2.86}, {name:"Light Sword",price:3.13}, 
+    {name:"Spy Agaric",price:3.2}, {name:"Bow Tie",price:3.22}, 
+    {name:"Eternal Candle",price:3.38}, {name:"Bunny Muffin",price:3.34}, 
+    {name:"Jelly Bunny",price:3.43}, {name:"Berry Box",price:3.58}, 
+    {name:"Evil Eye",price:3.6}, {name:"Snow Mittens",price:3.67}, 
+    {name:"Valentine Box",price:4.2}, {name:"Snoop Cigar",price:4.26}, 
+    {name:"Sakura Flower",price:4.77}, {name:"Hanging Star",price:5.26}, 
+    {name:"Jolly Chimp",price:5.34}, {name:"Sleigh Bell",price:7.63}, 
+    {name:"Skull Flower",price:7.7}, {name:"Crystal Ball",price:7.86}, 
+    {name:"Record Player",price:7.91}, {name:"Love Candle",price:7.94}, 
+    {name:"Top Hat",price:7.99}, {name:"Trapped Heart",price:8.69}, 
+    {name:"Love Potion",price:8.79}, {name:"Flying Broom",price:9.45}, 
+    {name:"Cupid Charm",price:11.26}, {name:"Eternal Rose",price:13.71}, 
+    {name:"Ionic Dryer",price:14.21}, {name:"Diamond Ring",price:16.39}, 
+    {name:"Voodoo Doll",price:16.43}, {name:"Mad Pumpkin",price:17.91}, 
+    {name:"Toy Bear",price:19.3}, {name:"Vintage Cigar",price:23.98}, 
+    {name:"Low Rider",price:24.8}, {name:"Signet Ring",price:25.1}, 
+    {name:"Neko Helmet",price:26.41}, {name:"Electric Skull",price:31}, 
+    {name:"Kissed Frog",price:34}, {name:"Swiss Watch",price:35}, 
+    {name:"Sharp Tongue",price:39.69}, {name:"Scared Cat",price:43.6}, 
+    {name:"Genie Lamp",price:47.07}, {name:"Westside Sign",price:51.27}, 
+    {name:"Bonded Ring",price:54.99}, {name:"Gem Signet",price:72.98}, 
+    {name:"Magic Potion",price:72.98}, {name:"Ion Gem",price:83}, 
+    {name:"Astral Shard",price:95.97}, {name:"Perfume Bottle",price:95.99}, 
+    {name:"Loot Bag",price:90.1}, {name:"Mini Oscar",price:123.89}, 
+    {name:"Nail Bracelet",price:129.84}, {name:"Heroic Helmet",price:219.99}, 
+    {name:"Precious Peach",price:379.99}, {name:"Durov’s Cap",price:794.9}, 
+    {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
 ];
-
 let inventory = [];
+let giftAnimations = {}; // кэш анимаций
 
 // --- Шахта 4x4 ---
 const oreTypes = [
@@ -252,14 +252,11 @@ function spawnBlock(cell, index = 0) {
         balance -= price;
         updateBalance();
       }
-
       let gift = getGiftByPrice(price, index === 0);
       inventory.push(gift);
       renderInventory();
-
       flyGift(gift, cell);
 
-      // Время до восстановления блока
       let respawn = (60 + Math.random() * 1740) * 1000;
       cell.classList.add("cooldown");
       cell.innerHTML = `<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn / 60000)}m</div>`;
@@ -288,11 +285,11 @@ function flyGift(gift, fromCell) {
   const rect = fromCell.getBoundingClientRect();
   const fly = document.createElement("div");
   fly.className = "flying";
+  fly.style.position = "absolute";
   fly.style.left = rect.left + "px";
   fly.style.top = rect.top + "px";
-  fly.style.position = "fixed";
-  fly.style.pointerEvents = "none";
-  fly.style.zIndex = "2000";
+  fly.style.width = "60px";
+  fly.style.height = "60px";
   document.body.appendChild(fly);
 
   lottie.loadAnimation({
@@ -300,17 +297,15 @@ function flyGift(gift, fromCell) {
     renderer: "svg",
     loop: false,
     autoplay: true,
-    path: `animations/${gift.name}.json`
+    animationData: giftAnimations[gift.name]
   });
 
-  const inv = document.getElementById("inventoryList").getBoundingClientRect();
-  const targetX = inv.left + inv.width/2 - rect.left;
-  const targetY = inv.top + inv.height/2 - rect.top;
+  const inv = document.getElementById("tab-inventory").getBoundingClientRect();
 
   fly.animate(
     [
       { transform: `translate(0,0) scale(1)` },
-      { transform: `translate(${targetX}px, ${targetY}px) scale(0.4)` }
+      { transform: `translate(${inv.left - rect.left}px, ${inv.top - rect.top}px) scale(0.3)` }
     ],
     { duration: 1000, easing: "ease-in-out" }
   );
@@ -318,63 +313,112 @@ function flyGift(gift, fromCell) {
   setTimeout(() => fly.remove(), 1000);
 }
 
-// --- Инвентарь ---
-function renderInventory(){
-    let list=document.getElementById("inventoryList");
-    list.innerHTML="";
-    inventory.forEach((gift,idx)=>{
-        let div=document.createElement("div");
-        div.className="gift-item";
+// --- Рендер инвентаря ---
+function renderInventory() {
+  let list = document.getElementById("inventoryList");
+  list.innerHTML = "";
+  inventory.forEach((gift, i) => {
+    let item = document.createElement("div");
+    item.className = "gift-item";
+    item.innerHTML = `
+      <div class="gift-top">
+        <div class="gift-preview" id="gift-preview-${i}"></div>
+        <div class="gift-info">
+          <div class="gift-name">${gift.name}</div>
+          <div class="gift-price">${gift.price.toFixed(2)} <img src="ton.svg" style="width:14px;vertical-align:middle"></div>
+        </div>
+      </div>
+      <div class="gift-actions">
+        <button onclick="sellGift(${i})">Продать</button>
+        <button onclick="sendGift(${i})">Передать</button>
+        <button onclick="useGift(${i})">Использовать</button>
+      </div>`;
+    list.appendChild(item);
 
-        let top=document.createElement("div"); top.className="gift-top";
-        let prev=document.createElement("div"); prev.className="gift-preview";
-        lottie.loadAnimation({container:prev,renderer:"svg",loop:true,autoplay:true,path:`emoji/${gift.name}.json`});
-
-        let info=document.createElement("div"); info.className="gift-info";
-        info.innerHTML=`<div class="gift-name">${gift.name}</div>
-            <div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-
-        top.appendChild(prev); top.appendChild(info);
-
-        let actions=document.createElement("div"); actions.className="gift-actions";
-        let sell=document.createElement("button"); sell.textContent="Продать";
-        sell.onclick=()=>{ balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory(); };
-        let withdraw=document.createElement("button"); withdraw.textContent="Вывести";
-        withdraw.onclick=()=>{ alert("Вывод оформлен!"); inventory.splice(idx,1); renderInventory(); };
-        actions.appendChild(sell); actions.appendChild(withdraw);
-
-        div.appendChild(top); div.appendChild(actions);
-        list.appendChild(div);
+    let container = item.querySelector(`#gift-preview-${i}`);
+    lottie.loadAnimation({
+      container: container,
+      renderer: "svg",
+      loop: true,
+      autoplay: true,
+      animationData: giftAnimations[gift.name]
     });
+  });
+}
+
+function sellGift(i) {
+  let gift = inventory[i];
+  balance += gift.price;
+  transactions.push(`Продажа ${gift.name} за ${gift.price}`);
+  inventory.splice(i, 1);
+  updateBalance(); renderInventory();
+}
+function sendGift(i) {
+  let gift = inventory[i];
+  transactions.push(`Передан ${gift.name}`);
+  inventory.splice(i, 1); renderInventory();
+}
+function useGift(i) {
+  let gift = inventory[i];
+  transactions.push(`Использован ${gift.name}`);
+  inventory.splice(i, 1); renderInventory();
 }
 
 // --- Баланс вкладка ---
 function redeemPromo(){
-    const code = document.getElementById("promoCode").value.trim();
-    if(code==="BONUS10"){ balance+=10; updateBalance(); transactions.push("Промокод +10 TON"); alert("Промокод активирован!"); }
-    else{ alert("Неверный промокод"); }
+    let code=document.getElementById('promoCode').value.trim();
+    if(code==="FREE100"){
+        balance+=100;transactions.push("Активирован промокод FREE100");
+    }
+    updateBalance();document.getElementById('promoCode').value="";
 }
 function addBalance(method){
-    let amount = 100; // заглушка
-    balance += amount; updateBalance(); transactions.push(`Пополнение через ${method} +${amount} TON`);
-    alert(`Баланс пополнен через ${method}: +${amount} TON`);
+    let amt=+(prompt("Сумма пополнения:","100"))||0;
+    if(amt>0){balance+=amt;transactions.push(`Пополнение через ${method}: +${amt}`);}
+    updateBalance();
 }
 
-// --- Предзагрузка ресурсов ---
+// --- Предзагрузка ---
 function preloadImages(paths, onProgress){
     let loaded=0; return Promise.all(paths.map(src=>new Promise(res=>{
         const img=new Image(); img.onload=img.onerror=function(){ loaded++; onProgress(loaded/paths.length); res(); }; img.src=src;
     })));
 }
-
+function preloadGiftAnimations(onProgress) {
+    let loaded = 0;
+    return Promise.all(
+        gifts.map(gift => new Promise(res => {
+            fetch(`animations/${gift.name}.json`)
+                .then(r => r.json())
+                .then(data => {
+                    giftAnimations[gift.name] = data;
+                })
+                .catch(()=>{})
+                .finally(() => {
+                    loaded++;
+                    onProgress(loaded / gifts.length);
+                    res();
+                });
+        }))
+    );
+}
 function preloadAssets(){
     const imagePaths=[ ...Object.values(backgrounds),"ton.svg", ...oreTypes.map(o=>o.img) ];
+    let totalProgress = 0;
+
     preloadImages(imagePaths,p=>{
-        document.getElementById("loaderProgressBar").style.width=(p*100)+"%";
-        if(p===1){
-            setTimeout(()=>document.getElementById("loader").classList.add("hidden"),500);
-        }
-    }).then(()=>{ generateMineGrid(); updateBalance(); });
+        totalProgress = p * 0.5;
+        document.getElementById("loaderProgressBar").style.width=(totalProgress*100)+"%";
+    }).then(()=>{
+        return preloadGiftAnimations(p=>{
+            totalProgress = 0.5 + p * 0.5;
+            document.getElementById("loaderProgressBar").style.width=(totalProgress*100)+"%";
+        });
+    }).then(()=>{
+        setTimeout(()=>document.getElementById("loader").classList.add("hidden"),500);
+        generateMineGrid(); 
+        updateBalance();
+    });
 }
 preloadAssets();
 </script>
