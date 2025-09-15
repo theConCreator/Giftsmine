@@ -226,111 +226,103 @@ const gifts=[
 ];
 let inventory = [];
 
-// --- Шахта ---
+// --- Шахта 4x4 ---
 const oreTypes = [
-    { img: "images/ores/coal.png", hits: 3 },
-    { img: "images/ores/iron.png", hits: 4 },
-    { img: "images/ores/gold.png", hits: 5 },
-    { img: "images/ores/diamond.png", hits: 6 },
-    { img: "images/ores/emerald.png", hits: 7 }
+  { img: "images/ores/coal.png", hits: 3 },
+  { img: "images/ores/iron.png", hits: 4 },
+  { img: "images/ores/gold.png", hits: 5 },
+  { img: "images/ores/diamond.png", hits: 6 },
+  { img: "images/ores/emerald.png", hits: 7 }
 ];
 
 function getGiftByPrice(price, isFirst = false) {
-    let min = price * 0.5, max = price * 1.45;
-    let possible = gifts.filter(g => g.price >= min && g.price <= max);
-
-    if (isFirst) {
-        possible = gifts.filter(g => g.price >= price);
-        if (possible.length === 0) possible = gifts;
-    }
-
+  let min = price * 0.5, max = price * 1.45;
+  let possible = gifts.filter(g => g.price >= min && g.price <= max);
+  if (isFirst) {
+    possible = gifts.filter(g => g.price >= price);
     if (possible.length === 0) possible = gifts;
-    return possible[Math.floor(Math.random() * possible.length)];
+  }
+  if (possible.length === 0) possible = gifts;
+  return possible[Math.floor(Math.random() * possible.length)];
 }
 
 function spawnBlock(cell, index = 0) {
-    const ore = oreTypes[Math.floor(Math.random() * oreTypes.length)];
-    let price = +(1 + Math.random() * 10).toFixed(2);
+  const ore = oreTypes[Math.floor(Math.random() * oreTypes.length)];
+  let price = +(1 + Math.random() * 10).toFixed(2);
 
-    cell.className = "block";
-    cell.style.backgroundImage = `url(${ore.img})`;
-    cell.innerHTML = `<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+  cell.className = "block";
+  cell.style.backgroundImage = `url(${ore.img})`;
+  cell.innerHTML = `<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
 
-    let hits = 0;
-    cell.onclick = () => {
-        hits++;
-        if (hits >= ore.hits) {
-            if (balance >= price) {
-                balance -= price;
-                updateBalance();
-            }
+  let hits = 0;
+  cell.onclick = () => {
+    hits++;
+    if (hits >= ore.hits) {
+      if (balance >= price) {
+        balance -= price;
+        updateBalance();
+      }
 
-            let gift = getGiftByPrice(price, index === 0);
-            inventory.push(gift);
-            renderInventory();
+      let gift = getGiftByPrice(price, index === 0);
+      inventory.push(gift);
+      renderInventory();
 
-            // Анимация полёта подарка
-            setTimeout(() => flyGift(gift, cell), 50);
+      flyGift(gift, cell);
 
-            // Убираем содержимое сразу, чтобы не было "свечения"
-            cell.innerHTML = "";
+      // Время до восстановления блока
+      let respawn = (60 + Math.random() * 1740) * 1000;
+      cell.classList.add("cooldown");
+      cell.innerHTML = `<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn / 60000)}m</div>`;
+      cell.onclick = null;
 
-            // Таймер восстановления блока
-            let respawn = (60 + Math.random() * 1740) * 1000;
-            cell.classList.add("cooldown");
-            cell.innerHTML = `<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn / 60000)}m</div>`;
-            cell.onclick = null;
-
-            setTimeout(() => {
-                cell.classList.remove("cooldown");
-                spawnBlock(cell, index);
-            }, respawn);
-        }
-    };
+      setTimeout(() => {
+        cell.classList.remove("cooldown");
+        spawnBlock(cell, index);
+      }, respawn);
+    }
+  };
 }
 
 function generateMineGrid() {
-    const grid = document.getElementById("mineGrid");
-    grid.innerHTML = "";
-    for (let i = 0; i < 16; i++) {
-        let cell = document.createElement("div");
-        spawnBlock(cell, i);
-        grid.appendChild(cell);
-    }
+  const grid = document.getElementById("mineGrid");
+  grid.innerHTML = "";
+  for (let i = 0; i < 16; i++) {
+    let cell = document.createElement("div");
+    spawnBlock(cell, i);
+    grid.appendChild(cell);
+  }
 }
 
 // --- Анимация подарка ---
 function flyGift(gift, fromCell) {
-    const rect = fromCell.getBoundingClientRect();
-    const fly = document.createElement("div");
-    fly.className = "flying";
-    fly.style.left = rect.left + "px";
-    fly.style.top = rect.top + "px";
-    fly.style.width = "50px";   // уменьшили размер, чтобы не перекрывал экран
-    fly.style.height = "50px";
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement("div");
+  fly.className = "flying";
+  fly.style.left = rect.left + "px";
+  fly.style.top = rect.top + "px";
+  document.body.appendChild(fly);
 
-    document.body.appendChild(fly);
+  lottie.loadAnimation({
+    container: fly,
+    renderer: "svg",
+    loop: false,
+    autoplay: true,
+    path: `animations/${gift.name}.json`
+  });
 
-    lottie.loadAnimation({
-        container: fly,
-        renderer: "svg",
-        loop: false,
-        autoplay: true,
-        path: `emoji/${gift.name}.json`
-    });
+  const inv = document.getElementById("tab-inventory").getBoundingClientRect();
 
-    const inv = document.getElementById("tab-inventory").getBoundingClientRect();
+  fly.animate(
+    [
+      { transform: `translate(0,0)` },
+      { transform: `translate(${inv.left - rect.left}px, ${inv.top - rect.top}px)` }
+    ],
+    { duration: 1000, easing: "ease-in-out" }
+  );
 
-    fly.animate(
-        [
-            { transform: `translate(0,0) scale(1)` },
-            { transform: `translate(${inv.left - rect.left}px, ${inv.top - rect.top}px) scale(0.5)` }
-        ],
-        { duration: 1000, easing: "ease-in-out" }
-    );
-
-    setTimeout(() => fly.remove(), 1000);
+  setTimeout(() => fly.remove(), 1000);
 }
+
 
 
 
