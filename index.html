@@ -206,7 +206,7 @@ function flyGift(gift,fromCell){
     const fly=document.createElement('div'); fly.className='flying';
     fly.style.left=rect.left+'px'; fly.style.top=rect.top+'px';
     document.body.appendChild(fly);
-    const anim=lottie.loadAnimation({container:fly, renderer:'svg', loop:true, autoplay:true, path:`animations/${gift.name}.json`});
+    const anim=lottie.loadAnimation({container:fly, renderer:'svg', loop:true, autoplay:true, path:`emoji/${gift.name}.json`});
     const invRect=document.getElementById('tab-inventory').getBoundingClientRect();
     fly.animate([{transform:'translate(0,0)'},{transform:`translate(${invRect.left-rect.left}px,${invRect.top-rect.top}px)`}],
         {duration:1000,easing:'ease-in-out'});
