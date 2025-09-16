@@ -6,7 +6,7 @@
 <title>GiftsMine 🎁</title>
 <link rel="icon" href="ton.svg">
 <style>
-/* -------------------- BASIC -------------------- */
+/* -------------------- STYLES -------------------- */
 @font-face{font-family:'Minecraft'; src:url('minecraft.ttf') format('truetype');}
 :root{
   --bg:#060608;
@@ -17,8 +17,8 @@
 }
 html,body{height:100%;margin:0;font-family:'Minecraft',sans-serif;background:var(--bg);color:#fff;}
 body{display:flex;flex-direction:column;overflow:hidden;background-size:cover;background-position:center;transition:background .45s;}
-#balance{padding:14px 18px;text-align:right;background:rgba(0,0,0,0.14);backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.45);font-weight:700;}
-main{flex:1;overflow:auto;padding:18px 16px 100px 16px;display:none;background:linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.22));}
+#balance{padding:14px 18px;text-align:right;background:rgba(0,0,0,0.12);backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.35);font-weight:700;}
+main{flex:1;overflow:auto;padding:18px 16px 100px 16px;display:none;background:linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.2));}
 main.active{display:block}
 h2{margin:0 0 12px 0;text-align:center;font-size:1.3rem}
 
@@ -33,10 +33,10 @@ h2{margin:0 0 12px 0;text-align:center;font-size:1.3rem}
 
 /* grid / blocks */
 .grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;align-items:stretch}
-.block{position:relative;padding-bottom:100%;border-radius:8px;overflow:hidden;cursor:pointer;background:#2b2b2b;box-shadow:inset 0 -8px 24px rgba(0,0,0,0.35)}
+.block{position:relative;padding-bottom:100%;border-radius:8px;overflow:hidden;cursor:pointer;background:#3a3a3a;box-shadow:inset 0 -6px 18px rgba(0,0,0,0.25)}
 .ore{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1}
-.block-price{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,0.6);padding:4px 6px;border-radius:6px;font-size:0.72rem;display:flex;align-items:center;gap:6px;z-index:8}
-.block.cooldown{filter:brightness(0.5);cursor:default}
+.block-price{position:absolute;right:5px;bottom:5px;background:rgba(0,0,0,0.55);padding:3px 5px;border-radius:6px;font-size:0.68rem;display:flex;align-items:center;gap:6px;z-index:9}
+.block.cooldown{filter:brightness(0.9);cursor:default} /* less dark */
 
 /* destroy overlay - pixelated */
 .destroy-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;z-index:6;pointer-events:none;opacity:0;transition:opacity 120ms}
@@ -85,7 +85,7 @@ h2{margin:0 0 12px 0;text-align:center;font-size:1.3rem}
   <div class="muted" style="margin-top:8px">Загрузка ресурсов...</div>
 </div>
 
-<!-- BALANCE -->
+<!-- BALANCE TOP -->
 <div id="balance">Баланс: 0 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
 
 <!-- MENU -->
@@ -153,9 +153,7 @@ h2{margin:0 0 12px 0;text-align:center;font-size:1.3rem}
   <button id="tab-balanceTab" onclick="showTab('balanceTab')">Баланс</button>
 </div>
 
-<!-- lottie -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
-
 <script>
 /* ================= STATE ================= */
 let balance = 1000.00;
@@ -173,8 +171,7 @@ const backgrounds = {
   balanceTab: 'images/mobs.jpg'
 };
 
-/* ---------------- GIFTS (FULL LIST) ---------------- */
-/* Используйте тот же список, который у вас был — здесь я вставлю полный список, как ранее */
+/* ---------------- GIFTS ---------------- */
 const gifts = [
 {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
 {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},{name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
@@ -201,137 +198,199 @@ const gifts = [
 {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
 ];
 
-/* ---------------- ORE TYPES ---------------- */
+/* ================= ORE TYPES (with new Earth and Glass) ================= */
+/* For glass and earth provide type property and custom behavior */
 const oreTypes = [
-  { img: 'images/ores/coal.png', hits: 3 },
-  { img: 'images/ores/iron.png', hits: 4 },
-  { img: 'images/ores/gold.png', hits: 5 },
-  { img: 'images/ores/diamond.png', hits: 6 },
-  { img: 'images/ores/emerald.png', hits: 7 }
+  { type:'coal', img:'images/ores/coal.png', hits:3 },
+  { type:'iron', img:'images/ores/iron.png', hits:4 },
+  { type:'gold', img:'images/ores/gold.png', hits:5 },
+  { type:'diamond', img:'images/ores/diamond.png', hits:6 },
+  { type:'emerald', img:'images/ores/emerald.png', hits:7 },
+  /* Земля: cheap, 2 hits, gives 0.1 TON or gift < 2 TON (low chance for gift; EV ~80% approx) */
+  { type:'earth', img:'images/ores/earth.png', hits:2, special:'earth' },
+  /* Стекло: expensive, displays an inner gift, higher chance to drop that gift. hits:4 */
+  { type:'glass', img:'images/ores/glass.png', hits:4, special:'glass' }
 ];
 
-/* ================= UI UPDATES ================= */
-function updateBalanceUI(){
-  document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
-}
-function updateTransactionsUI(){
-  const el = document.getElementById('transactionHistory');
-  el.innerHTML = '';
-  transactions.forEach(t => {
-    const div = document.createElement('div');
-    div.style.padding = '6px 0';
-    div.textContent = t;
-    el.appendChild(div);
-  });
-}
+/* ================= HELPERS ================= */
+function updateBalanceUI(){ document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`; }
+function updateTransactionsUI(){ const el=document.getElementById('transactionHistory'); el.innerHTML=''; transactions.forEach(t=>{ const d=document.createElement('div'); d.style.padding='6px 0'; d.textContent=t; el.appendChild(d);} ); }
 function updateBrokenUI(){ document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`; }
 function updateRefUI(){ document.getElementById('refPercent').textContent = refPercent.toFixed(1) + '%'; }
 
 /* ================= TABS ================= */
 function showTab(id){
-  document.querySelectorAll('main').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
   if(backgrounds[id]) document.body.style.backgroundImage = `url(${backgrounds[id]})`;
-  if(id === 'inventory') renderInventory();
+  if(id==='inventory') renderInventory();
 }
 window.showTab = showTab;
 
-/* ================= GIFT SELECTION (bias) =================
-   Keep a small bias to make player's EV slightly positive or around desired target.
-   We weight by price^alpha where alpha > 0 biases higher prices.
-*/
-function getGiftByPrice(price){
-  const min = price * 0.5, max = price * 1.45;
-  let candidates = gifts.filter(g => g.price >= min && g.price <= max);
-  if(candidates.length === 0) candidates = gifts.slice();
-  const alpha = 0.5; // tuning parameter (0.5 gives mild bias)
-  const weights = candidates.map(g => Math.pow(g.price, alpha));
-  const total = weights.reduce((a,b)=>a+b,0);
-  let r = Math.random() * total;
-  for(let i=0;i<candidates.length;i++){
+/* ================= GIFT PICKING ================= */
+function getGiftByPrice(price, maxMultiplier=1.45){
+  const min = price * 0.5, max = price * maxMultiplier;
+  let cand = gifts.filter(g => g.price >= min && g.price <= max);
+  if(cand.length === 0) cand = gifts.slice();
+  const alpha = 0.5;
+  const weights = cand.map(g => Math.pow(g.price, alpha));
+  const sum = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*sum;
+  for(let i=0;i<cand.length;i++){
     r -= weights[i];
-    if(r <= 0) return candidates[i];
+    if(r <= 0) return cand[i];
   }
-  return candidates[candidates.length-1];
+  return cand[cand.length-1];
 }
 
-/* ================= MINE / BLOCKS =================
-   - Render ore texture with .ore div
-   - Destroy frames: 0..9 images; select frames spread over hits
-   - Charge price only when block fully destroyed
-   - Do NOT allow to start breaking if balance < price
+/* ================= SPAWN BLOCK =================
+   Handles special types:
+    - earth: cheap block, 2 hits, either small TON payout or gift <2 TON
+    - glass: displays a gift (inside), higher chance to drop it; gift price limited to block.price*3
 */
-function spawnBlock(cell, index = 0){
+function spawnBlock(cell, index=0){
   const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
-  const price = +(1 + Math.random()*10).toFixed(2);
+  // price generation: general ores 1..10 (original), earth: 0.1..1, glass: 3..20
+  let price;
+  if(ore.special === 'earth'){ price = +(0.1 + Math.random()*0.9).toFixed(2); }
+  else if(ore.special === 'glass'){ price = +(3 + Math.random()*17).toFixed(2); }
+  else{ price = +(1 + Math.random()*10).toFixed(2); }
 
   cell.className = 'block';
-  cell.innerHTML = ''; // clear
+  cell.innerHTML = '';
 
-  // ore texture div
+  // ore texture
   const oreDiv = document.createElement('div');
   oreDiv.className = 'ore';
   oreDiv.style.backgroundImage = `url(${ore.img})`;
   cell.appendChild(oreDiv);
 
-  // destroy overlay (pixelated)
+  // destroy overlay
   const destroyImg = document.createElement('img');
   destroyImg.className = 'destroy-img';
   cell.appendChild(destroyImg);
 
-  // price element
+  // price display: closer to corner (smaller)
   const priceEl = document.createElement('div');
   priceEl.className = 'block-price';
-  priceEl.innerHTML = `${price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
+  priceEl.style.fontSize = '0.65rem';
+  priceEl.innerHTML = `${price.toFixed(2)} <img src="ton.svg" style="width:11px;vertical-align:middle">`;
   cell.appendChild(priceEl);
 
-  // compute frame indices for hits
+  // special data for glass: pick an inner gift to display
+  let displayedGift = null;
+  if(ore.special === 'glass'){
+    // choose gift with price <= price*3 (limit)
+    const cap = price * 3;
+    const possible = gifts.filter(g => g.price <= cap);
+    if(possible.length > 0){
+      displayedGift = possible[Math.floor(Math.random()*possible.length)];
+      // overlay small preview indicator in corner (text)
+      const preview = document.createElement('div');
+      preview.style.position = 'absolute';
+      preview.style.left = '6px';
+      preview.style.top = '6px';
+      preview.style.zIndex = 10;
+      preview.style.padding = '4px 6px';
+      preview.style.background = 'rgba(0,0,0,0.5)';
+      preview.style.borderRadius = '6px';
+      preview.style.fontSize = '0.65rem';
+      preview.textContent = displayedGift.name;
+      cell.appendChild(preview);
+    }
+  }
+
+  // compute frames mapping across ore.hits (pixelated frames 0..9)
   const totalHits = ore.hits;
   const frames = [];
   for(let i=0;i<totalHits;i++){
-    const idx = Math.round(i*(9/(Math.max(1,totalHits-1))));
+    const idx = Math.round(i * (9 / Math.max(1, totalHits - 1)));
     frames.push(idx);
   }
 
   let hits = 0;
-  let breaking = false;
-
   cell.onclick = () => {
     if(cell.classList.contains('cooldown')) return;
-    // if first click attempt to start breaking, ensure balance sufficient
+    // If first hit and cannot pay price upon completion (except earth? spec says cannot start if not enough balance) -> require balance >= price
     if(hits === 0 && balance < price){
       alert('Недостаточно баланса для начала ломки этого блока.');
       return;
     }
-    // set destroy frame for this hit
-    const frameIdx = frames[Math.min(hits, frames.length-1)];
-    destroyImg.src = `destroy/destroy_stage_${frameIdx}.png`;
+
+    // show corresponding destroy frame
+    const fidx = frames[Math.min(hits, frames.length - 1)];
+    destroyImg.src = `destroy/destroy_stage_${fidx}.png`;
     destroyImg.style.opacity = '1';
     hits++;
 
     if(hits >= totalHits){
-      // finalize destruction: charge price, give gift
+      // finalize: charge price once
       balance -= price;
       updateBalanceUI();
       transactions.unshift(`Ломание блока -${price.toFixed(2)} TON`);
+
+      // Reward selection depending on type
+      if(ore.special === 'earth'){
+        // Earth: either 0.1 TON or gift < 2 TON
+        // We'll compute probability for gift inversely proportional to gift price (cheaper gifts more likely)
+        const giftPool = gifts.filter(g => g.price < 2);
+        // chance to drop gift set moderately low, e.g. 20% weighted
+        const giftChance = 0.2;
+        if(Math.random() < giftChance && giftPool.length > 0){
+          // weight by 1/price to favor cheaper ones
+          const weights = giftPool.map(g => 1 / g.price);
+          const sum = weights.reduce((a,b)=>a+b,0);
+          let r = Math.random()*sum;
+          let chosen = giftPool[giftPool.length-1];
+          for(let i=0;i<giftPool.length;i++){
+            r -= weights[i];
+            if(r <= 0){ chosen = giftPool[i]; break; }
+          }
+          inventory.push(chosen);
+          renderInventory();
+          flyGift(chosen, cell);
+          transactions.unshift(`Подарок: ${chosen.name}`);
+        } else {
+          // give 0.1 TON cash
+          balance += 0.1;
+          updateBalanceUI();
+          transactions.unshift(`Выигрыш: +0.10 TON (Earth)`);
+        }
+      } else if(ore.special === 'glass'){
+        // Glass: high chance to drop displayedGift, else random gift within cap (price <= price*3)
+        const cap = price * 3;
+        const pool = gifts.filter(g => g.price <= cap);
+        // assign probability: displayedGift drop prob = 0.6, else from pool random
+        if(displayedGift && Math.random() < 0.6){
+          inventory.push(displayedGift);
+          renderInventory();
+          flyGift(displayedGift, cell);
+          transactions.unshift(`Подарок (Glass): ${displayedGift.name}`);
+        } else {
+          const other = pool.length ? pool[Math.floor(Math.random()*pool.length)] : getGiftByPrice(price, 3);
+          inventory.push(other);
+          renderInventory();
+          flyGift(other, cell);
+          transactions.unshift(`Подарок (Glass random): ${other.name}`);
+        }
+      } else {
+        // regular ore: pick gift by price
+        const gift = getGiftByPrice(price);
+        inventory.push(gift);
+        renderInventory();
+        flyGift(gift, cell);
+        transactions.unshift(`Подарок: ${gift.name}`);
+      }
+
       updateTransactionsUI();
-
-      const gift = getGiftByPrice(price);
-      inventory.push(gift);
-      renderInventory();
-
-      // fly to inventory animation
-      flyGift(gift, cell);
-
       brokenBlocks++;
       updateBrokenUI();
 
       // cooldown and respawn
       cell.classList.add('cooldown');
-      const respawnMs = (60 + Math.random()*1740) * 1000; // 1-30 min ish
-      // show respawn minutes
+      const respawnMs = (60 + Math.random()*1740)*1000;
       const mins = Math.round(respawnMs/60000);
       cell.innerHTML = `<div style="position:absolute;top:6px;left:6px;font-size:0.7rem;color:#ddd">${mins}m</div>`;
       setTimeout(()=>{ spawnBlock(cell, index); }, respawnMs);
@@ -350,9 +409,7 @@ function generateMineGrid(){
   }
 }
 
-/* ================= FLY GIFT - smooth, no teleport =================
-   Use lottie blob URLs from animationMap if available; otherwise try path.
-*/
+/* ================= FLY GIFT ================= */
 function flyGift(gift, fromCell){
   const rect = fromCell.getBoundingClientRect();
   const fly = document.createElement('div');
@@ -366,15 +423,14 @@ function flyGift(gift, fromCell){
   fly.style.pointerEvents = 'none';
   document.body.appendChild(fly);
 
-  // container inside fly to fix layout for lottie
   const container = document.createElement('div');
   container.style.width = '60px';
   container.style.height = '60px';
   container.style.overflow = 'visible';
   fly.appendChild(container);
 
-  const lottiePath = animationMap[gift.name] || (`emoji/${gift.name}.json`);
-  const anim = lottie.loadAnimation({ container: container, renderer: 'svg', loop:true, autoplay:true, path: lottiePath });
+  const lPath = animationMap[gift.name] || (`emoji/${gift.name}.json`);
+  const anim = lottie.loadAnimation({ container: container, renderer: 'svg', loop: true, autoplay: true, path: lPath });
 
   const invBtnRect = document.getElementById('tab-inventory').getBoundingClientRect();
   const targetX = invBtnRect.left + invBtnRect.width/2 - 30;
@@ -391,9 +447,7 @@ function flyGift(gift, fromCell){
     try{ anim.stop(); anim.destroy(); } catch(e){}
     fly.remove();
   };
-
-  // safety: cleanup after 1.6s
-  setTimeout(()=>{ if(document.body.contains(fly)){ try{ anim.stop(); anim.destroy(); }catch(e){} fly.remove(); } }, 1700);
+  setTimeout(()=>{ if(document.body.contains(fly)){ try{ anim.stop(); anim.destroy(); } catch(e){} fly.remove(); } }, 1700);
 }
 
 /* ================= INVENTORY UI ================= */
@@ -405,17 +459,13 @@ function renderInventory(){
     const top = document.createElement('div'); top.className = 'gift-top';
     const prev = document.createElement('div'); prev.className = 'gift-preview';
 
-    // show animation if preloaded
     if(animationMap[gift.name]){
-      try{
-        lottie.loadAnimation({ container: prev, renderer: 'svg', loop:true, autoplay:true, path: animationMap[gift.name] });
-      }catch(e){
-        prev.textContent = gift.name;
-      }
+      try{ lottie.loadAnimation({ container: prev, renderer: 'svg', loop:true, autoplay:true, path: animationMap[gift.name] }); }
+      catch(e){ prev.textContent = gift.name; }
     } else {
-      // fallback: try direct path (may load), else text
-      try{ lottie.loadAnimation({ container: prev, renderer:'svg', loop:true, autoplay:true, path:`emoji/${gift.name}.json` }); }
-      catch{ prev.textContent = gift.name; }
+      // fallback to try direct path
+      try{ lottie.loadAnimation({ container: prev, renderer: 'svg', loop:true, autoplay:true, path:`emoji/${gift.name}.json` }); }
+      catch(e){ prev.textContent = gift.name; }
     }
 
     const info = document.createElement('div'); info.className = 'gift-info';
@@ -423,7 +473,6 @@ function renderInventory(){
     const price = document.createElement('div'); price.className = 'gift-price';
     price.innerHTML = `Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
     info.appendChild(name); info.appendChild(price);
-
     top.appendChild(prev); top.appendChild(info);
 
     const actions = document.createElement('div'); actions.className = 'gift-actions';
@@ -445,13 +494,12 @@ function renderInventory(){
       alert('Вывод оформлен (заглушка).');
     };
     actions.appendChild(sell); actions.appendChild(withdraw);
-
     item.appendChild(top); item.appendChild(actions);
     list.appendChild(item);
   });
 }
 
-/* ================= PROMO & DEPOSITS ================= */
+/* ================= PROMO & DEPOSIT ================= */
 function redeemPromo(){
   const code = document.getElementById('promoCode').value.trim();
   if(!code){ alert('Введите промокод'); return; }
@@ -473,72 +521,44 @@ function addBalancePrompt(method){
   const sum = raw ? parseFloat(raw) : 0;
   if(!sum || sum <= 0) return;
   let net = sum;
-  if(method === 'CryptoBot') net = sum * 0.95; // 5% fee
-  if(method === 'Stars') net = sum * 0.80; // 20% fee
+  if(method === 'CryptoBot') net = sum * 0.95;
+  if(method === 'Stars') net = sum * 0.80;
   const bonus = net * (refPercent / 100);
   balance += net + bonus;
   transactions.unshift(`Пополнение ${method}: +${net.toFixed(2)} TON (бонус ${bonus.toFixed(2)})`);
   updateBalanceUI(); updateTransactionsUI();
-  // increase referral percent a bit on deposit
   refPercent = Math.min(MAX_REF, refPercent + 0.5);
   updateRefUI();
 }
 window.addBalancePrompt = addBalancePrompt;
 
-/* ================= PRELOAD RESOURCES =================
-   - Preload backgrounds, ore textures, destroy frames, icons, and all emoji JSONs (converted to blob URLs).
-   - Update progress bar (images + jsons).
-*/
+/* ================= PRELOAD RESOURCES ================= */
 window.addEventListener('load', () => { startPreload(); });
 
 let loaderAnimationInst = null;
 function startPreload(){
-  // start loader animation (lottie)
   try{
-    loaderAnimationInst = lottie.loadAnimation({
-      container: document.getElementById('loaderAnimation'),
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'animations/myLoader.json'
-    });
-  }catch(e){ /* ignore if missing */ }
+    loaderAnimationInst = lottie.loadAnimation({ container: document.getElementById('loaderAnimation'), renderer:'svg', loop:true, autoplay:true, path:'animations/myLoader.json' });
+  }catch(e){ /* ignore */ }
 
-  // build lists
   const imagePaths = [];
-  // backgrounds
   Object.values(backgrounds).forEach(p => imagePaths.push(p));
-  // ores
   oreTypes.forEach(o => imagePaths.push(o.img));
-  // destroy frames
   for(let i=0;i<=9;i++) imagePaths.push(`destroy/destroy_stage_${i}.png`);
-  // icons and small assets
-  imagePaths.push('ton.svg', 'icons/cryptobot.svg', 'icons/stars.svg', 'images/banner.jpg');
+  imagePaths.push('ton.svg','icons/cryptobot.svg','icons/stars.svg','images/banner.jpg');
 
-  // lottie JSONs for gifts
   const lottieList = gifts.map(g => ({ name: g.name, path: `emoji/${g.name}.json` }));
 
   const total = imagePaths.length + lottieList.length;
   let loaded = 0;
   const prog = document.getElementById('loaderProgressBar');
 
-  function tick(){
-    loaded++;
-    if(prog) prog.style.width = Math.round((loaded/total)*100) + '%';
-    if(loaded >= total){
-      setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalanceUI(); updateTransactionsUI(); updateBrokenUI(); updateRefUI(); document.body.style.backgroundImage = `url(${backgrounds.menu})`; }, 350);
-    }
-  }
+  function tick(){ loaded++; if(prog) prog.style.width = Math.round((loaded/total)*100) + '%'; if(loaded >= total){ setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalanceUI(); updateTransactionsUI(); updateBrokenUI(); updateRefUI(); document.body.style.backgroundImage = `url(${backgrounds.menu})`; }, 350); } }
 
-  // preload images
   imagePaths.forEach(src => {
-    const img = new Image();
-    img.onload = tick;
-    img.onerror = tick;
-    img.src = src;
+    const img = new Image(); img.onload = tick; img.onerror = tick; img.src = src;
   });
 
-  // preload lottie JSONs -> blob URL
   lottieList.forEach(item => {
     fetch(item.path).then(resp => {
       if(!resp.ok) throw new Error('missing');
@@ -550,20 +570,11 @@ function startPreload(){
     }).catch(()=>{ tick(); });
   });
 
-  // seed UI values
-  updateBalanceUI();
-  updateRefUI();
+  updateBalanceUI(); updateRefUI();
 }
 
-/* ================= INITIAL UI ================= */
-updateBalanceUI();
-updateTransactionsUI();
-updateBrokenUI();
-updateRefUI();
-
-/* expose a couple functions for console/testing */
-window.generateMineGrid = generateMineGrid;
-window.renderInventory = renderInventory;
+/* ================= INIT UI ================= */
+updateBalanceUI(); updateTransactionsUI(); updateBrokenUI(); updateRefUI();
 </script>
 </body>
 </html>
