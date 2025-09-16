@@ -244,14 +244,48 @@ function redeemPromo(){ const code=document.getElementById('promoCode').value.tr
 function addBalance(method){ let amount=100; balance+=amount; updateBalance(); transactions.unshift(`Пополнение через ${method} +${amount} TON`); updateTransactionHistory(); if(refBonus<maxRefBonus) refBonus+=0.5; updateRefBonus(); alert(`Баланс пополнен через ${method}: +${amount} TON`); }
 
 // Предзагрузка ресурсов
-function preloadResources(){
-  const allImgs=[...oreTypes.map(o=>o.img)];
-  for(let i=0;i<10;i++) allImgs.push(`destroy/destroy_stage_${i}.png`);
-  allImgs.push(...gifts.map(g=>`emoji/${g.name}.json`));
-  let loaded=0; const total=allImgs.length;
-  function tick(){ loaded++; document.getElementById('loaderProgressBar').style.width=(loaded/total*100)+'%'; if(loaded>=total){ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalance(); updateRefBonus(); updateBrokenBlocks(); } }
-  allImgs.forEach(src=>{ let img=new Image(); img.src=src; img.onload=tick; img.onerror=tick; });
+function preloadResources() {
+  const imagePaths = [...oreTypes.map(o=>o.img)];
+  for(let i=0;i<10;i++) imagePaths.push(`destroy/destroy_stage_${i}.png`);
+  
+  const lottiePaths = gifts.map(g=>`emoji/${g.name}.json`);
+  
+  const total = imagePaths.length + lottiePaths.length;
+  let loaded = 0;
+  const progBar = document.getElementById('loaderProgressBar');
+  
+  function tick() {
+    loaded++;
+    progBar.style.width = (loaded/total*100)+'%';
+    if(loaded >= total){
+      document.getElementById('loader').classList.add('hidden');
+      generateMineGrid();
+      updateBalance();
+      updateRefBonus();
+      updateBrokenBlocks();
+    }
+  }
+  
+  // Загружаем изображения
+  imagePaths.forEach(src=>{
+    const img = new Image();
+    img.onload = tick;
+    img.onerror = tick;
+    img.src = src;
+  });
+  
+  // Загружаем JSON анимации
+  lottiePaths.forEach(path=>{
+    fetch(path)
+      .then(r=>{ if(r.ok) return r.json(); else throw new Error('fail'); })
+      .then(json=>{
+        animationMap[path.split('/').pop().replace('.json','')] = URL.createObjectURL(new Blob([JSON.stringify(json)], {type:'application/json'}));
+        tick();
+      })
+      .catch(()=>tick());
+  });
 }
+
 
 preloadResources();
 </script>
