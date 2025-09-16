@@ -87,7 +87,6 @@
     @media (max-width:680px){
       #loaderProgress{width:70%}
       .tab-bar{padding:8px}
-      .method-left span{font-size:0.95rem}
     }
   </style>
 </head>
@@ -198,14 +197,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 
   <script>
-    // state
+    // -------------------------
+    // State & config
+    // -------------------------
     let balance = 10000;
-    let transactions = []; // newest first (we unshift)
+    let transactions = []; // newest first (unshift)
     let inventory = [];
     let brokenBlocks = 0;
     let firstMineCount = 0;
 
-    // backgrounds
     const backgrounds = {
       menu: 'images/menu.jpg',
       mine: 'images/mine.jpg',
@@ -213,37 +213,6 @@
       balanceTab: 'images/mobs.jpg'
     };
     document.body.style.backgroundImage = `url(${backgrounds.menu})`;
-
-    // helper UI updates
-    function updateBalanceUI(){
-      document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
-    }
-
-    function updateTransactionHistoryUI(){
-      const el = document.getElementById('transactionHistory');
-      el.innerHTML = '';
-      transactions.forEach(tx => {
-        const d = document.createElement('div');
-        d.className = 'tx-item';
-        d.textContent = tx;
-        el.appendChild(d);
-      });
-    }
-
-    function updateBrokenBlocksUI(){
-      document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`;
-    }
-
-    function showTab(id){
-      document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
-      document.getElementById('tab-' + id).classList.add('active');
-      document.body.style.backgroundImage = `url(${backgrounds[id]})`;
-      if(id === 'inventory') renderInventory();
-    }
-    // expose to inline handlers
-    window.showTab = showTab;
 
     // full gifts list
     const gifts = [
@@ -294,7 +263,6 @@
       {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
     ];
 
-    // ores
     const oreTypes = [
       {img:"images/ores/coal.png",hits:3},
       {img:"images/ores/iron.png",hits:4},
@@ -303,10 +271,49 @@
       {img:"images/ores/emerald.png",hits:7}
     ];
 
-    // map of preloaded lottie JSONs => objectURLs
-    const animationMap = {};
+    // preloaded lottie objectURLs
+    const animationMap = {}; // giftName -> objectURL
+    // track preview animations so we can destroy them on re-render
+    const previewAnimations = [];
 
-    // choose gift by price. For first two mined blocks limit max to 2x for the 'first' block condition.
+    // -------------------------
+    // UI update helpers
+    // -------------------------
+    function updateBalanceUI(){
+      document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
+    }
+
+    function updateTransactionHistoryUI(){
+      const el = document.getElementById('transactionHistory');
+      el.innerHTML = '';
+      transactions.forEach(tx => {
+        const d = document.createElement('div');
+        d.className = 'tx-item';
+        d.textContent = tx;
+        el.appendChild(d);
+      });
+    }
+
+    function updateBrokenBlocksUI(){
+      document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`;
+    }
+
+    // -------------------------
+    // Tabs
+    // -------------------------
+    function showTab(id){
+      document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      document.body.style.backgroundImage = `url(${backgrounds[id]})`;
+      if (id === 'inventory') renderInventory();
+    }
+    window.showTab = showTab;
+
+    // -------------------------
+    // Gift selection
+    // -------------------------
     function getGiftByPrice(price, isFirst=false){
       let min = price * 0.5;
       let max = price * 1.45;
@@ -317,7 +324,9 @@
       return possible[Math.floor(Math.random() * possible.length)];
     }
 
-    // spawn block into DOM cell
+    // -------------------------
+    // Mine grid
+    // -------------------------
     function spawnBlock(cell, index=0){
       const ore = oreTypes[Math.floor(Math.random() * oreTypes.length)];
       let price = +(1 + Math.random() * 10).toFixed(2);
@@ -328,25 +337,26 @@
       cell.onclick = () => {
         hits++;
         if (hits >= ore.hits){
-          // record block broken
+          // expense
           brokenBlocks++; updateBrokenBlocksUI();
           if (balance >= price){
-            balance -= price;
-            updateBalanceUI();
+            balance -= price; updateBalanceUI();
             transactions.unshift(`Оплата ломки: -${price.toFixed(2)} TON`);
           } else {
-            transactions.unshift(`Лом блока (недостаточно средств): цена ${price.toFixed(2)} TON`);
+            transactions.unshift(`Лом блока (недостаточно средств): ${price.toFixed(2)} TON`);
           }
           updateTransactionHistoryUI();
 
-          let gift = getGiftByPrice(price, index===0);
+          // gift
+          const gift = getGiftByPrice(price, index===0);
           inventory.push(gift);
           renderInventory();
           flyGift(gift, cell);
           firstMineCount++;
 
+          // cooldown + respawn
           const respawn = (60 + Math.random() * 1740) * 1000;
-          cell.classList.add("cooldown");
+          cell.classList.add('cooldown');
           cell.innerHTML = `<div style="position:absolute;top:4px;left:4px;font-size:0.7rem;">${Math.round(respawn/60000)}m</div>`;
           cell.onclick = null;
           setTimeout(()=>{ cell.classList.remove('cooldown'); spawnBlock(cell, index); }, respawn);
@@ -364,32 +374,36 @@
       }
     }
 
-    // fly gift: use transform: translate(...) only (no left/top changes) to avoid teleports
+    // -------------------------
+    // Flying gift (optimized)
+    // -------------------------
     function flyGift(gift, fromCell){
       const rect = fromCell.getBoundingClientRect();
       const invBtnRect = document.getElementById('tab-inventory').getBoundingClientRect();
 
       const fly = document.createElement('div');
       fly.className = 'flying';
-      // initial transform = start coords
+
+      // compute start (center) and set initial transform
       const startX = rect.left + rect.width/2 - 30;
       const startY = rect.top + rect.height/2 - 30;
       fly.style.transform = `translate(${startX}px, ${startY}px)`;
       document.body.appendChild(fly);
 
-      // try to attach preloaded animation if available
+      // try use preloaded animation (objectURL) to avoid fetching
       let animInstance = null;
-      const animObjURL = animationMap[gift.name];
+      const animPath = animationMap[gift.name] || `emoji/${encodeURIComponent(gift.name)}.json`;
       try {
-        if (animObjURL) {
-          animInstance = lottie.loadAnimation({ container: fly, renderer: 'svg', loop: true, autoplay: true, path: animObjURL });
-        } else {
-          // if not preloaded, try direct path (best-effort)
-          const directPath = `emoji/${encodeURIComponent(gift.name)}.json`;
-          animInstance = lottie.loadAnimation({ container: fly, renderer: 'svg', loop: true, autoplay: true, path: directPath });
-        }
+        // loop false for transient animation
+        animInstance = lottie.loadAnimation({
+          container: fly,
+          renderer: 'svg',
+          loop: false,
+          autoplay: true,
+          path: animPath
+        });
       } catch(e){
-        // fallback to text
+        // fallback
         fly.textContent = gift.name;
         fly.style.display = 'flex';
         fly.style.alignItems = 'center';
@@ -402,62 +416,101 @@
       const dx = targetX - startX;
       const dy = targetY - startY;
 
-      // animate transform (translate with absolute values) — avoids layout/left/top reflows
-      const animPlayer = fly.animate([
+      // animate transform only (no left/top changes) to avoid layout thrash / teleport
+      const player = fly.animate([
         { transform: `translate(${startX}px, ${startY}px)` },
         { transform: `translate(${startX + dx}px, ${startY + dy}px)` }
       ], {
-        duration: 1500, // slightly slower for nicer effect
+        duration: 1500,
         easing: 'cubic-bezier(.22,.8,.18,1)',
         fill: 'forwards'
       });
 
-      animPlayer.onfinish = () => {
+      player.onfinish = () => {
         try { if (animInstance && typeof animInstance.destroy === 'function') animInstance.destroy(); } catch(e){}
         fly.remove();
       };
     }
 
-    // render inventory (use preloaded animations for preview if available)
+    // -------------------------
+    // Inventory rendering (destroy previous preview animations first)
+    // -------------------------
+    function destroyPreviewAnimations(){
+      while(previewAnimations.length){
+        const a = previewAnimations.pop();
+        try{ if (a && typeof a.destroy === 'function') a.destroy(); } catch(e){}
+      }
+    }
+
     function renderInventory(){
+      // destroy preview anims to avoid memory / instance pile-up
+      destroyPreviewAnimations();
+
       const list = document.getElementById('inventoryList');
       list.innerHTML = '';
       inventory.forEach((gift, idx) => {
         const div = document.createElement('div');
         div.className = 'gift-item';
 
-        const top = document.createElement('div'); top.className = 'gift-top';
-        const prev = document.createElement('div'); prev.className = 'gift-preview';
+        const top = document.createElement('div');
+        top.className = 'gift-top';
 
-        // use preloaded animation if available
+        const prev = document.createElement('div');
+        prev.className = 'gift-preview';
+
+        // try to use preloaded animation
         if (animationMap[gift.name]){
           try{
-            lottie.loadAnimation({ container: prev, renderer: 'svg', loop: true, autoplay: true, path: animationMap[gift.name] });
+            const anim = lottie.loadAnimation({
+              container: prev,
+              renderer: 'svg',
+              loop: true,
+              autoplay: true,
+              path: animationMap[gift.name]
+            });
+            previewAnimations.push(anim);
           } catch(e){
             prev.textContent = gift.name;
           }
         } else {
-          prev.textContent = gift.name;
+          // fallback: try direct path, if fails show text
+          try {
+            const anim = lottie.loadAnimation({
+              container: prev,
+              renderer: 'svg',
+              loop: true,
+              autoplay: true,
+              path: `emoji/${encodeURIComponent(gift.name)}.json`
+            });
+            previewAnimations.push(anim);
+          } catch(e){
+            prev.textContent = gift.name;
+          }
         }
 
-        const info = document.createElement('div'); info.className = 'gift-info';
+        const info = document.createElement('div');
+        info.className = 'gift-info';
         info.innerHTML = `<div class="gift-name">${gift.name}</div>
                           <div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
 
         top.appendChild(prev);
         top.appendChild(info);
 
-        const actions = document.createElement('div'); actions.className = 'gift-actions';
-        const sellBtn = document.createElement('button'); sellBtn.textContent = 'Продать';
+        const actions = document.createElement('div');
+        actions.className = 'gift-actions';
+
+        const sellBtn = document.createElement('button');
+        sellBtn.textContent = 'Продать';
         sellBtn.onclick = () => {
-          balance += gift.price;
-          updateBalanceUI();
+          balance += gift.price; updateBalanceUI();
           inventory.splice(idx, 1);
           renderInventory();
           transactions.unshift(`Продажа: ${gift.name} +${gift.price.toFixed(2)} TON`);
           updateTransactionHistoryUI();
         };
-        const withdrawBtn = document.createElement('button'); withdrawBtn.textContent = 'Вывести';
+
+        const withdrawBtn = document.createElement('button');
+        withdrawBtn.textContent = 'Вывести';
         withdrawBtn.onclick = () => {
           alert('Вывод оформлен!');
           inventory.splice(idx, 1);
@@ -465,6 +518,7 @@
           transactions.unshift(`Вывод: ${gift.name}`);
           updateTransactionHistoryUI();
         };
+
         actions.appendChild(sellBtn);
         actions.appendChild(withdrawBtn);
 
@@ -474,7 +528,9 @@
       });
     }
 
-    // promo
+    // -------------------------
+    // Promo and balance actions
+    // -------------------------
     function redeemPromo(){
       const code = (document.getElementById('promoInput')||{}).value || '';
       if (!code) { alert('Введите промокод'); return; }
@@ -491,9 +547,8 @@
     }
     window.redeemPromo = redeemPromo;
 
-    // add balance
     function addBalance(method, feePerc){
-      const amount = 100; // demo top-up
+      const amount = 100;
       const net = +(amount - amount * (feePerc/100));
       balance += net;
       updateBalanceUI();
@@ -503,8 +558,11 @@
     }
     window.addBalance = addBalance;
 
-    // preload assets: images + lottie JSONs (if exists)
+    // -------------------------
+    // Preload images + lottie jsons
+    // -------------------------
     function preloadAssets(){
+      // gather images
       const imagePaths = [
         backgrounds.menu, backgrounds.mine, backgrounds.inventory, backgrounds.balanceTab,
         'ton.svg', 'images/banner.jpg',
@@ -512,7 +570,9 @@
         ...oreTypes.map(o => o.img)
       ];
 
+      // lottie jsons for gifts
       const lottieList = gifts.map(g => ({ name: g.name, path: `emoji/${encodeURIComponent(g.name)}.json` }));
+
       const total = imagePaths.length + lottieList.length;
       let loaded = 0;
       const setProgress = () => {
@@ -541,9 +601,11 @@
       return Promise.all([...imgPromises, ...lottiePromises]);
     }
 
-    // initialization on load
+    // -------------------------
+    // Initialization
+    // -------------------------
     window.addEventListener('load', () => {
-      // try to start loader Lottie if available (non-critical)
+      // try to start loader Lottie (non-critical)
       try {
         lottie.loadAnimation({ container: document.getElementById('loaderAnimation'), renderer:'svg', loop:true, autoplay:true, path:'animations/myLoader.json' });
       } catch(e){ /* ignore if missing */ }
@@ -555,15 +617,19 @@
           updateBalanceUI();
           updateTransactionHistoryUI();
           updateBrokenBlocksUI();
-          // ensure initial background
+          // initial background
           document.body.style.backgroundImage = `url(${backgrounds.menu})`;
         }, 300);
       });
     });
 
-    // expose renderInventory globally (used when switching tabs)
-    window.renderInventory = renderInventory;
-
+    // cleanup on unload: revoke object URLs and destroy preview animations
+    window.addEventListener('beforeunload', () => {
+      destroyPreviewAnimations();
+      for (const k in animationMap){
+        try{ URL.revokeObjectURL(animationMap[k]); } catch(e){}
+      }
+    });
   </script>
 </body>
 </html>
