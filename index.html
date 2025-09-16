@@ -1,536 +1,569 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>GiftsMine 🎁</title>
+<link rel="icon" href="ton.svg">
 <style>
-  @font-face{ font-family:'Minecraft'; src:url('minecraft.ttf') format('truetype'); }
-  :root{
-    --bg:#060608;
-    --card: rgba(20,20,20,0.92);
-    --accent1: linear-gradient(135deg,#ff9a9e,#fad0c4);
-    --accent2: linear-gradient(135deg,#a1c4fd,#c2e9fb);
-    --blue: linear-gradient(135deg,#6a11cb,#2575fc);
-  }
-  html,body{height:100%;margin:0;font-family:'Minecraft',sans-serif;background:var(--bg);color:#fff;}
-  body{display:flex;flex-direction:column;overflow:hidden;background-size:cover;background-position:center;transition:background .45s;}
-  #balance{padding:14px 18px;text-align:right;background:rgba(0,0,0,0.14);backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.45);font-weight:700;}
-  main{flex:1;overflow:auto;padding:18px 16px 92px 16px;display:none;background:linear-gradient(to bottom, rgba(0,0,0,0.14), rgba(0,0,0,0.26));}
-  main.active{display:block}
-  h2{margin:0 0 12px 0;text-align:center;font-size:1.35rem}
-  .banner{width:100%;aspect-ratio:5/1;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.45);margin-bottom:14px;background:rgba(255,255,255,0.03)}
-  .banner img{width:100%;height:100%;object-fit:cover;display:block}
-  .tab-bar{position:fixed;bottom:12px;left:12px;right:12px;display:flex;gap:10px;padding:10px;background:rgba(0,0,0,0.18);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6);z-index:999}
-  .tab-bar button{flex:1;padding:10px;border-radius:10px;border:none;cursor:pointer;background:var(--accent1);color:#fff;font-weight:800;box-shadow:0 6px 16px rgba(0,0,0,0.35)}
-  .tab-bar button.active{background:var(--accent2)}
-  .grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:8px;align-items:stretch}
-  .block{position:relative;padding-bottom:100%;background:#333;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:inset 0 -10px 30px rgba(0,0,0,0.35)}
-  .block::before{content:"";position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
-  .block-price{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,0.65);padding:4px 6px;border-radius:6px;font-size:0.68rem;display:flex;gap:6px;align-items:center;z-index:6}
-  .block.cooldown{filter:brightness(0.55);cursor:default}
-  /* destroy overlay image - pixelated */
-  .destroy-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;z-index:4;pointer-events:none}
-  .inventory-list{display:flex;flex-direction:column;gap:12px}
-  .gift-item{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.5);display:flex;flex-direction:column}
-  .gift-top{display:flex;gap:12px;align-items:center}
-  .gift-preview{width:64px;height:64px;border-radius:8px;overflow:hidden;background:#0b0b0b;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#ddd}
-  .gift-info{flex:1;display:flex;flex-direction:column;gap:6px}
-  .gift-name{font-weight:800}
-  .gift-price{color:#bbb;font-size:0.9rem}
-  .gift-actions{display:flex;gap:10px;margin-top:10px}
-  .btn{border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:800}
-  .btn.primary{background:var(--accent1);color:#fff}
-  .btn.secondary{background:var(--blue);color:#fff}
-  .deposit-option{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(255,255,255,0.03);margin-bottom:10px;cursor:pointer}
-  .deposit-left{display:flex;align-items:center;gap:10px}
-  .deposit-left img{width:26px;height:26px}
-  .deposit-percent{font-size:0.85rem;color:#cfd6ff;text-align:right}
-  .small{font-size:0.85rem;color:#bbb}
-  #loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#000;z-index:2000}
-  #loader.hidden{opacity:0;pointer-events:none;transition:opacity .6s}
-  #loaderAnimation{width:260px;height:260px;margin-bottom:14px}
-  #loaderProgress{width:40%;height:12px;background:#222;border-radius:12px;overflow:hidden}
-  #loaderProgressBar{width:0%;height:100%;background:#7c3cff;transition:width .25s}
-  .muted{color:#aeb2bb;font-size:0.9rem}
-  @media (max-width:700px){
-    .grid{grid-template-columns:repeat(4,1fr);gap:6px}
-    .tab-bar{left:8px;right:8px;bottom:8px}
-    #loaderAnimation{width:180px;height:180px}
-  }
+/* -------------------- BASIC -------------------- */
+@font-face{font-family:'Minecraft'; src:url('minecraft.ttf') format('truetype');}
+:root{
+  --bg:#060608;
+  --card: rgba(18,18,20,0.95);
+  --accent1: linear-gradient(135deg,#ff9a9e,#fad0c4);
+  --accent2: linear-gradient(135deg,#a1c4fd,#c2e9fb);
+  --accentBlue: linear-gradient(135deg,#6a11cb,#2575fc);
+}
+html,body{height:100%;margin:0;font-family:'Minecraft',sans-serif;background:var(--bg);color:#fff;}
+body{display:flex;flex-direction:column;overflow:hidden;background-size:cover;background-position:center;transition:background .45s;}
+#balance{padding:14px 18px;text-align:right;background:rgba(0,0,0,0.14);backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.45);font-weight:700;}
+main{flex:1;overflow:auto;padding:18px 16px 100px 16px;display:none;background:linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.22));}
+main.active{display:block}
+h2{margin:0 0 12px 0;text-align:center;font-size:1.3rem}
+
+/* banner */
+.banner{width:100%;aspect-ratio:5/1;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.45);margin-bottom:14px}
+.banner img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* tab bar */
+.tab-bar{position:fixed;bottom:12px;left:12px;right:12px;display:flex;gap:10px;padding:10px;background:rgba(0,0,0,0.16);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6);z-index:999}
+.tab-bar button{flex:1;padding:10px;border-radius:10px;border:none;cursor:pointer;background:var(--accent1);color:#fff;font-weight:800;box-shadow:0 6px 16px rgba(0,0,0,0.35)}
+.tab-bar button.active{background:var(--accent2)}
+
+/* grid / blocks */
+.grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;align-items:stretch}
+.block{position:relative;padding-bottom:100%;border-radius:8px;overflow:hidden;cursor:pointer;background:#2b2b2b;box-shadow:inset 0 -8px 24px rgba(0,0,0,0.35)}
+.ore{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1}
+.block-price{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,0.6);padding:4px 6px;border-radius:6px;font-size:0.72rem;display:flex;align-items:center;gap:6px;z-index:8}
+.block.cooldown{filter:brightness(0.5);cursor:default}
+
+/* destroy overlay - pixelated */
+.destroy-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;z-index:6;pointer-events:none;opacity:0;transition:opacity 120ms}
+
+/* inventory */
+.inventory-list{display:flex;flex-direction:column;gap:12px}
+.gift-item{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.6);display:flex;flex-direction:column}
+.gift-top{display:flex;gap:12px;align-items:center}
+.gift-preview{width:64px;height:64px;border-radius:8px;overflow:hidden;background:#0b0b0b;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#ddd}
+.gift-info{flex:1;display:flex;flex-direction:column;gap:6px}
+.gift-name{font-weight:800}
+.gift-price{color:#bbb;font-size:0.9rem}
+.gift-actions{display:flex;gap:10px;margin-top:10px}
+.btn{border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:800}
+.btn.primary{background:var(--accent1);color:#fff}
+.btn.secondary{background:var(--accentBlue);color:#fff}
+
+/* balance tab */
+.deposit-option{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(255,255,255,0.03);margin-bottom:10px;cursor:pointer}
+.deposit-left{display:flex;align-items:center;gap:10px}
+.deposit-left img{width:26px;height:26px}
+.deposit-percent{font-size:0.85rem;color:#cfd6ff;text-align:right}
+.small{font-size:0.85rem;color:#bbb}
+
+/* loader */
+#loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#000;z-index:2000}
+#loader.hidden{opacity:0;pointer-events:none;transition:opacity .6s}
+#loaderAnimation{width:220px;height:220px;margin-bottom:14px}
+#loaderProgress{width:36%;height:12px;background:#222;border-radius:12px;overflow:hidden}
+#loaderProgressBar{width:0%;height:100%;background:#7c3cff;transition:width .25s}
+.muted{color:#aeb2bb;font-size:0.9rem}
+
+@media (max-width:720px){
+  .grid{grid-template-columns:repeat(4,1fr);gap:6px}
+  .tab-bar{left:8px;right:8px;bottom:8px}
+  #loaderAnimation{width:160px;height:160px}
+}
 </style>
 </head>
 <body>
 
-  <!-- LOADER -->
-  <div id="loader">
-    <div id="loaderAnimation"></div>
-    <div id="loaderProgress"><div id="loaderProgressBar"></div></div>
-    <div class="muted" style="margin-top:8px">Загрузка ресурсов...</div>
+<!-- LOADER -->
+<div id="loader">
+  <div id="loaderAnimation"></div>
+  <div id="loaderProgress"><div id="loaderProgressBar"></div></div>
+  <div class="muted" style="margin-top:8px">Загрузка ресурсов...</div>
+</div>
+
+<!-- BALANCE -->
+<div id="balance">Баланс: 0 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
+
+<!-- MENU -->
+<main id="menu" class="active">
+  <h2>Главное меню</h2>
+  <a class="banner" href="#" target="_blank"><img src="images/banner.jpg" alt="banner"></a>
+  <p class="muted" style="text-align:center;margin-top:12px">Выбирайте режим и начинайте копать 🎁</p>
+</main>
+
+<!-- MINE -->
+<main id="mine">
+  <h2>Шахта ⛏️</h2>
+  <div class="small" id="brokenBlocks" style="text-align:center;margin-bottom:10px">Сломано блоков: 0</div>
+  <div class="grid" id="mineGrid" aria-live="polite"></div>
+</main>
+
+<!-- INVENTORY -->
+<main id="inventory">
+  <h2>Инвентарь 🎒</h2>
+  <div class="inventory-list" id="inventoryList"></div>
+</main>
+
+<!-- BALANCE TAB -->
+<main id="balanceTab">
+  <h2>Баланс 💰</h2>
+
+  <div style="margin-bottom:12px">
+    <div class="deposit-option" onclick="addBalancePrompt('TON')">
+      <div class="deposit-left"><img src="ton.svg" alt="ton"><div><strong>TON кошелёк</strong><div class="small">быстро и просто</div></div></div>
+      <div class="deposit-percent"><div class="small">комиссия</div><strong>0%</strong></div>
+    </div>
+
+    <div class="deposit-option" onclick="addBalancePrompt('CryptoBot')">
+      <div class="deposit-left"><img src="icons/cryptobot.svg" alt="cryptobot"><div><strong>Crypto Bot</strong><div class="small">оплата ботом</div></div></div>
+      <div class="deposit-percent"><div class="small">комиссия</div><strong>5%</strong></div>
+    </div>
+
+    <div class="deposit-option" onclick="addBalancePrompt('Stars')">
+      <div class="deposit-left"><img src="icons/stars.svg" alt="stars"><div><strong>Telegram Stars</strong><div class="small">подарки и звёзды</div></div></div>
+      <div class="deposit-percent"><div class="small">комиссия</div><strong>20%</strong></div>
+    </div>
   </div>
 
-  <!-- BALANCE TOP -->
-  <div id="balance">Баланс: 0 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
-
-  <!-- TABS -->
-  <main id="menu" class="active">
-    <h2>Главное меню</h2>
-    <!-- banner image (fixed to banner.jpg to avoid swap) -->
-    <a class="banner" href="#" target="_blank"><img src="images/banner.jpg" alt="banner"></a>
-    <p class="muted" style="text-align:center;margin-top:12px">Выбирайте режим и начинайте копать 🎁</p>
-  </main>
-
-  <main id="mine">
-    <h2>Шахта ⛏️</h2>
-    <div class="small" id="brokenBlocks" style="text-align:center;margin-bottom:10px">Сломано блоков: 0</div>
-    <div class="grid" id="mineGrid"></div>
-  </main>
-
-  <main id="inventory">
-    <h2>Инвентарь 🎒</h2>
-    <div class="inventory-list" id="inventoryList"></div>
-  </main>
-
-  <main id="balanceTab">
-    <h2>Баланс 💰</h2>
-
-    <div style="margin-bottom:12px">
-      <div class="deposit-option" onclick="addBalancePrompt('TON')">
-        <div class="deposit-left"><img src="ton.svg" alt="ton"><div><strong>TON кошелёк</strong><div class="muted">быстро и просто</div></div></div>
-        <div class="deposit-percent"><div class="muted">комиссия</div><strong>0%</strong></div>
-      </div>
-
-      <div class="deposit-option" onclick="addBalancePrompt('CryptoBot')">
-        <div class="deposit-left"><img src="icons/cryptobot.svg" alt="cryptobot"><div><strong>Crypto Bot</strong><div class="muted">оплата ботом</div></div></div>
-        <div class="deposit-percent"><div class="muted">комиссия</div><strong>5%</strong></div>
-      </div>
-
-      <div class="deposit-option" onclick="addBalancePrompt('Stars')">
-        <div class="deposit-left"><img src="icons/stars.svg" alt="stars"><div><strong>Telegram Stars</strong><div class="muted">подарки и звезды</div></div></div>
-        <div class="deposit-percent"><div class="muted">комиссия</div><strong>20%</strong></div>
-      </div>
-    </div>
-
-    <div style="margin-bottom:12px">
-      <h3 style="margin:0 0 6px 0">Реферальная программа</h3>
-      <p class="muted">Вы получаете <strong id="refPercent">1%</strong> бонуса от депозитов рефералов. Увеличивается на +0.5% при пополнении (макс 20%).</p>
-    </div>
-
-    <div style="margin-bottom:12px">
-      <h3 style="margin:0 0 6px 0">Промокод</h3>
-      <div style="display:flex;gap:8px"><input id="promoCode" type="text" placeholder="Введите промокод"><button class="btn primary" onclick="redeemPromo()">Активировать</button></div>
-    </div>
-
-    <div>
-      <h3 style="margin:6px 0">История операций</h3>
-      <div id="transactionHistory" class="muted" style="max-height:260px;overflow:auto;padding-right:6px"></div>
-    </div>
-  </main>
-
-  <!-- tab bar -->
-  <div class="tab-bar" role="tablist">
-    <button id="tab-menu" class="active" onclick="showTab('menu')">Меню</button>
-    <button id="tab-mine" onclick="showTab('mine')">Шахта</button>
-    <button id="tab-inventory" onclick="showTab('inventory')">Инвентарь</button>
-    <button id="tab-balanceTab" onclick="showTab('balanceTab')">Баланс</button>
+  <div style="margin-bottom:12px">
+    <h3 style="margin:0 0 6px 0">Реферальная программа</h3>
+    <p class="small">Вы получаете <strong id="refPercent">1%</strong> бонуса от депозитов рефералов. Увеличивается на +0.5% за депозит (макс 20%).</p>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
-  <script>
-  /* ---------- STATE ---------- */
-  let balance = 1000.00;
-  let transactions = []; // newest-first via unshift
-  let inventory = [];
-  let brokenBlocks = 0;
-  let refPercent = 1.0;
-  const MAX_REF = 20.0;
+  <div style="margin-bottom:12px">
+    <h3 style="margin:0 0 6px 0">Промокод</h3>
+    <div style="display:flex;gap:8px"><input id="promoCode" type="text" placeholder="Введите промокод"><button class="btn primary" onclick="redeemPromo()">Активировать</button></div>
+  </div>
 
-  const backgrounds = {
-    menu: 'images/menu.jpg',
-    mine: 'images/mine.jpg',
-    inventory: 'images/inventory.jpg',
-    balanceTab: 'images/mobs.jpg'
+  <div>
+    <h3 style="margin:6px 0">История операций</h3>
+    <div id="transactionHistory" class="muted" style="max-height:300px;overflow:auto;padding-right:6px"></div>
+  </div>
+</main>
+
+<!-- TAB BAR -->
+<div class="tab-bar" role="tablist" aria-label="Навигация">
+  <button id="tab-menu" class="active" onclick="showTab('menu')">Меню</button>
+  <button id="tab-mine" onclick="showTab('mine')">Шахта</button>
+  <button id="tab-inventory" onclick="showTab('inventory')">Инвентарь</button>
+  <button id="tab-balanceTab" onclick="showTab('balanceTab')">Баланс</button>
+</div>
+
+<!-- lottie -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+
+<script>
+/* ================= STATE ================= */
+let balance = 1000.00;
+let transactions = []; // newest-first (unshift)
+let inventory = [];
+let brokenBlocks = 0;
+let refPercent = 1.0;
+const MAX_REF = 20.0;
+const animationMap = {}; // giftName -> blobURL
+
+const backgrounds = {
+  menu: 'images/menu.jpg',
+  mine: 'images/mine.jpg',
+  inventory: 'images/inventory.jpg',
+  balanceTab: 'images/mobs.jpg'
+};
+
+/* ---------------- GIFTS (FULL LIST) ---------------- */
+/* Используйте тот же список, который у вас был — здесь я вставлю полный список, как ранее */
+const gifts = [
+{name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
+{name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},{name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
+{name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},{name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
+{name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},{name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
+{name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},{name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
+{name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},{name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
+{name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},{name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
+{name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},{name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
+{name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},{name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
+{name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},{name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
+{name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},{name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
+{name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},{name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
+{name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},{name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
+{name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},{name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
+{name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},{name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
+{name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},{name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
+{name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},{name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
+{name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},{name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
+{name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},{name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
+{name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},{name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
+{name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},{name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
+{name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},{name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
+{name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
+];
+
+/* ---------------- ORE TYPES ---------------- */
+const oreTypes = [
+  { img: 'images/ores/coal.png', hits: 3 },
+  { img: 'images/ores/iron.png', hits: 4 },
+  { img: 'images/ores/gold.png', hits: 5 },
+  { img: 'images/ores/diamond.png', hits: 6 },
+  { img: 'images/ores/emerald.png', hits: 7 }
+];
+
+/* ================= UI UPDATES ================= */
+function updateBalanceUI(){
+  document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;
+}
+function updateTransactionsUI(){
+  const el = document.getElementById('transactionHistory');
+  el.innerHTML = '';
+  transactions.forEach(t => {
+    const div = document.createElement('div');
+    div.style.padding = '6px 0';
+    div.textContent = t;
+    el.appendChild(div);
+  });
+}
+function updateBrokenUI(){ document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`; }
+function updateRefUI(){ document.getElementById('refPercent').textContent = refPercent.toFixed(1) + '%'; }
+
+/* ================= TABS ================= */
+function showTab(id){
+  document.querySelectorAll('main').forEach(m => m.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if(backgrounds[id]) document.body.style.backgroundImage = `url(${backgrounds[id]})`;
+  if(id === 'inventory') renderInventory();
+}
+window.showTab = showTab;
+
+/* ================= GIFT SELECTION (bias) =================
+   Keep a small bias to make player's EV slightly positive or around desired target.
+   We weight by price^alpha where alpha > 0 biases higher prices.
+*/
+function getGiftByPrice(price){
+  const min = price * 0.5, max = price * 1.45;
+  let candidates = gifts.filter(g => g.price >= min && g.price <= max);
+  if(candidates.length === 0) candidates = gifts.slice();
+  const alpha = 0.5; // tuning parameter (0.5 gives mild bias)
+  const weights = candidates.map(g => Math.pow(g.price, alpha));
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * total;
+  for(let i=0;i<candidates.length;i++){
+    r -= weights[i];
+    if(r <= 0) return candidates[i];
+  }
+  return candidates[candidates.length-1];
+}
+
+/* ================= MINE / BLOCKS =================
+   - Render ore texture with .ore div
+   - Destroy frames: 0..9 images; select frames spread over hits
+   - Charge price only when block fully destroyed
+   - Do NOT allow to start breaking if balance < price
+*/
+function spawnBlock(cell, index = 0){
+  const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
+  const price = +(1 + Math.random()*10).toFixed(2);
+
+  cell.className = 'block';
+  cell.innerHTML = ''; // clear
+
+  // ore texture div
+  const oreDiv = document.createElement('div');
+  oreDiv.className = 'ore';
+  oreDiv.style.backgroundImage = `url(${ore.img})`;
+  cell.appendChild(oreDiv);
+
+  // destroy overlay (pixelated)
+  const destroyImg = document.createElement('img');
+  destroyImg.className = 'destroy-img';
+  cell.appendChild(destroyImg);
+
+  // price element
+  const priceEl = document.createElement('div');
+  priceEl.className = 'block-price';
+  priceEl.innerHTML = `${price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
+  cell.appendChild(priceEl);
+
+  // compute frame indices for hits
+  const totalHits = ore.hits;
+  const frames = [];
+  for(let i=0;i<totalHits;i++){
+    const idx = Math.round(i*(9/(Math.max(1,totalHits-1))));
+    frames.push(idx);
+  }
+
+  let hits = 0;
+  let breaking = false;
+
+  cell.onclick = () => {
+    if(cell.classList.contains('cooldown')) return;
+    // if first click attempt to start breaking, ensure balance sufficient
+    if(hits === 0 && balance < price){
+      alert('Недостаточно баланса для начала ломки этого блока.');
+      return;
+    }
+    // set destroy frame for this hit
+    const frameIdx = frames[Math.min(hits, frames.length-1)];
+    destroyImg.src = `destroy/destroy_stage_${frameIdx}.png`;
+    destroyImg.style.opacity = '1';
+    hits++;
+
+    if(hits >= totalHits){
+      // finalize destruction: charge price, give gift
+      balance -= price;
+      updateBalanceUI();
+      transactions.unshift(`Ломание блока -${price.toFixed(2)} TON`);
+      updateTransactionsUI();
+
+      const gift = getGiftByPrice(price);
+      inventory.push(gift);
+      renderInventory();
+
+      // fly to inventory animation
+      flyGift(gift, cell);
+
+      brokenBlocks++;
+      updateBrokenUI();
+
+      // cooldown and respawn
+      cell.classList.add('cooldown');
+      const respawnMs = (60 + Math.random()*1740) * 1000; // 1-30 min ish
+      // show respawn minutes
+      const mins = Math.round(respawnMs/60000);
+      cell.innerHTML = `<div style="position:absolute;top:6px;left:6px;font-size:0.7rem;color:#ddd">${mins}m</div>`;
+      setTimeout(()=>{ spawnBlock(cell, index); }, respawnMs);
+    }
+  };
+}
+
+/* Generate grid */
+function generateMineGrid(){
+  const grid = document.getElementById('mineGrid');
+  grid.innerHTML = '';
+  for(let i=0;i<16;i++){
+    const cell = document.createElement('div');
+    spawnBlock(cell, i);
+    grid.appendChild(cell);
+  }
+}
+
+/* ================= FLY GIFT - smooth, no teleport =================
+   Use lottie blob URLs from animationMap if available; otherwise try path.
+*/
+function flyGift(gift, fromCell){
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'flying';
+  fly.style.position = 'absolute';
+  fly.style.width = '60px';
+  fly.style.height = '60px';
+  fly.style.left = (rect.left + rect.width/2 - 30) + 'px';
+  fly.style.top  = (rect.top + rect.height/2 - 30) + 'px';
+  fly.style.zIndex = 10000;
+  fly.style.pointerEvents = 'none';
+  document.body.appendChild(fly);
+
+  // container inside fly to fix layout for lottie
+  const container = document.createElement('div');
+  container.style.width = '60px';
+  container.style.height = '60px';
+  container.style.overflow = 'visible';
+  fly.appendChild(container);
+
+  const lottiePath = animationMap[gift.name] || (`emoji/${gift.name}.json`);
+  const anim = lottie.loadAnimation({ container: container, renderer: 'svg', loop:true, autoplay:true, path: lottiePath });
+
+  const invBtnRect = document.getElementById('tab-inventory').getBoundingClientRect();
+  const targetX = invBtnRect.left + invBtnRect.width/2 - 30;
+  const targetY = invBtnRect.top + invBtnRect.height/2 - 30;
+  const dx = targetX - (rect.left + rect.width/2 - 30);
+  const dy = targetY - (rect.top + rect.height/2 - 30);
+
+  const animHandle = fly.animate([
+    { transform: 'translate(0,0)' },
+    { transform: `translate(${dx}px, ${dy}px)` }
+  ], { duration: 1400, easing: 'cubic-bezier(.2,.8,.2,1)' });
+
+  animHandle.onfinish = () => {
+    try{ anim.stop(); anim.destroy(); } catch(e){}
+    fly.remove();
   };
 
-  // Full gift list (kept as in previous message)
-  const gifts = [
-    {name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},
-    {name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
-    {name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},
-    {name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
-    {name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},
-    {name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
-    {name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},
-    {name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
-    {name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},
-    {name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
-    {name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},
-    {name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
-    {name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},
-    {name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
-    {name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},
-    {name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
-    {name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},
-    {name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
-    {name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},
-    {name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
-    {name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},
-    {name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
-    {name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},
-    {name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
-    {name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},
-    {name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
-    {name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},
-    {name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
-    {name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},
-    {name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
-    {name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},
-    {name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
-    {name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},
-    {name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
-    {name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},
-    {name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
-    {name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},
-    {name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
-    {name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},
-    {name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
-    {name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},
-    {name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
-    {name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},
-    {name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
-    {name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
-  ];
+  // safety: cleanup after 1.6s
+  setTimeout(()=>{ if(document.body.contains(fly)){ try{ anim.stop(); anim.destroy(); }catch(e){} fly.remove(); } }, 1700);
+}
 
-  const oreTypes = [
-    {img:'images/ores/coal.png', hits:3},
-    {img:'images/ores/iron.png', hits:4},
-    {img:'images/ores/gold.png', hits:5},
-    {img:'images/ores/diamond.png', hits:6},
-    {img:'images/ores/emerald.png', hits:7}
-  ];
+/* ================= INVENTORY UI ================= */
+function renderInventory(){
+  const list = document.getElementById('inventoryList');
+  list.innerHTML = '';
+  inventory.forEach((gift, idx) => {
+    const item = document.createElement('div'); item.className = 'gift-item';
+    const top = document.createElement('div'); top.className = 'gift-top';
+    const prev = document.createElement('div'); prev.className = 'gift-preview';
 
-  // will be filled with blob URLs for lotties (keyed by gift.name)
-  const animationMap = {};
-
-  /* ---------- UI updates ---------- */
-  function updateBalanceUI(){ document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`; }
-  function updateTransactionsUI(){
-    const el = document.getElementById('transactionHistory');
-    el.innerHTML = '';
-    transactions.forEach(t=>{
-      const d = document.createElement('div'); d.style.padding='6px 0'; d.textContent = t; el.appendChild(d);
-    });
-  }
-  function updateBrokenUI(){ document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`; }
-  function updateRefUI(){ document.getElementById('refPercent').textContent = refPercent.toFixed(1) + '%'; }
-
-  /* ---------- Tabs ---------- */
-  function showTab(id){
-    document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
-    document.getElementById('tab-'+id).classList.add('active');
-    if(backgrounds[id]) document.body.style.backgroundImage = `url(${backgrounds[id]})`;
-    if(id === 'inventory') renderInventory();
-  }
-  window.showTab = showTab;
-
-  /* ---------- Gift selection (biased) ---------- */
-  function getGiftByPrice(price){
-    const min = price * 0.5, max = price * 1.45;
-    let candidate = gifts.filter(g => g.price >= min && g.price <= max);
-    if(candidate.length === 0) candidate = gifts.slice();
-    const alpha = 0.6; // bias factor
-    const weights = candidate.map(g => Math.pow(g.price, alpha));
-    const sum = weights.reduce((a,b)=>a+b,0);
-    let r = Math.random() * sum;
-    for(let i=0;i<candidate.length;i++){
-      r -= weights[i];
-      if(r <= 0) return candidate[i];
-    }
-    return candidate[candidate.length-1];
-  }
-
-  /* ---------- MINE logic ---------- */
-  function spawnBlock(cell, index=0){
-    const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
-    const price = +(1 + Math.random()*10).toFixed(2);
-
-    cell.className = 'block';
-    cell.style.backgroundImage = `url(${ore.img})`;
-    // set background via ::before - but we update inline style instead for compatibility
-    cell.style.backgroundImage = `url(${ore.img})`;
-    cell.innerHTML = '';
-    const priceEl = document.createElement('div');
-    priceEl.className = 'block-price';
-    priceEl.innerHTML = `${price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
-    cell.appendChild(priceEl);
-
-    // destroy overlay image (pixelated)
-    const destroyImg = document.createElement('img'); destroyImg.className = 'destroy-img'; destroyImg.style.opacity = '0';
-    cell.appendChild(destroyImg);
-
-    let hits = 0;
-    const totalHits = ore.hits;
-    // compute evenly distributed frames 0..9
-    const frames = [];
-    for(let i=0;i<totalHits;i++){
-      const idx = Math.round(i*(9/(Math.max(1,totalHits-1))));
-      frames.push(idx);
-    }
-
-    // click handler
-    cell.onclick = () => {
-      if(cell.classList.contains('cooldown')) return;
-      // if first hit and not enough balance - don't allow starting to break
-      if(hits === 0 && balance < price){
-        alert('Недостаточно баланса для начала ломки этого блока.');
-        return;
+    // show animation if preloaded
+    if(animationMap[gift.name]){
+      try{
+        lottie.loadAnimation({ container: prev, renderer: 'svg', loop:true, autoplay:true, path: animationMap[gift.name] });
+      }catch(e){
+        prev.textContent = gift.name;
       }
-
-      // show destroy frame
-      const frameIdx = frames[Math.min(hits, frames.length-1)];
-      destroyImg.src = `destroy/destroy_stage_${frameIdx}.png`;
-      destroyImg.style.opacity = '1';
-      hits++;
-
-      if(hits >= totalHits){
-        // charge price once
-        balance -= price;
-        updateBalanceUI();
-        transactions.unshift(`Ломание блока -${price.toFixed(2)} TON`);
-        updateTransactionsUI();
-
-        // give gift
-        const gift = getGiftByPrice(price);
-        inventory.push(gift);
-        renderInventory();
-        flyGift(gift, cell);
-
-        // update stats
-        brokenBlocks++;
-        updateBrokenUI();
-
-        // cooldown & respawn
-        cell.classList.add('cooldown');
-        const respawnMs = (60 + Math.random()*1740) * 1000; // keep original timing
-        const minutes = Math.round(respawnMs/60000);
-        cell.innerHTML = `<div style="position:absolute;top:6px;left:6px;font-size:0.7rem;color:#ddd">${minutes}m</div>`;
-        setTimeout(()=>{ spawnBlock(cell, index); }, respawnMs);
-      }
-    };
-  }
-
-  function generateMineGrid(){
-    const grid = document.getElementById('mineGrid');
-    grid.innerHTML = '';
-    for(let i=0;i<16;i++){
-      const cell = document.createElement('div');
-      spawnBlock(cell, i);
-      grid.appendChild(cell);
-    }
-  }
-
-  /* ---------- Fly gift (stable) ---------- */
-  function flyGift(gift, fromCell){
-    const rect = fromCell.getBoundingClientRect();
-    const fly = document.createElement('div');
-    fly.className = 'flying';
-    fly.style.position = 'absolute';
-    fly.style.width = '60px';
-    fly.style.height = '60px';
-    fly.style.left = (rect.left + rect.width/2 - 30) + 'px';
-    fly.style.top  = (rect.top + rect.height/2 - 30) + 'px';
-    fly.style.zIndex = 10000;
-    fly.style.pointerEvents = 'none';
-    document.body.appendChild(fly);
-
-    // container fixed to avoid lottie changing element size
-    const container = document.createElement('div');
-    container.style.width = '60px';
-    container.style.height = '60px';
-    container.style.overflow = 'visible';
-    fly.appendChild(container);
-
-    const path = animationMap[gift.name] || (`emoji/${gift.name}.json`);
-    const anim = lottie.loadAnimation({ container: container, renderer: 'svg', loop:true, autoplay:true, path: path });
-
-    const invRect = document.getElementById('tab-inventory').getBoundingClientRect();
-    const targetX = invRect.left + invRect.width/2 - 30;
-    const targetY = invRect.top + invRect.height/2 - 30;
-    const dx = targetX - (rect.left + rect.width/2 - 30);
-    const dy = targetY - (rect.top + rect.height/2 - 30);
-
-    const animHandle = fly.animate([{ transform: 'translate(0,0)' }, { transform: `translate(${dx}px, ${dy}px)` }], { duration: 1500, easing: 'cubic-bezier(.2,.8,.2,1)' });
-
-    animHandle.onfinish = () => {
-      try{ anim.stop(); anim.destroy(); } catch(e){}
-      fly.remove();
-    };
-    // safety fallback
-    setTimeout(()=>{ if(document.body.contains(fly)){ try{ anim.stop(); anim.destroy(); } catch(e){} fly.remove(); } }, 1700);
-  }
-
-  /* ---------- Inventory ---------- */
-  function renderInventory(){
-    const list = document.getElementById('inventoryList');
-    list.innerHTML = '';
-    inventory.forEach((gift, idx) => {
-      const item = document.createElement('div'); item.className = 'gift-item';
-      const top = document.createElement('div'); top.className = 'gift-top';
-      const prev = document.createElement('div'); prev.className = 'gift-preview';
-      // show lottie if preloaded
-      if(animationMap[gift.name]){
-        try{
-          lottie.loadAnimation({ container: prev, renderer: 'svg', loop:true, autoplay:true, path: animationMap[gift.name] });
-        } catch(e){
-          prev.textContent = gift.name;
-        }
-      } else {
-        // fallback to path - may or may not exist
-        try{
-          lottie.loadAnimation({ container: prev, renderer: 'svg', loop:true, autoplay:true, path: `emoji/${gift.name}.json` });
-        } catch(e){
-          prev.textContent = gift.name;
-        }
-      }
-      const info = document.createElement('div'); info.className = 'gift-info';
-      const name = document.createElement('div'); name.className = 'gift-name'; name.textContent = gift.name;
-      const price = document.createElement('div'); price.className = 'gift-price'; price.innerHTML = `Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
-      info.appendChild(name); info.appendChild(price);
-      top.appendChild(prev); top.appendChild(info);
-
-      const actions = document.createElement('div'); actions.className = 'gift-actions';
-      const sell = document.createElement('button'); sell.className = 'btn primary'; sell.textContent = 'Продать';
-      sell.onclick = ()=>{
-        balance += gift.price;
-        updateBalanceUI();
-        transactions.unshift(`Продажа: ${gift.name} +${gift.price.toFixed(2)} TON`);
-        inventory.splice(idx,1);
-        renderInventory();
-        updateTransactionsUI();
-      };
-      const withdraw = document.createElement('button'); withdraw.className = 'btn secondary'; withdraw.textContent = 'Вывести';
-      withdraw.onclick = ()=>{
-        inventory.splice(idx,1);
-        renderInventory();
-        transactions.unshift(`Вывод: ${gift.name}`);
-        updateTransactionsUI();
-        alert('Вывод оформлен (заглушка).');
-      };
-      actions.appendChild(sell); actions.appendChild(withdraw);
-      item.appendChild(top); item.appendChild(actions);
-      list.appendChild(item);
-    });
-  }
-
-  /* ---------- Promo & Deposit ---------- */
-  function redeemPromo(){
-    const code = document.getElementById('promoCode').value.trim();
-    if(!code){ alert('Введите промокод'); return; }
-    if(code === 'BONUS10'){
-      balance += 10;
-      transactions.unshift('Промокод BONUS10: +10 TON');
-      updateBalanceUI();
-      updateTransactionsUI();
-      alert('Промокод применён: +10 TON');
     } else {
-      transactions.unshift(`Промокод: неверный (${code})`);
+      // fallback: try direct path (may load), else text
+      try{ lottie.loadAnimation({ container: prev, renderer:'svg', loop:true, autoplay:true, path:`emoji/${gift.name}.json` }); }
+      catch{ prev.textContent = gift.name; }
+    }
+
+    const info = document.createElement('div'); info.className = 'gift-info';
+    const name = document.createElement('div'); name.className = 'gift-name'; name.textContent = gift.name;
+    const price = document.createElement('div'); price.className = 'gift-price';
+    price.innerHTML = `Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
+    info.appendChild(name); info.appendChild(price);
+
+    top.appendChild(prev); top.appendChild(info);
+
+    const actions = document.createElement('div'); actions.className = 'gift-actions';
+    const sell = document.createElement('button'); sell.className = 'btn primary'; sell.textContent = 'Продать';
+    sell.onclick = () => {
+      balance += gift.price;
+      updateBalanceUI();
+      transactions.unshift(`Продажа: ${gift.name} +${gift.price.toFixed(2)} TON`);
+      inventory.splice(idx,1);
+      renderInventory();
       updateTransactionsUI();
-      alert('Неверный промокод');
-    }
-  }
-  window.redeemPromo = redeemPromo;
+    };
+    const withdraw = document.createElement('button'); withdraw.className = 'btn secondary'; withdraw.textContent = 'Вывести';
+    withdraw.onclick = () => {
+      inventory.splice(idx,1);
+      renderInventory();
+      transactions.unshift(`Вывод: ${gift.name}`);
+      updateTransactionsUI();
+      alert('Вывод оформлен (заглушка).');
+    };
+    actions.appendChild(sell); actions.appendChild(withdraw);
 
-  function addBalancePrompt(method){
-    const raw = prompt(`Введите сумму пополнения через ${method}:`, '100');
-    const sum = raw ? parseFloat(raw) : 0;
-    if(!sum || sum <= 0) return;
-    let net = sum;
-    if(method === 'CryptoBot') net = sum * 0.95; // 5% fee
-    if(method === 'Stars') net = sum * 0.80; // 20% fee
-    const bonus = net * (refPercent / 100);
-    balance += net + bonus;
-    transactions.unshift(`Пополнение ${method}: +${net.toFixed(2)} TON (бонус ${bonus.toFixed(2)})`);
+    item.appendChild(top); item.appendChild(actions);
+    list.appendChild(item);
+  });
+}
+
+/* ================= PROMO & DEPOSITS ================= */
+function redeemPromo(){
+  const code = document.getElementById('promoCode').value.trim();
+  if(!code){ alert('Введите промокод'); return; }
+  if(code === 'BONUS10'){
+    balance += 10;
+    transactions.unshift('Промокод BONUS10: +10 TON');
     updateBalanceUI(); updateTransactionsUI();
-    // simulate ref increase per deposit (as requested)
-    refPercent = Math.min(MAX_REF, refPercent + 0.5);
-    updateRefUI();
+    alert('Промокод применён: +10 TON');
+  } else {
+    transactions.unshift(`Промокод: неверный (${code})`);
+    updateTransactionsUI();
+    alert('Неверный промокод');
   }
-  window.addBalancePrompt = addBalancePrompt;
+}
+window.redeemPromo = redeemPromo;
 
-  /* ---------- PRELOAD (images + lottie JSONs) ---------- */
-  window.addEventListener('load', ()=>{ startPreload(); });
+function addBalancePrompt(method){
+  const raw = prompt(`Сумма пополнения через ${method}:`, '100');
+  const sum = raw ? parseFloat(raw) : 0;
+  if(!sum || sum <= 0) return;
+  let net = sum;
+  if(method === 'CryptoBot') net = sum * 0.95; // 5% fee
+  if(method === 'Stars') net = sum * 0.80; // 20% fee
+  const bonus = net * (refPercent / 100);
+  balance += net + bonus;
+  transactions.unshift(`Пополнение ${method}: +${net.toFixed(2)} TON (бонус ${bonus.toFixed(2)})`);
+  updateBalanceUI(); updateTransactionsUI();
+  // increase referral percent a bit on deposit
+  refPercent = Math.min(MAX_REF, refPercent + 0.5);
+  updateRefUI();
+}
+window.addBalancePrompt = addBalancePrompt;
 
-  let loaderAnim = null;
-  function startPreload(){
-    // lottie loader animation
-    try{
-      loaderAnim = lottie.loadAnimation({ container: document.getElementById('loaderAnimation'), renderer:'svg', loop:true, autoplay:true, path:'animations/myLoader.json' });
-    }catch(e){ /* ignore */ }
+/* ================= PRELOAD RESOURCES =================
+   - Preload backgrounds, ore textures, destroy frames, icons, and all emoji JSONs (converted to blob URLs).
+   - Update progress bar (images + jsons).
+*/
+window.addEventListener('load', () => { startPreload(); });
 
-    // collect assets
-    const imagePaths = [];
-    // backgrounds
-    Object.values(backgrounds).forEach(p => imagePaths.push(p));
-    // ores
-    oreTypes.forEach(o => imagePaths.push(o.img));
-    // destroy frames
-    for(let i=0;i<=9;i++) imagePaths.push(`destroy/destroy_stage_${i}.png`);
-    // icons
-    imagePaths.push('ton.svg','icons/cryptobot.svg','icons/stars.svg','images/banner.jpg');
+let loaderAnimationInst = null;
+function startPreload(){
+  // start loader animation (lottie)
+  try{
+    loaderAnimationInst = lottie.loadAnimation({
+      container: document.getElementById('loaderAnimation'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'animations/myLoader.json'
+    });
+  }catch(e){ /* ignore if missing */ }
 
-    // lottie JSONs
-    const lottieList = gifts.map(g => ({ name: g.name, path: `emoji/${g.name}.json` }));
+  // build lists
+  const imagePaths = [];
+  // backgrounds
+  Object.values(backgrounds).forEach(p => imagePaths.push(p));
+  // ores
+  oreTypes.forEach(o => imagePaths.push(o.img));
+  // destroy frames
+  for(let i=0;i<=9;i++) imagePaths.push(`destroy/destroy_stage_${i}.png`);
+  // icons and small assets
+  imagePaths.push('ton.svg', 'icons/cryptobot.svg', 'icons/stars.svg', 'images/banner.jpg');
 
-    const total = imagePaths.length + lottieList.length;
-    let loaded = 0;
-    const prog = document.getElementById('loaderProgressBar');
+  // lottie JSONs for gifts
+  const lottieList = gifts.map(g => ({ name: g.name, path: `emoji/${g.name}.json` }));
 
-    function tick(){
-      loaded++;
-      if(prog) prog.style.width = Math.round((loaded/total)*100) + '%';
-      if(loaded >= total){
-        setTimeout(()=>{
-          document.getElementById('loader').classList.add('hidden');
-          generateMineGrid();
-          updateBalanceUI();
-          updateTransactionsUI();
-          updateBrokenUI();
-          updateRefUI();
-          // make sure menu background is set (menu tab active)
-          document.body.style.backgroundImage = `url(${backgrounds.menu})`;
-        }, 350);
-      }
+  const total = imagePaths.length + lottieList.length;
+  let loaded = 0;
+  const prog = document.getElementById('loaderProgressBar');
+
+  function tick(){
+    loaded++;
+    if(prog) prog.style.width = Math.round((loaded/total)*100) + '%';
+    if(loaded >= total){
+      setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalanceUI(); updateTransactionsUI(); updateBrokenUI(); updateRefUI(); document.body.style.backgroundImage = `url(${backgrounds.menu})`; }, 350);
     }
-
-    // preload images
-    imagePaths.forEach(src=>{
-      const img = new Image();
-      img.onload = tick;
-      img.onerror = tick;
-      img.src = src;
-    });
-
-    // preload lottie JSONs -> blob URL and store
-    lottieList.forEach(item=>{
-      fetch(item.path).then(resp => {
-        if(!resp.ok) throw new Error('no');
-        return resp.blob();
-      }).then(blob=>{
-        const url = URL.createObjectURL(blob);
-        animationMap[item.name] = url;
-        tick();
-      }).catch(()=>{ // missing file counts too
-        tick();
-      });
-    });
-
-    // seed UI
-    updateBalanceUI();
-    updateRefUI();
   }
 
-  </script>
+  // preload images
+  imagePaths.forEach(src => {
+    const img = new Image();
+    img.onload = tick;
+    img.onerror = tick;
+    img.src = src;
+  });
+
+  // preload lottie JSONs -> blob URL
+  lottieList.forEach(item => {
+    fetch(item.path).then(resp => {
+      if(!resp.ok) throw new Error('missing');
+      return resp.blob();
+    }).then(blob => {
+      const url = URL.createObjectURL(blob);
+      animationMap[item.name] = url;
+      tick();
+    }).catch(()=>{ tick(); });
+  });
+
+  // seed UI values
+  updateBalanceUI();
+  updateRefUI();
+}
+
+/* ================= INITIAL UI ================= */
+updateBalanceUI();
+updateTransactionsUI();
+updateBrokenUI();
+updateRefUI();
+
+/* expose a couple functions for console/testing */
+window.generateMineGrid = generateMineGrid;
+window.renderInventory = renderInventory;
+</script>
 </body>
 </html>
