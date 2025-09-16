@@ -43,11 +43,16 @@ button { background: linear-gradient(135deg,#ff9a9e,#fad0c4); color:#fff; border
   background:rgba(0,0,0,0.5); padding:1px 3px; font-size:0.65em;
   border-radius:2px; display:flex; align-items:center; gap:2px;
 }
+.block-timer {
+  position:absolute; top:2px; left:2px;
+  background:rgba(0,0,0,0.5); padding:1px 3px; font-size:0.65em;
+  border-radius:2px;
+}
 .block.cooldown { filter:brightness(0.7); cursor:not-allowed; }
 .inventory-list { display:flex; flex-direction:column; gap:12px; }
 .gift-item { display:flex; flex-direction:column; background: rgba(20,20,20,0.95); border-radius:10px; padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.5); color:#fff; }
 .gift-top { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
-.gift-preview { width:60px; height:60px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#111; }
+.gift-preview { width:60px; height:60px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#111; display:flex;align-items:center;justify-content:center; }
 .gift-info { display:flex; flex-direction:column; justify-content:center; gap:4px; flex-grow:1; }
 .gift-name { font-size:1em; font-weight:bold; }
 .gift-price { font-size:0.9em; color:#ccc; }
@@ -61,6 +66,7 @@ button { background: linear-gradient(135deg,#ff9a9e,#fad0c4); color:#fff; border
 #loaderProgress { width:50%; height:15px; background:#444; border-radius:10px; margin-top:10px; overflow:hidden; }
 #loaderProgressBar { width:0%; height:100%; background:#ff9a9e; transition:0.3s; }
 input[type="text"]{padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-weight:bold;}
+.balance-section { background: rgba(20,20,20,0.9); border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.4);}
 .balance-buttons button{background:linear-gradient(135deg,#6a11cb,#2575fc); color:#fff; font-weight:bold; border-radius:8px; padding:12px; width:100%; margin-bottom:8px; transition:0.3s;}
 .balance-buttons button:hover{filter:brightness(1.1);}
 @media (max-width:500px){ .tab-bar button{font-size:0.85em;padding:8px;} #balance{font-size:1em;padding:10px;} #mineGrid{gap:3px;} }
@@ -84,30 +90,38 @@ input[type="text"]{padding:8px;border-radius:8px;border:none;background:rgba(255
 </main>
 
 <main id="mine">
-  <h2>Шахта ⛏️</h2>
+  <h2>Шахта</h2>
   <div id="brokenBlocks" style="text-align:center;margin-bottom:12px">Сломано блоков: 0</div>
   <div class="grid" id="mineGrid"></div>
 </main>
 
 <main id="inventory">
-  <h2>Инвентарь 🎒</h2>
+  <h2>Инвентарь</h2>
   <div class="inventory-list" id="inventoryList"></div>
 </main>
 
 <main id="balanceTab">
-  <h2>Баланс 💰</h2>
-  <div class="balance-buttons">
-    <button onclick="addBalance('ton')"><img src="ton.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> TON кошелёк - 0%</button>
-    <button onclick="addBalance('cryptobot')"><img src="icons/cryptobot.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> Crypto Bot - 5%</button>
-    <button onclick="addBalance('stars')"><img src="stars.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> Telegram Stars - 20%</button>
+  <h2>Баланс</h2>
+  <div class="balance-section">
+    <h3>Пополнение</h3>
+    <div class="balance-buttons">
+      <button onclick="addBalance('ton')"><img src="ton.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> TON кошелёк (0%)</button>
+      <button onclick="addBalance('cryptobot')"><img src="icons/cryptobot.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> Crypto Bot (+5%)</button>
+      <button onclick="addBalance('stars')"><img src="stars.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> Telegram Stars (+20%)</button>
+    </div>
   </div>
-  <div style="margin-bottom:15px;">
-    <label>Промокод: <input type="text" id="promoCode"><button onclick="redeemPromo()">Активировать</button></label>
+  <div class="balance-section">
+    <h3>Промокод</h3>
+    <label><input type="text" id="promoCode" placeholder="Введите код"><button onclick="redeemPromo()">Активировать</button></label>
   </div>
-  <div style="margin-bottom:15px;font-size:0.9em;color:#ccc">
-    Реферальная программа: +0.5% с депозитов рефералов (максимум 20%)
+  <div class="balance-section">
+    <h3>Реферальная программа</h3>
+    <p style="margin:0;font-size:0.9em;color:#ccc">+0.5% с депозитов рефералов (максимум 20%)</p>
   </div>
-  <div id="transactionHistory" style="font-size:0.85em;"></div>
+  <div class="balance-section">
+    <h3>История</h3>
+    <div id="transactionHistory" style="font-size:0.85em;"></div>
+  </div>
 </main>
 
 <div class="tab-bar">
@@ -220,7 +234,7 @@ function spawnBlock(cell,index=0){
       firstMineCount++;
       let respawn=(60+Math.random()*1740)*1000;
       cell.classList.add("cooldown");
-      cell.innerHTML=`<div style="position:absolute;top:2px;left:2px;font-size:0.7em;">${Math.round(respawn/60000)}m</div>`;
+      cell.innerHTML=`<div class="block-timer">${Math.round(respawn/60000)}m</div><div class="block-price">${price}<img src="ton.svg" style="width:12px;"></div>`;
       cell.onclick=null;
       setTimeout(()=>{ cell.classList.remove("cooldown"); spawnBlock(cell,index); },respawn);
     }
@@ -236,12 +250,15 @@ function flyGift(gift, fromCell) {
   fly.style.left = rect.left + rect.width / 2 - 30 + 'px';
   fly.style.top  = rect.top  + rect.height / 2 - 30 + 'px';
   document.body.appendChild(fly);
-  const anim = lottie.loadAnimation({ container: fly, renderer:'svg', loop:true, autoplay:true, path:`emoji/${gift.name}.json` });
+  if(animationMap[gift.name]){ 
+    let anim=lottie.loadAnimation({ container: fly, renderer:'svg', loop:false, autoplay:false, path:animationMap[gift.name] });
+    anim.goToAndStop(0,true); 
+  } else { fly.textContent = gift.name; fly.style.fontSize="0.7em"; fly.style.color="#ddd"; fly.style.display="flex"; fly.style.alignItems="center"; fly.style.justifyContent="center"; }
   const invBtn = document.getElementById('tab-inventory').getBoundingClientRect();
   const targetX = invBtn.left + invBtn.width / 2 - 30;
   const targetY = invBtn.top  + invBtn.height / 2 - 30;
   fly.animate([{ transform: 'translate(0,0)' }, { transform: `translate(${targetX - (rect.left + rect.width / 2 - 30)}px, ${targetY - (rect.top + rect.height / 2 - 30)}px)` }], { duration: 1500, easing: 'ease-in-out' });
-  setTimeout(()=>{ fly.remove(); anim.destroy(); }, 1500);
+  setTimeout(()=>{ fly.remove(); }, 1500);
 }
 
 function renderInventory(){
@@ -250,14 +267,17 @@ function renderInventory(){
     const div=document.createElement('div'); div.className='gift-item';
     const top=document.createElement('div'); top.className='gift-top';
     const prev=document.createElement('div'); prev.className='gift-preview';
-    if(animationMap[gift.name]){ try{ lottie.loadAnimation({container:prev,renderer:'svg',loop:true,autoplay:true,path:animationMap[gift.name]}); }catch(e){} } else { prev.textContent = gift.name; prev.style.display='flex'; prev.style.alignItems='center'; prev.style.justifyContent='center'; prev.style.padding='6px'; prev.style.fontSize='0.75em'; prev.style.color='#ddd'; }
-    const info=document.createElement('div'); info.className='gift-info';
-    info.innerHTML=`<div class="gift-name">${gift.name}</div><div class="gift-price">Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+    if(animationMap[gift.name]){ try{ let anim=lottie.loadAnimation({container:prev,renderer:'svg',loop:false,autoplay:false,path:animationMap[gift.name]}); anim.goToAndStop(0,true);}catch(e){} } else { prev.textContent = gift.name; prev.style.fontSize="0.8em"; }
+    const info=document.createElement('div'); info.className='gift-info'; info.innerHTML=`<div class='gift-name'>${gift.name}</div><div class='gift-price'>Цена: ${gift.price} TON</div>`;
     top.appendChild(prev); top.appendChild(info);
     const actions=document.createElement('div'); actions.className='gift-actions';
-    const sell=document.createElement('button'); sell.textContent='Продать'; sell.onclick=()=>{ balance+=gift.price; updateBalance(); inventory.splice(idx,1); renderInventory(); transactions.unshift(`Продажа: +${gift.price.toFixed(2)} TON`); updateTransactionHistory(); };
-    const withdraw=document.createElement('button'); withdraw.textContent='Вывести'; withdraw.onclick=()=>{ alert('Вывод оформлен!'); inventory.splice(idx,1); renderInventory(); transactions.unshift(`Вывод: ${gift.name}`); updateTransactionHistory(); };
-    actions.appendChild(sell); actions.appendChild(withdraw); div.appendChild(top); div.appendChild(actions); list.appendChild(div);
+    const sell=document.createElement('button'); sell.textContent='Продать';
+    sell.onclick=()=>{balance+=gift.price;updateBalance();transactions.unshift(`Продажа: +${gift.price} TON`);updateTransactionHistory();inventory.splice(idx,1);renderInventory();};
+    const open=document.createElement('button'); open.textContent='Открыть';
+    open.onclick=()=>alert('Открыт '+gift.name);
+    actions.appendChild(sell); actions.appendChild(open);
+    div.appendChild(top); div.appendChild(actions);
+    list.appendChild(div);
   });
 }
 
@@ -265,7 +285,7 @@ function redeemPromo(){ const code=document.getElementById('promoCode').value.tr
 
 function addBalance(method){ let amount=100; balance+=amount; updateBalance(); transactions.unshift(`Пополнение через ${method} +${amount} TON`); updateTransactionHistory(); alert(`Баланс пополнен через ${method}: +${amount} TON`); }
 
-preloadAssets().then(()=>{ setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalance(); updateTransactionHistory(); updateBrokenBlocks(); document.body.style.backgroundImage=`url(${backgrounds.menu})`; },400); });
+preloadAssets().then(()=>{ setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalance(); updateTransactionHistory(); updateBrokenBlocks(); },400); });
 </script>
 </body>
 </html>
