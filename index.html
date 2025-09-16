@@ -1,291 +1,623 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GiftsMine 🎁</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>GiftsMine</title>
 <style>
-@font-face { font-family:'Minecraft'; src:url('minecraft.ttf') format('truetype'); }
-body, html {
-  margin:0; padding:0; height:100%;
-  font-family:'Minecraft',sans-serif; color:#fff; overflow:hidden;
-  display:flex; flex-direction:column;
-  background:#000; background-size:cover; background-position:center; transition: background 0.5s;
+@font-face{font-family:'Minecraft';src:url('minecraft.ttf') format('truetype');}
+:root{
+  --bg:#060608;
+  --card: rgba(18,18,20,0.95);
+  --accent1: linear-gradient(135deg,#ff9a9e,#fad0c4);
+  --accent2: linear-gradient(135deg,#a1c4fd,#c2e9fb);
+  --accentBlue: linear-gradient(135deg,#6a11cb,#2575fc);
 }
-#balance { padding:15px; text-align:right; font-size:1.2em; font-weight:bold;
-  background:rgba(0,0,0,0.15); backdrop-filter:blur(5px);
-  box-shadow:0 2px 8px rgba(0,0,0,0.3);
-}
-main { flex:1; overflow-y:auto; padding:10px; padding-bottom:70px; display:none; background: rgba(0,0,0,0.2); }
-main.active{display:block;}
-h2{margin-top:0;text-align:center;}
-.banner{width:100%;aspect-ratio:5/1;background:rgba(255,255,255,0.06);border-radius:10px;margin-bottom:15px;display:flex;align-items:center;justify-content:center;color:#ccc;}
-.tab-bar {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  display: flex; justify-content: space-between;
-  background: rgba(0,0,0,0.2); padding: 10px 8px;
-  border-top: 2px solid #fff; z-index: 1000; box-sizing: border-box;
-}
-.tab-bar button { flex:1; margin:0 4px; padding:10px; font-size:1em; border-radius:10px; transition:0.25s; }
-button { background: linear-gradient(135deg,#ff9a9e,#fad0c4); color:#fff; border:none; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:bold; }
-.tab-bar button.active { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
-.grid { display:grid; gap:5px; justify-content:center; }
-#mineGrid { grid-template-columns: repeat(4, minmax(60px,1fr)); }
-.block {
-  aspect-ratio:1/1; background:#333; display:flex;
-  align-items:center; justify-content:center; cursor:pointer;
-  transition:0.2s; position:relative; overflow:hidden;
-  border-radius:4px;
-  background-size:cover; background-position:center;
-}
-.block-price {
-  position:absolute; bottom:2px; right:2px;
-  background:rgba(0,0,0,0.5); padding:1px 3px; font-size:0.65em;
-  border-radius:2px; display:flex; align-items:center; gap:2px;
-}
-.block-timer {
-  position:absolute; top:2px; left:2px;
-  background:rgba(0,0,0,0.5); padding:1px 3px; font-size:0.65em;
-  border-radius:2px;
-}
-.block.cooldown { filter:brightness(0.7); cursor:not-allowed; }
-.inventory-list { display:flex; flex-direction:column; gap:12px; }
-.gift-item { display:flex; flex-direction:column; background: rgba(20,20,20,0.95); border-radius:10px; padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.5); color:#fff; }
-.gift-top { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
-.gift-preview { width:60px; height:60px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#111; display:flex;align-items:center;justify-content:center; }
-.gift-info { display:flex; flex-direction:column; justify-content:center; gap:4px; flex-grow:1; }
-.gift-name { font-size:1em; font-weight:bold; }
-.gift-price { font-size:0.9em; color:#ccc; }
-.gift-actions { display:flex; gap:10px; margin-top:6px; }
-.gift-actions button { flex:1; padding:6px; border:none; border-radius:6px; font-size:0.85em; cursor:pointer; color:#fff; background: linear-gradient(135deg,#ff9a9e,#fad0c4); transition:0.3s; }
-.gift-actions button:hover { filter:brightness(1.1); }
-.flying { position:absolute; width:60px; height:60px; pointer-events:none; z-index:10000; }
-#loader { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:9999; background:#000; transition:opacity 0.6s ease; }
-#loader.hidden { opacity:0; pointer-events:none; }
-#loaderAnimation { width:200px; height:200px; margin-bottom:15px; }
-#loaderProgress { width:50%; height:15px; background:#444; border-radius:10px; margin-top:10px; overflow:hidden; }
-#loaderProgressBar { width:0%; height:100%; background:#ff9a9e; transition:0.3s; }
-input[type="text"]{padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-weight:bold;}
-.balance-section { background: rgba(20,20,20,0.9); border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.4);}
-.balance-buttons button{background:linear-gradient(135deg,#6a11cb,#2575fc); color:#fff; font-weight:bold; border-radius:8px; padding:12px; width:100%; margin-bottom:8px; transition:0.3s;}
-.balance-buttons button:hover{filter:brightness(1.1);}
-@media (max-width:500px){ .tab-bar button{font-size:0.85em;padding:8px;} #balance{font-size:1em;padding:10px;} #mineGrid{gap:3px;} }
+html,body{height:100%;margin:0;font-family:'Minecraft',sans-serif;background:var(--bg);color:#fff}
+body{display:flex;flex-direction:column;overflow:hidden;background-size:cover;background-position:center;transition:background .45s}
+#balance{padding:12px 18px;text-align:right;background:rgba(0,0,0,0.12);backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.35);font-weight:700}
+main{flex:1;overflow:auto;padding:18px 16px 110px 16px;display:none;background:linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.2))}
+main.active{display:block}
+h2{margin:0 0 12px 0;text-align:center;font-size:1.25rem}
+.banner{width:100%;aspect-ratio:5/1;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.45);margin-bottom:14px}
+.banner img{width:100%;height:100%;object-fit:cover}
+.tab-bar{position:fixed;left:12px;right:12px;bottom:12px;display:flex;gap:10px;padding:10px;background:rgba(0,0,0,0.16);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.6);z-index:999}
+.tab-bar button{flex:1;padding:10px;border-radius:10px;border:none;cursor:pointer;background:var(--accent1);color:#fff;font-weight:800}
+.tab-bar button.active{background:var(--accent2)}
+.grid{display:grid;gap:10px;align-items:stretch}
+#mineGrid{grid-template-columns:repeat(4,minmax(72px,1fr))}
+.block{position:relative;padding-bottom:100%;border-radius:8px;overflow:hidden;box-shadow:inset 0 -6px 18px rgba(0,0,0,0.25);background:#2f2f2f}
+.block .ore{position:absolute;inset:0;background-size:cover;background-position:center;image-rendering:pixelated}
+.block-price{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,0.6);padding:4px 6px;border-radius:6px;font-size:0.75rem;display:flex;align-items:center;gap:6px}
+.block-timer{position:absolute;left:6px;top:6px;background:rgba(0,0,0,0.6);padding:4px 6px;border-radius:6px;font-size:0.75rem}
+.block.cooldown{filter:brightness(0.9);cursor:default}
+.gift-preview-block{position:absolute;width:70%;height:70%;top:15%;left:15%;pointer-events:none;z-index:5}
+.destroy-img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;image-rendering:pixelated;opacity:0;transition:opacity 80ms;z-index:4;pointer-events:none}
+.inventory-list{display:flex;flex-direction:column;gap:12px}
+.gift-item{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.6);display:flex;flex-direction:column}
+.gift-top{display:flex;gap:12px;align-items:center}
+.gift-preview{width:64px;height:64px;border-radius:8px;overflow:hidden;background:#0b0b0b;display:flex;align-items:center;justify-content:center}
+.gift-info{flex:1;display:flex;flex-direction:column;gap:6px}
+.gift-name{font-weight:800}
+.gift-price{color:#cfcfd8;font-size:0.95rem}
+.gift-actions{display:flex;gap:10px;margin-top:8px}
+.btn{border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:800}
+.btn.primary{background:var(--accent1);color:#fff}
+.btn.secondary{background:var(--accentBlue);color:#fff}
+#loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#000;z-index:2000}
+#loader.hidden{opacity:0;pointer-events:none;transition:opacity .6s}
+#loaderAnimation{width:220px;height:220px;margin-bottom:12px}
+#loaderProgress{width:36%;height:12px;background:#222;border-radius:12px;overflow:hidden}
+#loaderProgressBar{width:0;height:100%;background:#7c3cff;transition:width .25s}
+.muted{color:#aeb2bb;font-size:0.95rem}
+#flyLayer{position:fixed;inset:0;pointer-events:none;z-index:1500}
+.fly-ton{position:absolute;display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:10px;background:rgba(0,0,0,0.6);font-weight:700}
+@media (max-width:720px){#loaderAnimation{width:160px;height:160px}#loaderProgress{width:60%}#mineGrid{grid-template-columns:repeat(4,1fr);gap:6px}}
 </style>
 </head>
 <body>
+
+<!-- LOADER -->
 <div id="loader">
   <div id="loaderAnimation"></div>
   <div id="loaderProgress"><div id="loaderProgressBar"></div></div>
-  <p style="color:#fff;font-size:1.1em;margin-top:8px">Загрузка ресурсов...</p>
+  <div class="muted" style="margin-top:10px">Загрузка ресурсов...</div>
 </div>
 
-<div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
+<!-- BALANCE -->
+<div id="balance">Баланс: 10000 <img src="ton.svg" style="width:18px;vertical-align:middle"></div>
 
+<!-- MENU -->
 <main id="menu" class="active">
   <h2>Главное меню</h2>
-  <a href="https://t.me/theConCreator" target="_blank" class="banner">
-    <img src="images/banner.jpg" alt="Реклама" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
-  </a>
-  <p style="text-align:center;color:#bbb">Выбирай режим и зарабатывай подарки!</p>
+  <a class="banner" href="#" target="_blank"><img src="images/banner.jpg" alt="banner"></a>
+  <p class="muted" style="text-align:center;margin-top:12px">Выбирайте режим и начинайте копать</p>
 </main>
 
+<!-- MINE -->
 <main id="mine">
   <h2>Шахта</h2>
-  <div id="brokenBlocks" style="text-align:center;margin-bottom:12px">Сломано блоков: 0</div>
+  <div class="muted" id="brokenBlocks" style="text-align:center;margin:10px 0">Сломано блоков: 0</div>
   <div class="grid" id="mineGrid"></div>
 </main>
 
+<!-- INVENTORY -->
 <main id="inventory">
   <h2>Инвентарь</h2>
   <div class="inventory-list" id="inventoryList"></div>
 </main>
 
+<!-- BALANCE TAB -->
 <main id="balanceTab">
   <h2>Баланс</h2>
-  <div class="balance-section">
-    <h3>Пополнение</h3>
-    <div class="balance-buttons">
-      <button onclick="addBalance('ton')"><img src="ton.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> TON кошелёк (0%)</button>
-      <button onclick="addBalance('cryptobot')"><img src="icons/cryptobot.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> Crypto Bot (+5%)</button>
-      <button onclick="addBalance('stars')"><img src="stars.svg" style="width:18px;vertical-align:middle;margin-right:6px;"> Telegram Stars (+20%)</button>
+
+  <div style="margin-bottom:12px; background:rgba(20,20,20,0.9);padding:12px;border-radius:10px">
+    <h3 style="margin:0 0 8px 0">Пополнение</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn primary" onclick="addBalancePrompt('TON')"><img src="ton.svg" style="width:18px;margin-right:8px;vertical-align:middle"> TON кошелёк — комиссия 0%</button>
+      <button class="btn primary" onclick="addBalancePrompt('CryptoBot')"><img src="icons/cryptobot.svg" style="width:18px;margin-right:8px;vertical-align:middle"> Crypto Bot — комиссия 5%</button>
+      <button class="btn primary" onclick="addBalancePrompt('Stars')"><img src="stars.svg" style="width:18px;margin-right:8px;vertical-align:middle"> Telegram Stars — комиссия 20%</button>
     </div>
   </div>
-  <div class="balance-section">
-    <h3>Промокод</h3>
-    <label><input type="text" id="promoCode" placeholder="Введите код"><button onclick="redeemPromo()">Активировать</button></label>
+
+  <div style="margin-bottom:12px;background:rgba(20,20,20,0.9);padding:12px;border-radius:10px">
+    <h3 style="margin:0 0 8px 0">Промокод</h3>
+    <div style="display:flex;gap:8px"><input id="promoCode" type="text" placeholder="Введите промокод"><button class="btn secondary" onclick="redeemPromo()">Активировать</button></div>
   </div>
-  <div class="balance-section">
-    <h3>Реферальная программа</h3>
-    <p style="margin:0;font-size:0.9em;color:#ccc">+0.5% с депозитов рефералов (максимум 20%)</p>
+
+  <div style="margin-bottom:12px;background:rgba(20,20,20,0.9);padding:12px;border-radius:10px">
+    <h3 style="margin:0 0 8px 0">Реферальная программа</h3>
+    <div class="muted">Вы получаете <strong id="refPercent">1%</strong> бонуса от депозитов рефералов. Увеличивается на +0.5% за каждый сломанный блок (макс 20%).</div>
   </div>
-  <div class="balance-section">
-    <h3>История</h3>
-    <div id="transactionHistory" style="font-size:0.85em;"></div>
+
+  <div style="background:rgba(20,20,20,0.9);padding:12px;border-radius:10px">
+    <h3 style="margin:0 0 8px 0">История операций</h3>
+    <div id="transactionHistory" style="max-height:300px;overflow:auto;font-size:0.95rem"></div>
   </div>
 </main>
 
-<div class="tab-bar">
-  <button onclick="showTab('menu')" id="tab-menu" class="active">Меню</button>
-  <button onclick="showTab('mine')" id="tab-mine">Шахта</button>
-  <button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
-  <button onclick="showTab('balanceTab')" id="tab-balanceTab">Баланс</button>
+<!-- TAB BAR -->
+<div class="tab-bar" role="tablist" aria-label="Навигация">
+  <button id="tab-menu" class="active" onclick="showTab('menu')">Меню</button>
+  <button id="tab-mine" onclick="showTab('mine')">Шахта</button>
+  <button id="tab-inventory" onclick="showTab('inventory')">Инвентарь</button>
+  <button id="tab-balanceTab" onclick="showTab('balanceTab')">Баланс</button>
 </div>
+
+<!-- FLY LAYER -->
+<div id="flyLayer"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
 <script>
-let loaderAnim=lottie.loadAnimation({container:document.getElementById('loaderAnimation'),renderer:'svg',loop:true,autoplay:true,path:'animations/myLoader.json'});
-let balance=10000,transactions=[],inventory=[],brokenBlocks=0,firstMineCount=0;
+/* ================= STATE ================= */
+let balance = 10000.00;
+let transactions = []; // newest-first via unshift
+let inventory = [];
+let brokenBlocks = 0;
+let refPercent = 1.0;
+const MAX_REF = 20.0;
+const animationMap = {}; // giftName -> blob URL
 
-const backgrounds={menu:'images/menu.jpg',mine:'images/mine.jpg',inventory:'images/inventory.jpg',balanceTab:'images/mobs.jpg'};
-document.body.style.backgroundImage=`url(${backgrounds.menu})`;
+const backgrounds = {
+  menu: 'images/menu.jpg',
+  mine: 'images/mine.jpg',
+  inventory: 'images/inventory.jpg',
+  balanceTab: 'images/mobs.jpg'
+};
 
-function updateBalance(){document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;}
-function updateTransactionHistory(){const el=document.getElementById('transactionHistory'); el.innerHTML=''; transactions.slice().reverse().forEach(t=>{el.innerHTML+=`<div style="padding:4px 0">${t}</div>`});}
-function updateBrokenBlocks(){document.getElementById('brokenBlocks').textContent=`Сломано блоков: ${brokenBlocks}`;}
-
-function showTab(id){document.querySelectorAll('main').forEach(m=>m.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.body.style.backgroundImage=`url(${backgrounds[id]})`; if(id==='inventory') renderInventory();}
-
+/* ================= GIFTS (FULL LIST) ================= */
 const gifts = [
-      {name:"Hypno Lollipop",price:1.77}, {name:"Desk Calendar",price:1.31},
-      {name:"B-Day Candle",price:1.32}, {name:"Lol Pop",price:1.32},
-      {name:"Lunar Snake",price:1.38}, {name:"Snake Box",price:1.36},
-      {name:"Xmas Stocking",price:1.38}, {name:"Whip Cupcake",price:1.38},
-      {name:"Candy Cane",price:1.48}, {name:"Pet Snake",price:1.58},
-      {name:"Jester Hat",price:1.62}, {name:"Snoop Dogg",price:1.64},
-      {name:"Homemade Cake",price:1.7}, {name:"Holiday Drink",price:1.7},
-      {name:"Jingle Bells",price:1.74}, {name:"Cookie Heart",price:1.75},
-      {name:"Big Year",price:1.78}, {name:"Party Sparkler",price:1.8},
-      {name:"Winter Wreath",price:1.79}, {name:"Swag Bag",price:1.91},
-      {name:"Tama Gadget",price:1.93}, {name:"Ginger Cookie",price:1.95},
-      {name:"Moon Pendant",price:1.96}, {name:"Jack-in-the-Box",price:2.01},
-      {name:"Spiced Wine",price:2.12}, {name:"Stellar Rocket",price:2.19},
-      {name:"Star Notepad",price:2.32}, {name:"Easter Egg",price:2.46},
-      {name:"Restless Jar",price:2.5}, {name:"Santa Hat",price:2.6},
-      {name:"Snow Globe",price:2.65}, {name:"Hex Pot",price:2.7},
-      {name:"Joyful Bundle",price:2.71}, {name:"Lush Bouquet",price:2.84},
-      {name:"Witch Hat",price:2.86}, {name:"Light Sword",price:3.13},
-      {name:"Spy Agaric",price:3.2}, {name:"Bow Tie",price:3.22},
-      {name:"Eternal Candle",price:3.38}, {name:"Bunny Muffin",price:3.34},
-      {name:"Jelly Bunny",price:3.43}, {name:"Berry Box",price:3.58},
-      {name:"Evil Eye",price:3.6}, {name:"Snow Mittens",price:3.67},
-      {name:"Valentine Box",price:4.2}, {name:"Snoop Cigar",price:4.26},
-      {name:"Sakura Flower",price:4.77}, {name:"Hanging Star",price:5.26},
-      {name:"Jolly Chimp",price:5.34}, {name:"Sleigh Bell",price:7.63},
-      {name:"Skull Flower",price:7.7}, {name:"Crystal Ball",price:7.86},
-      {name:"Record Player",price:7.91}, {name:"Love Candle",price:7.94},
-      {name:"Top Hat",price:7.99}, {name:"Trapped Heart",price:8.69},
-      {name:"Love Potion",price:8.79}, {name:"Flying Broom",price:9.45},
-      {name:"Cupid Charm",price:11.26}, {name:"Eternal Rose",price:13.71},
-      {name:"Ionic Dryer",price:14.21}, {name:"Diamond Ring",price:16.39},
-      {name:"Voodoo Doll",price:16.43}, {name:"Mad Pumpkin",price:17.91},
-      {name:"Toy Bear",price:19.3}, {name:"Vintage Cigar",price:23.98},
-      {name:"Low Rider",price:24.8}, {name:"Signet Ring",price:25.1},
-      {name:"Neko Helmet",price:26.41}, {name:"Electric Skull",price:31},
-      {name:"Kissed Frog",price:34}, {name:"Swiss Watch",price:35},
-      {name:"Sharp Tongue",price:39.69}, {name:"Scared Cat",price:43.6},
-      {name:"Genie Lamp",price:47.07}, {name:"Westside Sign",price:51.27},
-      {name:"Bonded Ring",price:54.99}, {name:"Gem Signet",price:72.98},
-      {name:"Magic Potion",price:72.98}, {name:"Ion Gem",price:83},
-      {name:"Astral Shard",price:95.97}, {name:"Perfume Bottle",price:95.99},
-      {name:"Loot Bag",price:90.1}, {name:"Mini Oscar",price:123.89},
-      {name:"Nail Bracelet",price:129.84}, {name:"Heroic Helmet",price:219.99},
-      {name:"Precious Peach",price:379.99}, {name:"Durov’s Cap",price:794.9},
-      {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
-    ];
-const oreTypes=[{img:"images/ores/coal.png",hits:3},{img:"images/ores/iron.png",hits:4},{img:"images/ores/gold.png",hits:5},{img:"images/ores/diamond.png",hits:6},{img:"images/ores/emerald.png",hits:7},{img:"images/ores/earth.png",hits:2},{img:"images/ores/glass.png",hits:4}];
-const animationMap={};
+{name:"Hypno Lollipop",price:1.77},{name:"Desk Calendar",price:1.31},{name:"B-Day Candle",price:1.32},{name:"Lol Pop",price:1.32},
+{name:"Lunar Snake",price:1.38},{name:"Snake Box",price:1.36},{name:"Xmas Stocking",price:1.38},{name:"Whip Cupcake",price:1.38},
+{name:"Candy Cane",price:1.48},{name:"Pet Snake",price:1.58},{name:"Jester Hat",price:1.62},{name:"Snoop Dogg",price:1.64},
+{name:"Homemade Cake",price:1.7},{name:"Holiday Drink",price:1.7},{name:"Jingle Bells",price:1.74},{name:"Cookie Heart",price:1.75},
+{name:"Big Year",price:1.78},{name:"Party Sparkler",price:1.8},{name:"Winter Wreath",price:1.79},{name:"Swag Bag",price:1.91},
+{name:"Tama Gadget",price:1.93},{name:"Ginger Cookie",price:1.95},{name:"Moon Pendant",price:1.96},{name:"Jack-in-the-Box",price:2.01},
+{name:"Spiced Wine",price:2.12},{name:"Stellar Rocket",price:2.19},{name:"Star Notepad",price:2.32},{name:"Easter Egg",price:2.46},
+{name:"Restless Jar",price:2.5},{name:"Santa Hat",price:2.6},{name:"Snow Globe",price:2.65},{name:"Hex Pot",price:2.7},
+{name:"Joyful Bundle",price:2.71},{name:"Lush Bouquet",price:2.84},{name:"Witch Hat",price:2.86},{name:"Light Sword",price:3.13},
+{name:"Spy Agaric",price:3.2},{name:"Bow Tie",price:3.22},{name:"Eternal Candle",price:3.38},{name:"Bunny Muffin",price:3.34},
+{name:"Jelly Bunny",price:3.43},{name:"Berry Box",price:3.58},{name:"Evil Eye",price:3.6},{name:"Snow Mittens",price:3.67},
+{name:"Valentine Box",price:4.2},{name:"Snoop Cigar",price:4.26},{name:"Sakura Flower",price:4.77},{name:"Hanging Star",price:5.26},
+{name:"Jolly Chimp",price:5.34},{name:"Sleigh Bell",price:7.63},{name:"Skull Flower",price:7.7},{name:"Crystal Ball",price:7.86},
+{name:"Record Player",price:7.91},{name:"Love Candle",price:7.94},{name:"Top Hat",price:7.99},{name:"Trapped Heart",price:8.69},
+{name:"Love Potion",price:8.79},{name:"Flying Broom",price:9.45},{name:"Cupid Charm",price:11.26},{name:"Eternal Rose",price:13.71},
+{name:"Ionic Dryer",price:14.21},{name:"Diamond Ring",price:16.39},{name:"Voodoo Doll",price:16.43},{name:"Mad Pumpkin",price:17.91},
+{name:"Toy Bear",price:19.3},{name:"Vintage Cigar",price:23.98},{name:"Low Rider",price:24.8},{name:"Signet Ring",price:25.1},
+{name:"Neko Helmet",price:26.41},{name:"Electric Skull",price:31},{name:"Kissed Frog",price:34},{name:"Swiss Watch",price:35},
+{name:"Sharp Tongue",price:39.69},{name:"Scared Cat",price:43.6},{name:"Genie Lamp",price:47.07},{name:"Westside Sign",price:51.27},
+{name:"Bonded Ring",price:54.99},{name:"Gem Signet",price:72.98},{name:"Magic Potion",price:72.98},{name:"Ion Gem",price:83},
+{name:"Astral Shard",price:95.97},{name:"Perfume Bottle",price:95.99},{name:"Loot Bag",price:90.1},{name:"Mini Oscar",price:123.89},
+{name:"Nail Bracelet",price:129.84},{name:"Heroic Helmet",price:219.99},{name:"Precious Peach",price:379.99},{name:"Durov’s Cap",price:794.9},
+{name:"Heart Locket",price:1450},{name:"Plush Pepe",price:5199}
+];
 
-function preloadAssets(){
-  const imagePaths=[...Object.values(backgrounds),'ton.svg','stars.svg','icons/cryptobot.svg',...oreTypes.map(o=>o.img)];
-  const lottiePaths=gifts.map(g=>({name:g.name,path:`emoji/${g.name}.json`}));
-  const total=imagePaths.length+lottiePaths.length; let loaded=0;
-  const prog=p=>{ document.getElementById('loaderProgressBar').style.width=Math.round(p*100)+'%'; };
-  const imgPromises=imagePaths.map(src=>new Promise(res=>{ const img=new Image(); img.onload=img.onerror=function(){ loaded++; prog(loaded/total); res(); }; img.src=src; }));
-  const lottiePromises=lottiePaths.map(item=>fetch(item.path).then(r=>{ if(!r.ok) return null; return r.blob(); }).then(blob=>{ if(blob){ animationMap[item.name]=URL.createObjectURL(blob); } loaded++; prog(loaded/total); }).catch(()=>{ loaded++; prog(loaded/total); }));
-  return Promise.all([...imgPromises,...lottiePromises]);
+/* ================= ORE TYPES ================= */
+/* Added earth (maxPrice 1 TON) and glass (shows gift) */
+const oreTypes = [
+  { name:'coal', img:'images/ores/coal.png', hits:3 },
+  { name:'iron', img:'images/ores/iron.png', hits:4 },
+  { name:'gold', img:'images/ores/gold.png', hits:5 },
+  { name:'diamond', img:'images/ores/diamond.png', hits:6 },
+  { name:'emerald', img:'images/ores/emerald.png', hits:7 },
+  { name:'earth', img:'images/ores/earth.png', hits:2, special:'earth', min:0.1, max:1 },
+  { name:'glass', img:'images/ores/glass.png', hits:4, special:'glass' }
+];
+
+/* ================= HELPERS ================= */
+function updateBalanceUI(){ document.getElementById('balance').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:18px;vertical-align:middle">`; }
+function updateTransactionUI(){ const el = document.getElementById('transactionHistory'); el.innerHTML = ''; transactions.forEach(t => { const d = document.createElement('div'); d.style.padding='6px 0'; d.textContent = t; el.appendChild(d); }); }
+function updateBrokenUI(){ document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`; }
+function updateRefUI(){ document.getElementById('refPercent').textContent = refPercent.toFixed(1) + '%'; }
+
+/* ================= TABS ================= */
+function showTab(id){
+  document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(backgrounds[id]) document.body.style.backgroundImage = `url(${backgrounds[id]})`;
+  if(id === 'inventory') renderInventory();
+}
+window.showTab = showTab;
+
+/* ================= PICK GIFTS ================= */
+/* getGiftByPrice with optional multiplier limits */
+function getGiftByPrice(price, minMul = 0.5, maxMul = 1.45){
+  const min = price * minMul, max = price * maxMul;
+  let pool = gifts.filter(g => g.price >= min && g.price <= max);
+  if(pool.length === 0) pool = gifts.slice();
+  // weighted random by inverse price to slightly favor cheaper gifts
+  const weights = pool.map(g => 1 / Math.max(0.01, g.price));
+  const sum = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * sum;
+  for(let i=0;i<pool.length;i++){
+    r -= weights[i];
+    if(r <= 0) return pool[i];
+  }
+  return pool[pool.length-1];
 }
 
-function getGiftByPrice(price,isFirst=false){
-  let min=price*0.5,max=price*1.45;
-  if(firstMineCount<2 && isFirst) max=price*2;
-  let possible=gifts.filter(g=>g.price>=min && g.price<=max);
-  if(isFirst && possible.length===0) possible=gifts.filter(g=>g.price>=price);
-  if(possible.length===0) possible=gifts;
-  return possible[Math.floor(Math.random()*possible.length)];
+/* getGiftForGlass: at least 1.5x price, cap 3x */
+function getGiftForGlass(price){
+  const min = price * 1.5;
+  const max = price * 3;
+  let pool = gifts.filter(g => g.price >= min && g.price <= max);
+  if(pool.length === 0){
+    // if none found, fallback to gifts above min
+    pool = gifts.filter(g => g.price >= min);
+  }
+  if(pool.length === 0) pool = gifts.slice();
+  return pool[Math.floor(Math.random()*pool.length)];
 }
 
-function spawnBlock(cell,index=0){
-  const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
-  let price=+(1+Math.random()*10).toFixed(2);
-  cell.className="block"; cell.style.backgroundImage=`url(${ore.img})`;
-  cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
-  let hits=0;
-  cell.onclick=()=>{
+/* ================= SPAWN & BLOCK LOGIC ================= */
+function spawnBlock(cell){
+  const ore = oreTypes[Math.floor(Math.random() * oreTypes.length)];
+  let price;
+  if(ore.special === 'earth'){
+    price = +(ore.min + Math.random()*(ore.max - ore.min)).toFixed(2); // [0.1..1]
+  } else if(ore.special === 'glass'){
+    price = +(3 + Math.random()*17).toFixed(2); // [3..20]
+  } else {
+    price = +(1 + Math.random()*10).toFixed(2);
+  }
+
+  cell.className = 'block';
+  cell.innerHTML = '';
+
+  // ore background
+  const oreEl = document.createElement('div');
+  oreEl.className = 'ore';
+  oreEl.style.backgroundImage = `url(${ore.img})`;
+  cell.appendChild(oreEl);
+
+  // destroy overlay (pixel frames)
+  const destroyImg = document.createElement('img');
+  destroyImg.className = 'destroy-img';
+  cell.appendChild(destroyImg);
+
+  // price box
+  const priceBox = document.createElement('div');
+  priceBox.className = 'block-price';
+  priceBox.innerHTML = `${price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
+  cell.appendChild(priceBox);
+
+  // timer placeholder (hidden until cooldown)
+  const timerBox = document.createElement('div');
+  timerBox.className = 'block-timer';
+  timerBox.style.display = 'none';
+  cell.appendChild(timerBox);
+
+  // glass preview
+  let displayedGift = null;
+  let previewContainer = null;
+  if(ore.special === 'glass'){
+    displayedGift = getGiftForGlass(price);
+    previewContainer = document.createElement('div');
+    previewContainer.className = 'gift-preview-block';
+    cell.appendChild(previewContainer);
+    if(animationMap[displayedGift.name]){
+      try{
+        const a = lottie.loadAnimation({ container: previewContainer, renderer:'svg', loop:false, autoplay:false, path: animationMap[displayedGift.name] });
+        a.goToAndStop(0,true);
+      }catch(e){
+        previewContainer.textContent = displayedGift.name;
+      }
+    } else {
+      // fallback: try load from emoji path
+      try{
+        const a = lottie.loadAnimation({ container: previewContainer, renderer:'svg', loop:false, autoplay:false, path: `emoji/${displayedGift.name}.json` });
+        a.goToAndStop(0,true);
+      }catch(e){
+        previewContainer.textContent = displayedGift.name;
+      }
+    }
+  }
+
+  // determine destroy frames mapping to give distribution across hits
+  const totalHits = ore.hits;
+  const frames = [];
+  for(let i=0;i<totalHits;i++){
+    const idx = Math.round(i * (9 / Math.max(1, totalHits - 1)));
+    frames.push(idx);
+  }
+
+  let hits = 0;
+  cell.onclick = () => {
+    if(cell.classList.contains('cooldown')) return;
+    // require balance >= price to start last hit (we'll check at completion)
+    // show next destroy frame
+    const frameIdx = frames[Math.min(hits, frames.length - 1)];
+    destroyImg.src = `destroy/destroy_stage_${frameIdx}.png`;
+    destroyImg.style.opacity = '1';
     hits++;
-    if(hits>=ore.hits){
-      if(balance<price){ alert("Недостаточно баланса!"); return; }
-      brokenBlocks++; updateBrokenBlocks();
-      balance-=price; updateBalance();
-      transactions.unshift(`Ломание блока: -${price.toFixed(2)} TON`);
-      updateTransactionHistory();
-      let gift=getGiftByPrice(price,index===0);
-      inventory.push(gift); renderInventory();
-      flyGift(gift,cell);
-      firstMineCount++;
-      let respawn=(60+Math.random()*1740)*1000;
-      cell.classList.add("cooldown");
-      cell.innerHTML=`<div class="block-timer">${Math.round(respawn/60000)}m</div><div class="block-price">${price}<img src="ton.svg" style="width:12px;"></div>`;
-      cell.onclick=null;
-      setTimeout(()=>{ cell.classList.remove("cooldown"); spawnBlock(cell,index); },respawn);
+    // on final hit:
+    if(hits >= totalHits){
+      if(balance < price){
+        alert('Недостаточно баланса!');
+        // revert overlay quickly
+        setTimeout(()=> destroyImg.style.opacity='0', 300);
+        return;
+      }
+
+      // charge once
+      balance -= price;
+      updateBalanceUI();
+
+      // log transaction (TON only)
+      transactions.unshift(`Сломан блок -${price.toFixed(2)} TON`);
+      updateTransactionUI();
+
+      // reward logic
+      if(ore.special === 'earth'){
+        // 50% 0.1 TON, else gift (<2 TON)
+        if(Math.random() < 0.5){
+          // give 0.1 TON and animate to balance
+          flyTon(cell, 0.10, () => {
+            transactions.unshift(`Получение из блока +0.10 TON`);
+            updateTransactionUI();
+          });
+        } else {
+          // gift chosen from pool of gifts < 2 TON weighted
+          const pool = gifts.filter(g => g.price < 2);
+          if(pool.length === 0) pool.push(gifts[Math.floor(Math.random()*gifts.length)]);
+          const chosen = pool[Math.floor(Math.random()*pool.length)];
+          inventory.push(chosen);
+          renderInventory();
+          flyGift(chosen, cell);
+        }
+      } else if(ore.special === 'glass'){
+        // glass: higher chance to drop displayedGift (60%)
+        if(displayedGift && Math.random() < 0.6){
+          inventory.push(displayedGift);
+          renderInventory();
+          flyGift(displayedGift, cell);
+        } else {
+          const other = getGiftByPrice(price, 0.5, 3);
+          inventory.push(other);
+          renderInventory();
+          flyGift(other, cell);
+        }
+      } else {
+        // regular ore
+        const chosen = getGiftByPrice(price);
+        inventory.push(chosen);
+        renderInventory();
+        flyGift(chosen, cell);
+      }
+
+      brokenBlocks++;
+      updateBrokenUI();
+
+      // show cooldown + timer in same style as price
+      const respawnMs = (60 + Math.random() * 1740) * 1000; // 1 min .. 30 min
+      const mins = Math.round(respawnMs / 60000);
+      timerBox.textContent = `${mins}m`;
+      timerBox.style.display = 'flex';
+      priceBox.style.display = 'flex';
+      cell.classList.add('cooldown');
+      cell.onclick = null;
+
+      // respawn after timeout: replace content (we reuse same cell element)
+      setTimeout(() => {
+        cell.classList.remove('cooldown');
+        spawnBlock(cell); // repopulate
+      }, respawnMs);
     }
   };
 }
 
-function generateMineGrid(){ const grid=document.getElementById('mineGrid'); grid.innerHTML=''; for(let i=0;i<16;i++){ let cell=document.createElement('div'); spawnBlock(cell,i); grid.appendChild(cell); }}
+/* Generate grid */
+function generateMineGrid(){
+  const grid = document.getElementById('mineGrid');
+  grid.innerHTML = '';
+  for(let i=0;i<16;i++){
+    const cell = document.createElement('div');
+    spawnBlock(cell);
+    grid.appendChild(cell);
+  }
+}
 
-function flyGift(gift, fromCell) {
+/* ================= FLY ANIMATIONS ================= */
+/* flyGift: plays Lottie animation (if exists), moves element to inventory tab */
+function flyGift(gift, fromCell){
   const rect = fromCell.getBoundingClientRect();
   const fly = document.createElement('div');
   fly.className = 'flying';
-  fly.style.left = rect.left + rect.width / 2 - 30 + 'px';
-  fly.style.top  = rect.top  + rect.height / 2 - 30 + 'px';
-  document.body.appendChild(fly);
-  if(animationMap[gift.name]){ 
-    let anim=lottie.loadAnimation({ container: fly, renderer:'svg', loop:false, autoplay:false, path:animationMap[gift.name] });
-    anim.goToAndStop(0,true); 
-  } else { fly.textContent = gift.name; fly.style.fontSize="0.7em"; fly.style.color="#ddd"; fly.style.display="flex"; fly.style.alignItems="center"; fly.style.justifyContent="center"; }
-  const invBtn = document.getElementById('tab-inventory').getBoundingClientRect();
-  const targetX = invBtn.left + invBtn.width / 2 - 30;
-  const targetY = invBtn.top  + invBtn.height / 2 - 30;
-  fly.animate([{ transform: 'translate(0,0)' }, { transform: `translate(${targetX - (rect.left + rect.width / 2 - 30)}px, ${targetY - (rect.top + rect.height / 2 - 30)}px)` }], { duration: 1500, easing: 'ease-in-out' });
-  setTimeout(()=>{ fly.remove(); }, 1500);
+  fly.style.left = (rect.left + rect.width/2 - 30) + 'px';
+  fly.style.top  = (rect.top + rect.height/2 - 30) + 'px';
+  fly.style.width = '60px';
+  fly.style.height = '60px';
+  fly.style.zIndex = 1200;
+  document.getElementById('flyLayer').appendChild(fly);
+
+  const container = document.createElement('div');
+  container.style.width='60px'; container.style.height='60px';
+  fly.appendChild(container);
+
+  let anim;
+  const path = animationMap[gift.name] || `emoji/${gift.name}.json`;
+  try{
+    anim = lottie.loadAnimation({ container, renderer:'svg', loop:true, autoplay:true, path });
+  }catch(e){
+    container.textContent = gift.name;
+    container.style.fontSize = '10px';
+    container.style.display = 'flex';
+    container.style.alignItems = 'center';
+    container.style.justifyContent = 'center';
+  }
+
+  const invBtnRect = document.getElementById('tab-inventory').getBoundingClientRect();
+  const targetX = invBtnRect.left + invBtnRect.width/2 - 30;
+  const targetY = invBtnRect.top + invBtnRect.height/2 - 30;
+  const dx = targetX - (rect.left + rect.width/2 - 30);
+  const dy = targetY - (rect.top + rect.height/2 - 30);
+
+  const animHandle = fly.animate([
+    { transform: 'translate(0,0)', opacity:1 },
+    { transform: `translate(${dx}px, ${dy}px)`, opacity:0.95 }
+  ], { duration: 1400, easing: 'cubic-bezier(.2,.8,.2,1)' });
+
+  animHandle.onfinish = () => {
+    try{ if(anim){ anim.stop(); anim.destroy(); } } catch(e){}
+    fly.remove();
+  };
+  // safety remove
+  setTimeout(()=>{ if(document.body.contains(fly)){ try{ if(anim){ anim.stop(); anim.destroy(); } }catch(e){} fly.remove(); } }, 1800);
 }
 
+/* flyTon: small ton icon + amount flies to balance; callback fired after complete */
+function flyTon(fromCell, amount, cb){
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'fly-ton';
+  fly.style.left = (rect.left + rect.width/2 - 30) + 'px';
+  fly.style.top  = (rect.top + rect.height/2 - 18) + 'px';
+  fly.style.zIndex = 1200;
+  fly.innerHTML = `<img src="ton.svg" style="width:20px;height:20px"><span style="font-weight:800">${amount.toFixed(2)}</span>`;
+  document.getElementById('flyLayer').appendChild(fly);
+
+  const target = document.getElementById('balance').getBoundingClientRect();
+  const dx = target.left + 20 - (rect.left + rect.width/2 - 30);
+  const dy = target.top - (rect.top + rect.height/2 - 18);
+
+  const anim = fly.animate([{ transform:'translate(0,0)', opacity:1 },{ transform:`translate(${dx}px,${dy}px)`, opacity:0.95 }], { duration: 1100, easing:'ease-in-out' });
+  anim.onfinish = () => {
+    fly.remove();
+    balance += amount;
+    updateBalanceUI();
+    if(typeof cb === 'function') cb();
+  };
+  setTimeout(()=>{ if(document.body.contains(fly)) fly.remove(); }, 1400);
+}
+
+/* ================= INVENTORY UI ================= */
 function renderInventory(){
-  const list=document.getElementById('inventoryList'); list.innerHTML='';
-  inventory.forEach((gift,idx)=>{
-    const div=document.createElement('div'); div.className='gift-item';
-    const top=document.createElement('div'); top.className='gift-top';
-    const prev=document.createElement('div'); prev.className='gift-preview';
-    if(animationMap[gift.name]){ try{ let anim=lottie.loadAnimation({container:prev,renderer:'svg',loop:false,autoplay:false,path:animationMap[gift.name]}); anim.goToAndStop(0,true);}catch(e){} } else { prev.textContent = gift.name; prev.style.fontSize="0.8em"; }
-    const info=document.createElement('div'); info.className='gift-info'; info.innerHTML=`<div class='gift-name'>${gift.name}</div><div class='gift-price'>Цена: ${gift.price} TON</div>`;
+  const list = document.getElementById('inventoryList');
+  list.innerHTML = '';
+  inventory.forEach((gift, idx) => {
+    const item = document.createElement('div'); item.className='gift-item';
+    const top = document.createElement('div'); top.className='gift-top';
+    const prev = document.createElement('div'); prev.className='gift-preview';
+    if(animationMap[gift.name]){
+      try{
+        const a = lottie.loadAnimation({ container: prev, renderer:'svg', loop:false, autoplay:false, path: animationMap[gift.name] });
+        a.goToAndStop(0,true);
+      }catch(e){
+        prev.textContent = gift.name;
+      }
+    } else {
+      // try direct path
+      try{
+        const a = lottie.loadAnimation({ container: prev, renderer:'svg', loop:false, autoplay:false, path:`emoji/${gift.name}.json` });
+        a.goToAndStop(0,true);
+      }catch(e){
+        prev.textContent = gift.name;
+      }
+    }
+
+    const info = document.createElement('div'); info.className='gift-info';
+    const name = document.createElement('div'); name.className='gift-name'; name.textContent = gift.name;
+    const price = document.createElement('div'); price.className='gift-price'; price.innerHTML = `Цена: ${gift.price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
+    info.appendChild(name); info.appendChild(price);
+
     top.appendChild(prev); top.appendChild(info);
-    const actions=document.createElement('div'); actions.className='gift-actions';
-    const sell=document.createElement('button'); sell.textContent='Продать';
-    sell.onclick=()=>{balance+=gift.price;updateBalance();transactions.unshift(`Продажа: +${gift.price} TON`);updateTransactionHistory();inventory.splice(idx,1);renderInventory();};
-    const open=document.createElement('button'); open.textContent='Открыть';
-    open.onclick=()=>alert('Открыт '+gift.name);
-    actions.appendChild(sell); actions.appendChild(open);
-    div.appendChild(top); div.appendChild(actions);
-    list.appendChild(div);
+
+    const actions = document.createElement('div'); actions.className='gift-actions';
+    const sell = document.createElement('button'); sell.className='btn primary'; sell.textContent='Продать';
+    sell.onclick = () => {
+      balance += gift.price;
+      updateBalanceUI();
+      transactions.unshift(`Продажа: +${gift.price.toFixed(2)} TON`);
+      updateTransactionUI();
+      inventory.splice(idx,1);
+      renderInventory();
+    };
+    const withdraw = document.createElement('button'); withdraw.className='btn secondary'; withdraw.textContent='Вывести';
+    withdraw.onclick = () => {
+      inventory.splice(idx,1);
+      renderInventory();
+      transactions.unshift(`Вывод: ${gift.name}`);
+      updateTransactionUI();
+      alert('Запрос на вывод отправлен (заглушка).');
+    };
+    actions.appendChild(sell); actions.appendChild(withdraw);
+
+    item.appendChild(top);
+    item.appendChild(actions);
+    list.appendChild(item);
   });
 }
 
-function redeemPromo(){ const code=document.getElementById('promoCode').value.trim(); if(code==='BONUS10'){ balance+=10; updateBalance(); transactions.unshift('Промокод +10 TON'); updateTransactionHistory(); alert('Промокод активирован!'); } else{ transactions.unshift(`Промокод: неверный (${code||'пусто'})`); updateTransactionHistory(); alert('Неверный промокод'); }}
+/* ================= PROMO & DEPOSIT ================= */
+function redeemPromo(){
+  const code = document.getElementById('promoCode').value.trim();
+  if(!code) return alert('Введите промокод');
+  if(code === 'BONUS10'){
+    balance += 10;
+    transactions.unshift('Промокод: +10 TON');
+    updateBalanceUI(); updateTransactionUI();
+    alert('Промокод применён: +10 TON');
+  } else {
+    transactions.unshift(`Промокод: неверный (${code})`);
+    updateTransactionUI();
+    alert('Неверный промокод');
+  }
+}
 
-function addBalance(method){ let amount=100; balance+=amount; updateBalance(); transactions.unshift(`Пополнение через ${method} +${amount} TON`); updateTransactionHistory(); alert(`Баланс пополнен через ${method}: +${amount} TON`); }
+/* deposit prompt */
+function addBalancePrompt(method){
+  const raw = prompt(`Введите сумму пополнения через ${method}:`, '100');
+  const sum = raw ? parseFloat(raw) : 0;
+  if(!sum || sum <= 0) return;
+  let net = sum;
+  if(method === 'CryptoBot') net = sum * 0.95;
+  if(method === 'Stars') net = sum * 0.8;
+  const bonus = net * (refPercent / 100);
+  balance += net + bonus;
+  transactions.unshift(`Пополнение ${method}: +${net.toFixed(2)} TON (бонус ${bonus.toFixed(2)})`);
+  updateBalanceUI(); updateTransactionUI();
+  refPercent = Math.min(MAX_REF, refPercent + 0.5);
+  updateRefUI();
+}
 
-preloadAssets().then(()=>{ setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalance(); updateTransactionHistory(); updateBrokenBlocks(); },400); });
+/* ================= PRELOAD RESOURCES ================= */
+let loaderAnimInst = null;
+window.addEventListener('load', () => {
+  try{
+    loaderAnimInst = lottie.loadAnimation({ container: document.getElementById('loaderAnimation'), renderer:'svg', loop:true, autoplay:true, path: 'animations/myLoader.json' });
+  }catch(e){}
+  startPreload();
+});
+
+function startPreload(){
+  const imagePaths = [];
+  Object.values(backgrounds).forEach(p => imagePaths.push(p));
+  oreTypes.forEach(o => imagePaths.push(o.img));
+  for(let i=0;i<=9;i++) imagePaths.push(`destroy/destroy_stage_${i}.png`);
+  imagePaths.push('ton.svg','icons/cryptobot.svg','stars.svg','images/banner.jpg');
+
+  const lottieList = gifts.map(g => ({ name: g.name, path: `emoji/${g.name}.json` }));
+
+  const total = imagePaths.length + lottieList.length;
+  let loaded = 0;
+  const prog = document.getElementById('loaderProgressBar');
+
+  const tick = () => {
+    loaded++;
+    prog.style.width = Math.round(loaded / total * 100) + '%';
+    if(loaded >= total){
+      setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); generateMineGrid(); updateBalanceUI(); updateTransactionUI(); updateBrokenUI(); updateRefUI(); document.body.style.backgroundImage = `url(${backgrounds.menu})`; }, 300);
+    }
+  };
+
+  imagePaths.forEach(src => {
+    const img = new Image();
+    img.onload = tick; img.onerror = tick;
+    img.src = src;
+  });
+
+  lottieList.forEach(item => {
+    fetch(item.path).then(resp => {
+      if(!resp.ok) throw new Error('missing');
+      return resp.blob();
+    }).then(blob => {
+      const url = URL.createObjectURL(blob);
+      animationMap[item.name] = url;
+      tick();
+    }).catch(()=>{ tick(); });
+  });
+
+  updateBalanceUI();
+  updateRefUI();
+}
+
+/* ================= INIT UI ================= */
+updateBalanceUI();
+updateTransactionUI();
+updateBrokenUI();
+updateRefUI();
 </script>
 </body>
 </html>
