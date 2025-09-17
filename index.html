@@ -1,127 +1,89 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GiftsMine 🎁</title>
-  <style>
-    @font-face { font-family: 'Minecraft'; src: url('minecraft.ttf') format('truetype'); }
-    body, html {
-      margin: 0; padding: 0; height: 100%; font-family: 'Minecraft', sans-serif;
-      background: #000 no-repeat center/cover; color: #fff; overflow: hidden;
-      display: flex; flex-direction: column;
-    }
-    #loader {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: #000; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 9999;
-      transition: opacity 0.5s;
-    }
-    #loader.hidden { opacity: 0; pointer-events: none; }
-    #loaderAnimation { width: 180px; height: 180px; }
-    #loaderProgress { width: 50%; height: 14px; background: #333;
-      border-radius: 8px; margin-top: 15px; overflow: hidden; }
-    #loaderProgressBar { width: 0; height: 100%; background: #ff9a9e; transition: 0.3s; }
-
-    #balanceBar {
-      padding: 12px; text-align: right; font-weight: bold;
-      background: rgba(0,0,0,0.2); backdrop-filter: blur(5px);
-    }
-
-    main { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 70px; display: none; }
-    main.active { display: block; }
-    h2 { text-align: center; margin-top: 0; }
-
-    .banner {
-      width: 100%; aspect-ratio: 5/1; border-radius: 12px;
-      overflow: hidden; margin-bottom: 15px;
-    }
-    .banner img { width: 100%; height: 100%; object-fit: cover; }
-
-    /* Шахта */
-    .grid { display: grid; gap: 5px; grid-template-columns: repeat(4, 1fr); }
-    .block {
-      aspect-ratio: 1/1; border-radius: 6px;
-      background-size: cover; background-position: center;
-      display: flex; align-items: flex-end; justify-content: flex-end;
-      position: relative; cursor: pointer; overflow: hidden;
-      image-rendering: pixelated;
-    }
-    .block-price {
-      font-size: 0.7em; padding: 2px 4px;
-      background: rgba(0,0,0,0.6); border-radius: 4px;
-      margin: 3px;
-    }
-    .block.cooldown { filter: brightness(0.6); cursor: not-allowed; }
-    .destroy-stage {
-      position: absolute; inset: 0; image-rendering: pixelated;
-    }
-
-    /* Инвентарь */
-    .inventory-list { display: flex; flex-direction: column; gap: 10px; }
-    .gift-item {
-      background: rgba(20,20,20,0.9); border-radius: 10px; padding: 10px;
-      display: flex; flex-direction: column; gap: 6px;
-    }
-    .gift-top { display: flex; gap: 10px; align-items: center; }
-    .gift-preview { width: 60px; height: 60px; border-radius: 6px; background: #111; }
-    .gift-actions { display: flex; gap: 6px; }
-    .gift-actions button { flex: 1; }
-
-    /* Баланс */
-    .balance-section { margin-bottom: 20px; }
-    .balance-section h3 { margin: 0 0 10px 0; font-size: 1.1em; text-align: center; }
-    .balance-buttons { display: flex; flex-direction: column; gap: 10px; }
-    .balance-buttons button {
-      width: 100%; padding: 12px; border-radius: 8px; font-weight: bold;
-      background: linear-gradient(135deg,#6a11cb,#2575fc); color: #fff;
-    }
-    input[type="text"] {
-      width: 100%; padding: 10px; border-radius: 8px;
-      border: none; background: rgba(255,255,255,0.1);
-      color: #fff; font-weight: bold;
-    }
-    #transactionHistory div {
-      font-size: 0.85em; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    /* Навигация */
-    .tab-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      display: flex; background: rgba(0,0,0,0.2); border-top: 2px solid #fff;
-    }
-    .tab-bar button {
-      flex: 1; padding: 10px; font-size: 0.9em; border: none;
-      background: transparent; color: #fff; font-weight: bold;
-    }
-    .tab-bar button.active {
-      background: rgba(255,255,255,0.15);
-    }
-    button { cursor: pointer; border: none; }
-    .flying { position: absolute; width: 60px; height: 60px; pointer-events: none; z-index: 2000; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>GiftsMine — переписанный</title>
+<style>
+  @font-face{font-family:'Minecraft';src:url('minecraft.ttf') format('truetype');}
+  :root{
+    --bg:#071018; --card:rgba(17,17,20,0.95);
+    --accent1:linear-gradient(135deg,#ff9a9e,#fad0c4);
+    --accent2:linear-gradient(135deg,#a1c4fd,#c2e9fb);
+    --accentBlue:linear-gradient(135deg,#6a11cb,#2575fc);
+  }
+  html,body{height:100%;margin:0;font-family:'Minecraft',sans-serif;background:var(--bg);color:#fff;}
+  body{display:flex;flex-direction:column;overflow:hidden;background-size:cover;background-position:center;}
+  /* loader */
+  #loader{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;z-index:9999}
+  #loader.hidden{opacity:0;pointer-events:none;transition:opacity .4s}
+  #loaderAnimation{width:200px;height:200px;margin-bottom:12px}
+  #loaderProgress{width:48%;height:12px;background:#222;border-radius:999px;overflow:hidden}
+  #loaderProgressBar{width:0;height:100%;background:#7c3cff;transition:width .2s}
+  /* header balance */
+  #balanceBar{padding:12px 16px;text-align:right;background:rgba(0,0,0,0.12);backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,0.35);font-weight:800}
+  /* main areas */
+  main{flex:1;overflow:auto;padding:16px;padding-bottom:110px;display:none;background:linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.14))}
+  main.active{display:block}
+  h2{margin:0 0 12px 0;text-align:center}
+  .banner{width:100%;aspect-ratio:5/1;border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.55);margin-bottom:12px}
+  .banner img{width:100%;height:100%;object-fit:cover}
+  /* tab bar */
+  .tab-bar{position:fixed;left:12px;right:12px;bottom:12px;display:flex;gap:10px;padding:10px;background:rgba(0,0,0,0.16);border-radius:12px;z-index:999}
+  .tab-bar button{flex:1;padding:10px;border-radius:8px;border:none;background:var(--accent1);color:#fff;font-weight:800;cursor:pointer}
+  .tab-bar button.active{background:var(--accent2)}
+  /* mine grid */
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(4,minmax(72px,1fr));}
+  .block{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1/1;background:#2b2b2b;cursor:pointer;box-shadow:inset 0 -10px 24px rgba(0,0,0,0.35)}
+  .block .ore{position:absolute;inset:0;background-size:cover;background-position:center;image-rendering:pixelated}
+  .destroy-frame{position:absolute;inset:0;image-rendering:pixelated;opacity:0;transition:opacity 80ms linear;z-index:5}
+  .block-price{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,0.6);padding:4px 6px;border-radius:6px;font-size:0.82rem;display:flex;gap:6px;align-items:center;z-index:6}
+  .block-timer{position:absolute;left:8px;top:8px;background:rgba(0,0,0,0.6);padding:4px 6px;border-radius:6px;font-size:0.82rem;display:none;align-items:center;z-index:6}
+  .block.cooldown{filter:brightness(0.85);cursor:default}
+  /* gift preview inside glass */
+  .gift-preview-block{position:absolute;top:12%;left:12%;width:76%;height:76%;z-index:6;pointer-events:none;display:flex;align-items:center;justify-content:center}
+  /* inventory */
+  .inventory-list{display:flex;flex-direction:column;gap:12px}
+  .gift-item{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+  .gift-top{display:flex;gap:12px;align-items:center}
+  .gift-preview{width:64px;height:64px;border-radius:8px;background:#111;display:flex;align-items:center;justify-content:center}
+  .gift-actions{display:flex;gap:8px;margin-top:10px}
+  .btn{padding:10px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
+  .btn.primary{background:var(--accent1);color:#fff}
+  .btn.secondary{background:var(--accentBlue);color:#fff}
+  /* balance tab */
+  .balance-section{background:var(--card);padding:12px;border-radius:12px;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+  .balance-buttons{display:flex;flex-direction:column;gap:8px}
+  .small{font-size:0.9rem;color:#bfc4cc}
+  /* fly layer for animations */
+  #flyLayer{position:fixed;inset:0;pointer-events:none;z-index:1500}
+  .flying{position:absolute;width:64px;height:64px;transform-origin:center center}
+  /* responsive */
+  @media (max-width:720px){ .grid{grid-template-columns:repeat(4,1fr);gap:8px} #loaderAnimation{width:140px;height:140px} #loaderProgress{width:66%} .tab-bar{left:8px;right:8px;bottom:8px} }
+</style>
 </head>
 <body>
-  <!-- Загрузчик -->
+
+  <!-- Loader -->
   <div id="loader">
     <div id="loaderAnimation"></div>
     <div id="loaderProgress"><div id="loaderProgressBar"></div></div>
-    <p>Загрузка...</p>
+    <div class="small" style="margin-top:8px">Подготовка ресурсов...</div>
   </div>
 
-  <!-- Баланс -->
-  <div id="balanceBar">Баланс: 0 <img src="ton.svg" width="16" style="vertical-align:middle"></div>
+  <!-- Balance header -->
+  <div id="balanceBar">Баланс: 0 <img src="ton.svg" style="width:18px;vertical-align:middle"></div>
 
-  <!-- Вкладки -->
+  <!-- Pages -->
   <main id="menu" class="active">
     <h2>Главное меню</h2>
-    <div class="banner"><img src="images/banner.jpg" alt="Реклама"></div>
-    <p style="text-align:center;color:#bbb">Выбирай режим и зарабатывай подарки!</p>
+    <a class="banner" href="#" target="_blank"><img src="images/banner.jpg" alt="banner"></a>
+    <p class="small" style="text-align:center;margin-top:6px">Выбирайте режим и зарабатывайте подарки</p>
   </main>
 
   <main id="mine">
     <h2>Шахта</h2>
-    <div id="brokenBlocks" style="text-align:center;margin-bottom:12px">Сломано блоков: 0</div>
+    <div id="brokenBlocks" style="text-align:center;margin:10px 0" class="small">Сломано блоков: 0</div>
     <div class="grid" id="mineGrid"></div>
   </main>
 
@@ -134,288 +96,534 @@
     <h2>Баланс</h2>
 
     <div class="balance-section">
-      <h3>Пополнение</h3>
+      <h3 style="margin:0 0 8px 0">Пополнение</h3>
       <div class="balance-buttons">
-        <button onclick="addBalance('ton')"><img src="ton.svg" width="18"> TON кошелёк<br><small>комиссия 0%</small></button>
-        <button onclick="addBalance('crypto')"><img src="icons/cryptobot.svg" width="18"> Crypto Bot<br><small>комиссия 5%</small></button>
-        <button onclick="addBalance('stars')"><img src="icons/stars.svg" width="18"> Telegram Stars<br><small>комиссия 20%</small></button>
+        <button class="btn primary" onclick="promptAdd('ton')"><img src="ton.svg" style="width:18px;vertical-align:middle;margin-right:8px">TON кошелёк — 0%</button>
+        <button class="btn primary" onclick="promptAdd('cryptobot')"><img src="icons/cryptobot.svg" style="width:18px;vertical-align:middle;margin-right:8px">CryptoBot — 5%</button>
+        <button class="btn primary" onclick="promptAdd('stars')"><img src="stars.svg" style="width:18px;vertical-align:middle;margin-right:8px">Telegram Stars — 20%</button>
       </div>
     </div>
 
     <div class="balance-section">
-      <h3>Промокод</h3>
-      <input type="text" id="promoCode" placeholder="Введите промокод">
-      <button onclick="redeemPromo()" style="margin-top:8px;width:100%;padding:10px;border-radius:8px;background:linear-gradient(135deg,#ff9a9e,#fad0c4);color:#fff">Активировать</button>
+      <h3 style="margin:0 0 8px 0">Промокод</h3>
+      <input id="promoCode" type="text" placeholder="Введите промокод">
+      <button class="btn secondary" style="margin-top:8px;width:100%" onclick="redeemPromo()">Активировать</button>
     </div>
 
     <div class="balance-section">
-      <h3>Реферальная программа</h3>
-      <p style="text-align:center;font-size:0.9em;color:#ccc">+0.5% с депозитов рефералов за каждый сломанный блок (макс 20%)</p>
+      <h3 style="margin:0 0 8px 0">Реферальная программа</h3>
+      <div class="small">Базовый бонус: <strong id="refPercent">1.0%</strong>. Увеличивается на +0.5% за каждый сломанный блок (макс 20%).</div>
     </div>
 
     <div class="balance-section">
-      <h3>История операций</h3>
-      <div id="transactionHistory"></div>
+      <h3 style="margin:0 0 8px 0">История операций</h3>
+      <div id="transactionHistory" style="max-height:320px;overflow:auto;font-size:0.95rem"></div>
     </div>
   </main>
 
-  <!-- Навигация -->
-  <div class="tab-bar">
+  <!-- Tabbar -->
+  <div class="tab-bar" role="tablist">
     <button id="tab-menu" class="active" onclick="showTab('menu')">Меню</button>
     <button id="tab-mine" onclick="showTab('mine')">Шахта</button>
     <button id="tab-inventory" onclick="showTab('inventory')">Инвентарь</button>
     <button id="tab-balanceTab" onclick="showTab('balanceTab')">Баланс</button>
   </div>
 
+  <div id="flyLayer"></div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
   <script>
-    // === Глобальные переменные ===
-    let balance = 0, transactions = [], inventory = [], brokenBlocks = 0;
-    const animationMap = {};
+/* ========== STATE ========== */
+let balance = 10000.00;
+let transactions = []; // newest first via unshift
+let inventory = [];
+let brokenBlocks = 0;
+let refPercent = 1.0; // increases by 0.5% per broken block up to 20
+const MAX_REF = 20.0;
+const animationMap = {}; // name -> blobURL (if available)
 
-    const backgrounds = {
-      menu: "images/menu.jpg",
-      mine: "images/mine.jpg",
-      inventory: "images/inventory.jpg",
-      balanceTab: "images/mobs.jpg"
+/* backgrounds (must exist or will be ignored) */
+const backgrounds = {
+  menu: 'images/menu.jpg',
+  mine: 'images/mine.jpg',
+  inventory: 'images/inventory.jpg',
+  balanceTab: 'images/mobs.jpg'
+};
+
+/* full gifts list (kept as in spec) */
+const gifts = [
+  {name:"Hypno Lollipop",price:1.77}, {name:"Desk Calendar",price:1.31},
+  {name:"B-Day Candle",price:1.32}, {name:"Lol Pop",price:1.32},
+  {name:"Lunar Snake",price:1.38}, {name:"Snake Box",price:1.36},
+  {name:"Xmas Stocking",price:1.38}, {name:"Whip Cupcake",price:1.38},
+  {name:"Candy Cane",price:1.48}, {name:"Pet Snake",price:1.58},
+  {name:"Jester Hat",price:1.62}, {name:"Snoop Dogg",price:1.64},
+  {name:"Homemade Cake",price:1.7}, {name:"Holiday Drink",price:1.7},
+  {name:"Jingle Bells",price:1.74}, {name:"Cookie Heart",price:1.75},
+  {name:"Big Year",price:1.78}, {name:"Party Sparkler",price:1.8},
+  {name:"Winter Wreath",price:1.79}, {name:"Swag Bag",price:1.91},
+  {name:"Tama Gadget",price:1.93}, {name:"Ginger Cookie",price:1.95},
+  {name:"Moon Pendant",price:1.96}, {name:"Jack-in-the-Box",price:2.01},
+  {name:"Spiced Wine",price:2.12}, {name:"Stellar Rocket",price:2.19},
+  {name:"Star Notepad",price:2.32}, {name:"Easter Egg",price:2.46},
+  {name:"Restless Jar",price:2.5}, {name:"Santa Hat",price:2.6},
+  {name:"Snow Globe",price:2.65}, {name:"Hex Pot",price:2.7},
+  {name:"Joyful Bundle",price:2.71}, {name:"Lush Bouquet",price:2.84},
+  {name:"Witch Hat",price:2.86}, {name:"Light Sword",price:3.13},
+  {name:"Spy Agaric",price:3.2}, {name:"Bow Tie",price:3.22},
+  {name:"Eternal Candle",price:3.38}, {name:"Bunny Muffin",price:3.34},
+  {name:"Jelly Bunny",price:3.43}, {name:"Berry Box",price:3.58},
+  {name:"Evil Eye",price:3.6}, {name:"Snow Mittens",price:3.67},
+  {name:"Valentine Box",price:4.2}, {name:"Snoop Cigar",price:4.26},
+  {name:"Sakura Flower",price:4.77}, {name:"Hanging Star",price:5.26},
+  {name:"Jolly Chimp",price:5.34}, {name:"Sleigh Bell",price:7.63},
+  {name:"Skull Flower",price:7.7}, {name:"Crystal Ball",price:7.86},
+  {name:"Record Player",price:7.91}, {name:"Love Candle",price:7.94},
+  {name:"Top Hat",price:7.99}, {name:"Trapped Heart",price:8.69},
+  {name:"Love Potion",price:8.79}, {name:"Flying Broom",price:9.45},
+  {name:"Cupid Charm",price:11.26}, {name:"Eternal Rose",price:13.71},
+  {name:"Ionic Dryer",price:14.21}, {name:"Diamond Ring",price:16.39},
+  {name:"Voodoo Doll",price:16.43}, {name:"Mad Pumpkin",price:17.91},
+  {name:"Toy Bear",price:19.3}, {name:"Vintage Cigar",price:23.98},
+  {name:"Low Rider",price:24.8}, {name:"Signet Ring",price:25.1},
+  {name:"Neko Helmet",price:26.41}, {name:"Electric Skull",price:31},
+  {name:"Kissed Frog",price:34}, {name:"Swiss Watch",price:35},
+  {name:"Sharp Tongue",price:39.69}, {name:"Scared Cat",price:43.6},
+  {name:"Genie Lamp",price:47.07}, {name:"Westside Sign",price:51.27},
+  {name:"Bonded Ring",price:54.99}, {name:"Gem Signet",price:72.98},
+  {name:"Magic Potion",price:72.98}, {name:"Ion Gem",price:83},
+  {name:"Astral Shard",price:95.97}, {name:"Perfume Bottle",price:95.99},
+  {name:"Loot Bag",price:90.1}, {name:"Mini Oscar",price:123.89},
+  {name:"Nail Bracelet",price:129.84}, {name:"Heroic Helmet",price:219.99},
+  {name:"Precious Peach",price:379.99}, {name:"Durov’s Cap",price:794.9},
+  {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
+];
+
+/* ore types */
+const oreTypes = [
+  {name:'coal', img:'images/ores/coal.png', hits:3},
+  {name:'iron', img:'images/ores/iron.png', hits:4},
+  {name:'gold', img:'images/ores/gold.png', hits:5},
+  {name:'diamond', img:'images/ores/diamond.png', hits:6},
+  {name:'emerald', img:'images/ores/emerald.png', hits:7},
+  {name:'earth', img:'images/ores/earth.png', hits:2, type:'earth', min:0.1, max:1.0},
+  {name:'glass', img:'images/ores/glass.png', hits:4, type:'glass'}
+];
+
+/* ========= UI helpers ========= */
+function setBalanceUI(){ document.getElementById('balanceBar').innerHTML = `Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:18px;vertical-align:middle">`; }
+function setTransactionsUI(){ const el = document.getElementById('transactionHistory'); el.innerHTML=''; transactions.forEach(t=>{ const d=document.createElement('div'); d.textContent=t; el.appendChild(d); }); }
+function setBrokenUI(){ document.getElementById('brokenBlocks').textContent = `Сломано блоков: ${brokenBlocks}`; }
+function setRefUI(){ document.getElementById('refPercent').textContent = refPercent.toFixed(1) + '%'; }
+function showTab(id){ document.querySelectorAll('main').forEach(m=>m.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); if(backgrounds[id]) document.body.style.backgroundImage=`url(${backgrounds[id]})`; if(id==='inventory') renderInventory(); }
+
+/* ========= preload (robust) ========= */
+function preloadAll(){
+  const images = [];
+  Object.values(backgrounds).forEach(p=>images.push(p));
+  oreTypes.forEach(o=>images.push(o.img));
+  for(let i=0;i<=9;i++) images.push(`destroy/destroy_stage_${i}.png`);
+  images.push('ton.svg','icons/cryptobot.svg','stars.svg','images/banner.jpg');
+
+  const lotties = gifts.map(g=>({name:g.name, path:`emoji/${g.name}.json`}));
+
+  const total = images.length + lotties.length;
+  let done = 0;
+  const progressBar = document.getElementById('loaderProgressBar');
+
+  function tick(){ done++; progressBar.style.width = Math.round(done/total*100) + '%'; if(done>=total){ setTimeout(()=>document.getElementById('loader').classList.add('hidden'), 300); } }
+
+  const imgPromises = images.map(src => new Promise(res => {
+    const img = new Image();
+    img.onload = img.onerror = ()=>{ tick(); res(); };
+    img.src = src;
+  }));
+
+  const lottiePromises = lotties.map(item => fetch(item.path).then(r => {
+    if(!r.ok) throw new Error('no'); return r.blob();
+  }).then(blob => {
+    const url = URL.createObjectURL(blob);
+    animationMap[item.name] = url;
+    tick();
+  }).catch(()=>{ // missing animation -> skip
+    console.warn('skip lottie', item.path);
+    tick();
+  }));
+
+  // run all concurrently but don't block on one missing
+  return Promise.all([...imgPromises, ...lottiePromises]).catch(()=>{}); // swallow errors
+}
+
+/* ========= gift selection Helpers ========= */
+function getGiftByPrice(price, minMul=0.5, maxMul=1.45){
+  const min = price * minMul, max = price * maxMul;
+  let pool = gifts.filter(g => g.price >= min && g.price <= max);
+  if(pool.length === 0) pool = gifts.slice();
+  // weighted random slightly favor cheaper items
+  const weights = pool.map(g => 1 / (g.price + 0.01));
+  const sum = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*sum;
+  for(let i=0;i<pool.length;i++){
+    r -= weights[i];
+    if(r <= 0) return pool[i];
+  }
+  return pool[pool.length-1];
+}
+function getGiftForGlass(price){
+  const min = price*1.5, max = price*3;
+  let pool = gifts.filter(g => g.price >= min && g.price <= max);
+  if(pool.length===0) pool = gifts.filter(g => g.price >= min);
+  if(pool.length===0) pool = gifts.slice();
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+/* ========= spawn, break logic ========= */
+function spawnBlock(cell){
+  const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
+  let price;
+  if(ore.type === 'earth'){
+    price = +(ore.min + Math.random()*(ore.max - ore.min)).toFixed(2); // 0.1..1.0
+  } else if(ore.type === 'glass'){
+    price = +(3 + Math.random()*17).toFixed(2); // 3..20
+  } else {
+    price = +(1 + Math.random()*10).toFixed(2); // 1..11
+  }
+
+  cell.className = 'block';
+  cell.innerHTML = '';
+
+  // ore background
+  const oreDiv = document.createElement('div');
+  oreDiv.className = 'ore';
+  oreDiv.style.backgroundImage = `url(${ore.img})`;
+  cell.appendChild(oreDiv);
+
+  // destroy overlay
+  const destroyImg = document.createElement('img');
+  destroyImg.className = 'destroy-frame';
+  cell.appendChild(destroyImg);
+
+  // price box
+  const priceBox = document.createElement('div');
+  priceBox.className = 'block-price';
+  priceBox.innerHTML = `${price.toFixed(2)} <img src="ton.svg" style="width:12px;vertical-align:middle">`;
+  cell.appendChild(priceBox);
+
+  // timer box (hidden)
+  const timerBox = document.createElement('div');
+  timerBox.className = 'block-timer';
+  timerBox.style.display = 'none';
+  cell.appendChild(timerBox);
+
+  // glass preview if glass
+  let displayedGift = null;
+  let previewContainer = null;
+  if(ore.type === 'glass'){
+    displayedGift = getGiftForGlass(price);
+    previewContainer = document.createElement('div');
+    previewContainer.className = 'gift-preview-block';
+    cell.appendChild(previewContainer);
+    // if we have a blob url for animation, display first frame
+    const animPath = animationMap[displayedGift.name] || `emoji/${displayedGift.name}.json`;
+    // try to render first frame; if fails, fallback to text
+    try {
+      const anim = lottie.loadAnimation({ container: previewContainer, renderer:'svg', loop:false, autoplay:false, path: animPath });
+      anim.addEventListener('DOMLoaded', ()=> { try{ anim.goToAndStop(0,true); }catch(e){} setTimeout(()=>{ anim.destroy(); },50); });
+    } catch(e){
+      previewContainer.textContent = displayedGift.name;
+    }
+  }
+
+  // frames distribution for destroy: evenly map hits to frames 0..9
+  const totalHits = ore.hits;
+  const frames = [];
+  for(let i=0;i<totalHits;i++){
+    const idx = Math.round(i * (9 / Math.max(1, totalHits - 1)));
+    frames.push(idx);
+  }
+
+  let hits = 0;
+  cell.onclick = () => {
+    if(cell.classList.contains('cooldown')) return;
+    // show next damage frame
+    const frameIndex = frames[Math.min(hits, frames.length-1)];
+    destroyImg.src = `destroy/destroy_stage_${frameIndex}.png`;
+    destroyImg.style.opacity = '1';
+    // small flash then keep visible
+    setTimeout(()=>{ destroyImg.style.opacity = '1'; }, 10);
+
+    hits++;
+    if(hits < totalHits) return;
+
+    // final hit: check balance first
+    if(balance < price){
+      alert('Недостаточно баланса для полного разрушения.');
+      // revert overlay fade
+      setTimeout(()=>destroyImg.style.opacity = '0', 300);
+      return;
+    }
+
+    // charge once
+    balance -= price;
+    setBalanceUI();
+    transactions.unshift(`Списание: -${price.toFixed(2)} TON`);
+    setTransactionsUI();
+
+    // reward
+    if(ore.type === 'earth'){
+      // 70% small TON, else gift (<2 TON)
+      if(Math.random() < 0.7){
+        // give 0.1 TON and animate to balance
+        flyTon(cell, 0.10, ()=> {
+          balance += 0.10;
+          setBalanceUI();
+          transactions.unshift(`Получение из блока: +0.10 TON`);
+          setTransactionsUI();
+        });
+      } else {
+        // gift chosen from pool < 2 TON
+        const pool = gifts.filter(g => g.price < 2);
+        const chosen = pool.length ? pool[Math.floor(Math.random()*pool.length)] : getGiftByPrice(1);
+        inventory.push(chosen);
+        renderInventory();
+        flyGift(chosen, cell);
+      }
+    } else if(ore.type === 'glass'){
+      // 70% drop displayedGift, else random gift near price
+      if(displayedGift && Math.random() < 0.7){
+        inventory.push(displayedGift);
+        renderInventory();
+        flyGift(displayedGift, cell);
+      } else {
+        const other = getGiftByPrice(price, 0.5, 3);
+        inventory.push(other);
+        renderInventory();
+        flyGift(other, cell);
+      }
+    } else {
+      // standard ore -> choose gift by price
+      const chosen = getGiftByPrice(price);
+      inventory.push(chosen);
+      renderInventory();
+      flyGift(chosen, cell);
+    }
+
+    // increase broken count and referral percent
+    brokenBlocks++;
+    setBrokenUI();
+    refPercent = Math.min(MAX_REF, refPercent + 0.5);
+    setRefUI();
+
+    // cooldown display
+    const respawnMs = (60 + Math.random()*1740) * 1000; // 1..30 min in ms
+    const mins = Math.round(respawnMs / 60000);
+    timerBox.textContent = `${mins}m`;
+    timerBox.style.display = 'flex';
+    // ensure price visible as well (kept)
+    priceBox.style.display = 'flex';
+    cell.classList.add('cooldown');
+    cell.onclick = null;
+
+    // respawn after timeout: refresh cell (reuse same element)
+    setTimeout(()=> spawnBlock(cell), respawnMs);
+  };
+}
+
+/* generate mine grid */
+function generateMineGrid(){
+  const grid = document.getElementById('mineGrid');
+  grid.innerHTML = '';
+  for(let i=0;i<16;i++){
+    const cell = document.createElement('div');
+    spawnBlock(cell);
+    grid.appendChild(cell);
+  }
+}
+
+/* ========= FLY ANIMATIONS ========= */
+/* Smooth flying using Web Animations API; no teleport */
+function flyGift(gift, fromCell){
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement('div'); fly.className = 'flying';
+  fly.style.left = rect.left + rect.width/2 - 32 + 'px';
+  fly.style.top  = rect.top  + rect.height/2 - 32 + 'px';
+  document.getElementById('flyLayer').appendChild(fly);
+
+  // container for lottie
+  const container = document.createElement('div');
+  container.style.width='64px'; container.style.height='64px';
+  fly.appendChild(container);
+
+  // load animation if we have blob URL or fallback to emoji/<name>.json path
+  const path = animationMap[gift.name] || `emoji/${gift.name}.json`;
+  let animInstance = null;
+  try {
+    animInstance = lottie.loadAnimation({ container, renderer:'svg', loop:true, autoplay:true, path });
+  } catch(e) {
+    container.textContent = gift.name;
+    container.style.fontSize = '10px';
+    container.style.display='flex';
+    container.style.alignItems='center';
+    container.style.justifyContent='center';
+  }
+
+  const invBtn = document.getElementById('tab-inventory').getBoundingClientRect();
+  const targetX = invBtn.left + invBtn.width/2 - 32;
+  const targetY = invBtn.top  + invBtn.height/2 - 32;
+  const dx = targetX - (rect.left + rect.width/2 - 32);
+  const dy = targetY - (rect.top + rect.height/2 - 32);
+
+  const wa = fly.animate([
+    { transform: 'translate(0,0)', opacity: 1 },
+    { transform: `translate(${dx}px, ${dy}px)`, opacity: 0.98 }
+  ], { duration: 1400, easing: 'cubic-bezier(.2,.8,.2,1)' });
+
+  wa.onfinish = () => {
+    try{ if(animInstance){ animInstance.stop(); animInstance.destroy(); } }catch(e){}
+    fly.remove();
+  };
+  // safety removal
+  setTimeout(()=>{ if(document.body.contains(fly)) { try{ if(animInstance){ animInstance.stop(); animInstance.destroy(); } }catch(e){} fly.remove(); } }, 1800);
+}
+
+/* flyTon: small TON popup flies to balance */
+function flyTon(fromCell, amount, callback){
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement('div'); fly.className='flying';
+  fly.style.left = rect.left + rect.width/2 - 32 + 'px';
+  fly.style.top  = rect.top  + rect.height/2 - 16 + 'px';
+  fly.style.width = 'auto';
+  fly.style.height = 'auto';
+  fly.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:10px;background:rgba(0,0,0,0.6);font-weight:800">
+    <img src="ton.svg" style="width:18px"> ${amount.toFixed(2)}
+  </div>`;
+  document.getElementById('flyLayer').appendChild(fly);
+
+  const balRect = document.getElementById('balanceBar').getBoundingClientRect();
+  const dx = (balRect.left + 20) - (rect.left + rect.width/2 - 32);
+  const dy = (balRect.top) - (rect.top + rect.height/2 - 16);
+
+  const wa = fly.animate([
+    { transform: 'translate(0,0)', opacity:1 },
+    { transform: `translate(${dx}px, ${dy}px)`, opacity:0.98 }
+  ], { duration: 1100, easing: 'ease-in-out' });
+
+  wa.onfinish = () => {
+    fly.remove();
+    if(typeof callback === 'function') callback();
+  };
+  setTimeout(()=>{ if(document.body.contains(fly)) fly.remove(); }, 1400);
+}
+
+/* ========= Inventory UI ========= */
+function renderInventory(){
+  const list = document.getElementById('inventoryList');
+  list.innerHTML = '';
+  inventory.forEach((gift, idx) => {
+    const item = document.createElement('div'); item.className='gift-item';
+    const top = document.createElement('div'); top.className='gift-top';
+    const prev = document.createElement('div'); prev.className='gift-preview';
+    // try static first frame of animation
+    const animPath = animationMap[gift.name] || `emoji/${gift.name}.json`;
+    try {
+      const anim = lottie.loadAnimation({ container: prev, renderer:'svg', loop:false, autoplay:false, path: animPath });
+      anim.addEventListener('DOMLoaded', ()=> { try{ anim.goToAndStop(0,true); }catch(e){} setTimeout(()=>anim.destroy(),50); });
+    } catch(e){
+      prev.textContent = gift.name;
+    }
+    const info = document.createElement('div'); info.innerHTML = `<div style="font-weight:800">${gift.name}</div><div class="small">Цена: ${gift.price.toFixed(2)} TON</div>`;
+    top.appendChild(prev); top.appendChild(info);
+    item.appendChild(top);
+
+    const actions = document.createElement('div'); actions.className = 'gift-actions';
+    const sell = document.createElement('button'); sell.className='btn primary'; sell.textContent='Продать';
+    sell.onclick = ()=> {
+      balance += gift.price;
+      setBalanceUI();
+      transactions.unshift(`Продажа: +${gift.price.toFixed(2)} TON`);
+      setTransactionsUI();
+      inventory.splice(idx,1);
+      renderInventory();
     };
+    const withdraw = document.createElement('button'); withdraw.className='btn secondary'; withdraw.textContent='Вывести';
+    withdraw.onclick = ()=> {
+      inventory.splice(idx,1);
+      renderInventory();
+      transactions.unshift(`Вывод: ${gift.name}`);
+      setTransactionsUI();
+      alert('Запрос на вывод создан (заглушка).');
+    };
+    actions.appendChild(sell); actions.appendChild(withdraw);
+    item.appendChild(actions);
+    list.appendChild(item);
+  });
+}
 
-    const gifts = [
-      {name:"Hypno Lollipop",price:1.77}, {name:"Desk Calendar",price:1.31},
-      {name:"B-Day Candle",price:1.32}, {name:"Lol Pop",price:1.32},
-      {name:"Lunar Snake",price:1.38}, {name:"Snake Box",price:1.36},
-      {name:"Xmas Stocking",price:1.38}, {name:"Whip Cupcake",price:1.38},
-      {name:"Candy Cane",price:1.48}, {name:"Pet Snake",price:1.58},
-      {name:"Jester Hat",price:1.62}, {name:"Snoop Dogg",price:1.64},
-      {name:"Homemade Cake",price:1.7}, {name:"Holiday Drink",price:1.7},
-      {name:"Jingle Bells",price:1.74}, {name:"Cookie Heart",price:1.75},
-      {name:"Big Year",price:1.78}, {name:"Party Sparkler",price:1.8},
-      {name:"Winter Wreath",price:1.79}, {name:"Swag Bag",price:1.91},
-      {name:"Tama Gadget",price:1.93}, {name:"Ginger Cookie",price:1.95},
-      {name:"Moon Pendant",price:1.96}, {name:"Jack-in-the-Box",price:2.01},
-      {name:"Spiced Wine",price:2.12}, {name:"Stellar Rocket",price:2.19},
-      {name:"Star Notepad",price:2.32}, {name:"Easter Egg",price:2.46},
-      {name:"Restless Jar",price:2.5}, {name:"Santa Hat",price:2.6},
-      {name:"Snow Globe",price:2.65}, {name:"Hex Pot",price:2.7},
-      {name:"Joyful Bundle",price:2.71}, {name:"Lush Bouquet",price:2.84},
-      {name:"Witch Hat",price:2.86}, {name:"Light Sword",price:3.13},
-      {name:"Spy Agaric",price:3.2}, {name:"Bow Tie",price:3.22},
-      {name:"Eternal Candle",price:3.38}, {name:"Bunny Muffin",price:3.34},
-      {name:"Jelly Bunny",price:3.43}, {name:"Berry Box",price:3.58},
-      {name:"Evil Eye",price:3.6}, {name:"Snow Mittens",price:3.67},
-      {name:"Valentine Box",price:4.2}, {name:"Snoop Cigar",price:4.26},
-      {name:"Sakura Flower",price:4.77}, {name:"Hanging Star",price:5.26},
-      {name:"Jolly Chimp",price:5.34}, {name:"Sleigh Bell",price:7.63},
-      {name:"Skull Flower",price:7.7}, {name:"Crystal Ball",price:7.86},
-      {name:"Record Player",price:7.91}, {name:"Love Candle",price:7.94},
-      {name:"Top Hat",price:7.99}, {name:"Trapped Heart",price:8.69},
-      {name:"Love Potion",price:8.79}, {name:"Flying Broom",price:9.45},
-      {name:"Cupid Charm",price:11.26}, {name:"Eternal Rose",price:13.71},
-      {name:"Ionic Dryer",price:14.21}, {name:"Diamond Ring",price:16.39},
-      {name:"Voodoo Doll",price:16.43}, {name:"Mad Pumpkin",price:17.91},
-      {name:"Toy Bear",price:19.3}, {name:"Vintage Cigar",price:23.98},
-      {name:"Low Rider",price:24.8}, {name:"Signet Ring",price:25.1},
-      {name:"Neko Helmet",price:26.41}, {name:"Electric Skull",price:31},
-      {name:"Kissed Frog",price:34}, {name:"Swiss Watch",price:35},
-      {name:"Sharp Tongue",price:39.69}, {name:"Scared Cat",price:43.6},
-      {name:"Genie Lamp",price:47.07}, {name:"Westside Sign",price:51.27},
-      {name:"Bonded Ring",price:54.99}, {name:"Gem Signet",price:72.98},
-      {name:"Magic Potion",price:72.98}, {name:"Ion Gem",price:83},
-      {name:"Astral Shard",price:95.97}, {name:"Perfume Bottle",price:95.99},
-      {name:"Loot Bag",price:90.1}, {name:"Mini Oscar",price:123.89},
-      {name:"Nail Bracelet",price:129.84}, {name:"Heroic Helmet",price:219.99},
-      {name:"Precious Peach",price:379.99}, {name:"Durov’s Cap",price:794.9},
-      {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
-    ];
+/* ========= Balance & promo ========= */
+function redeemPromo(){
+  const code = document.getElementById('promoCode').value.trim();
+  if(!code) return alert('Введите промокод');
+  if(code === 'BONUS10'){
+    balance += 10;
+    setBalanceUI();
+    transactions.unshift('Промокод: +10 TON');
+    setTransactionsUI();
+    alert('Промокод активирован: +10 TON');
+  } else {
+    transactions.unshift(`Промокод: неверный (${code})`);
+    setTransactionsUI();
+    alert('Неверный промокод');
+  }
+}
 
-    const oreTypes = [
-      { img:"images/ores/coal.png", hits:3 },
-      { img:"images/ores/iron.png", hits:4 },
-      { img:"images/ores/gold.png", hits:5 },
-      { img:"images/ores/diamond.png", hits:6 },
-      { img:"images/ores/emerald.png", hits:7 },
-      { img:"images/ores/earth.png", hits:2, type:"earth" },
-      { img:"images/ores/glass.png", hits:4, type:"glass" }
-    ];
+/* deposit prompt & logic */
+function promptAdd(method){
+  const raw = prompt(`Введите сумму пополнения (${method}) — пример: 100`, '100');
+  if(!raw) return;
+  const val = parseFloat(raw.replace(',', '.'));
+  if(!val || isNaN(val) || val<=0) return alert('Некорректная сумма');
+  let fee = 0;
+  if(method === 'cryptobot') fee = 0.05;
+  if(method === 'stars') fee = 0.20;
+  const net = val * (1 - fee);
+  const bonus = net * (refPercent/100.0); // referral bonus from refPercent
+  const totalAdd = net + bonus;
+  balance += totalAdd;
+  setBalanceUI();
+  transactions.unshift(`Пополнение ${val.toFixed(2)} TON через ${method} (комиссия ${Math.round(fee*100)}%), бонус ${bonus.toFixed(2)}`);
+  setTransactionsUI();
+}
 
-    // === Интерфейс ===
-    function updateBalance(){
-      document.getElementById('balanceBar').innerHTML =
-        `Баланс: ${balance.toFixed(2)} <img src="ton.svg" width="16" style="vertical-align:middle">`;
-    }
-    function updateTransactionHistory(){
-      const el=document.getElementById('transactionHistory'); el.innerHTML='';
-      transactions.forEach(t=>{
-        el.innerHTML += `<div>${t}</div>`;
-      });
-    }
-    function updateBrokenBlocks(){
-      document.getElementById('brokenBlocks').textContent=`Сломано блоков: ${brokenBlocks}`;
-    }
+/* ========= Preload & start ========= */
+async function startApp(){
+  // loader animation
+  try {
+    lottie.loadAnimation({ container: document.getElementById('loaderAnimation'), renderer:'svg', loop:true, autoplay:true, path: 'animations/myLoader.json' });
+  } catch(e) { /* ignore */ }
 
-    function showTab(id){
-      document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
-      document.getElementById('tab-'+id).classList.add('active');
-      document.body.style.backgroundImage=`url(${backgrounds[id]})`;
-      if(id==='inventory') renderInventory();
-    }
+  // preload all (images + lottie jsons)
+  await preloadAll();
 
-    // === Шахта ===
-    function spawnBlock(cell){
-      const ore = oreTypes[Math.floor(Math.random()*oreTypes.length)];
-      let price = +(1+Math.random()*10).toFixed(2);
-      cell.className="block"; cell.style.backgroundImage=`url(${ore.img})`;
-      cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" width="12"></div>`;
-      let hits=0, stages=[0,3,6,9], destroyOverlay=document.createElement('img');
-      destroyOverlay.className="destroy-stage"; cell.appendChild(destroyOverlay);
+  // init UI & grid
+  setBalanceUI();
+  setTransactionsUI();
+  setBrokenUI();
+  setRefUI();
+  generateMineGrid();
 
-      let glassGift=null;
-      if(ore.type==="glass"){
-        glassGift=gifts[Math.floor(Math.random()*gifts.length)];
-        const prev=document.createElement('div'); prev.className='gift-preview';
-        prev.style.position='absolute'; prev.style.inset='25%'; prev.style.fontSize='0.5em';
-        prev.style.display='flex'; prev.style.alignItems='center'; prev.style.justifyContent='center';
-        prev.textContent=glassGift.name;
-        cell.appendChild(prev);
-      }
+  // small delay to let UX settle, then hide loader (preloadAll already hides when done)
+  setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); }, 200);
+}
 
-      cell.onclick=()=>{
-        if(balance<price){ alert("Недостаточно баланса!"); return; }
-        hits++;
-        let stageIndex=Math.floor(hits/ore.hits*stages.length);
-        if(stageIndex>=stages.length) stageIndex=stages.length-1;
-        destroyOverlay.src=`destroy/destroy_stage_${stages[stageIndex]}.png`;
+/* ===== start ===== */
+startApp();
 
-        if(hits>=ore.hits){
-          brokenBlocks++; updateBrokenBlocks();
-          balance-=price; updateBalance();
-          transactions.unshift(`Списание: -${price} TON`); updateTransactionHistory();
+/* expose showTab globally for buttons */
+window.showTab = showTab;
+window.promptAdd = promptAdd;
+window.redeemPromo = redeemPromo;
+window.renderInventory = renderInventory;
 
-          if(ore.type==="earth"){
-            if(Math.random()<0.5){ // тон
-              flyTon(cell,0.1);
-              balance+=0.1; updateBalance();
-              transactions.unshift("Получение из блока: +0.1 TON");
-              updateTransactionHistory();
-            } else {
-              const cheap=gifts.filter(g=>g.price<2);
-              const g=cheap[Math.floor(Math.random()*cheap.length)];
-              inventory.push(g); renderInventory();
-              flyGift(g,cell);
-            }
-          } else if(ore.type==="glass" && glassGift){
-            inventory.push(glassGift); renderInventory();
-            flyGift(glassGift,cell);
-          } else {
-            const g=gifts[Math.floor(Math.random()*gifts.length)];
-            inventory.push(g); renderInventory();
-            flyGift(g,cell);
-          }
-
-          // респавн
-          let respawn=(30+Math.random()*60)*1000;
-          cell.classList.add("cooldown");
-          cell.innerHTML=`<div class="block-price">${Math.round(respawn/1000)}s</div>`;
-          setTimeout(()=>spawnBlock(cell),respawn);
-        }
-      };
-    }
-
-    function generateMineGrid(){
-      const grid=document.getElementById('mineGrid'); grid.innerHTML='';
-      for(let i=0;i<16;i++){ let cell=document.createElement('div'); spawnBlock(cell); grid.appendChild(cell); }
-    }
-
-    // === Анимации полёта ===
-    function flyGift(gift,fromCell){
-      const rect=fromCell.getBoundingClientRect();
-      const fly=document.createElement('div'); fly.className='flying';
-      fly.style.left=rect.left+rect.width/2-30+"px";
-      fly.style.top=rect.top+rect.height/2-30+"px";
-      document.body.appendChild(fly);
-      const anim=lottie.loadAnimation({container:fly,renderer:'svg',loop:true,autoplay:true,path:`emoji/${gift.name}.json`});
-      const invBtn=document.getElementById('tab-inventory').getBoundingClientRect();
-      const targetX=invBtn.left+invBtn.width/2-30, targetY=invBtn.top-30;
-      fly.animate([{transform:'translate(0,0)'},{transform:`translate(${targetX-(rect.left+rect.width/2-30)}px,${targetY-(rect.top+rect.height/2-30)}px)`}],{duration:1200,easing:'ease-in-out'});
-      setTimeout(()=>{fly.remove();anim.destroy();},1200);
-    }
-    function flyTon(fromCell,amount){
-      const rect=fromCell.getBoundingClientRect();
-      const fly=document.createElement('div'); fly.className='flying';
-      fly.innerHTML=`<div style="display:flex;align-items:center;gap:4px;background:#222;padding:4px 6px;border-radius:6px;">
-        <img src="ton.svg" width="20">+${amount}</div>`;
-      fly.style.left=rect.left+rect.width/2-30+"px"; fly.style.top=rect.top+"px";
-      document.body.appendChild(fly);
-      const bal=document.getElementById('balanceBar').getBoundingClientRect();
-      const targetX=bal.left+bal.width/2-30, targetY=bal.top;
-      fly.animate([{transform:'translate(0,0)'},{transform:`translate(${targetX-(rect.left+rect.width/2-30)}px,${targetY-rect.top}px)`}],{duration:1200,easing:'ease-in-out'});
-      setTimeout(()=>fly.remove(),1200);
-    }
-
-    // === Инвентарь ===
-    function renderInventory(){
-      const list=document.getElementById('inventoryList'); list.innerHTML='';
-      inventory.forEach((gift,idx)=>{
-        const div=document.createElement('div'); div.className='gift-item';
-        div.innerHTML=`<div class="gift-top"><div class="gift-preview">${gift.name}</div><div>${gift.price} TON</div></div>`;
-        const actions=document.createElement('div'); actions.className='gift-actions';
-        const sell=document.createElement('button'); sell.textContent='Продать';
-        sell.onclick=()=>{ balance+=gift.price; updateBalance(); transactions.unshift(`Продажа: +${gift.price} TON`); updateTransactionHistory(); inventory.splice(idx,1); renderInventory(); };
-        const withdraw=document.createElement('button'); withdraw.textContent='Вывести';
-        withdraw.onclick=()=>{ transactions.unshift(`Вывод: ${gift.name}`); updateTransactionHistory(); inventory.splice(idx,1); renderInventory(); };
-        actions.appendChild(sell); actions.appendChild(withdraw); div.appendChild(actions); list.appendChild(div);
-      });
-    }
-
-    // === Баланс ===
-    function redeemPromo(){
-      const code=document.getElementById('promoCode').value.trim();
-      if(code==='BONUS10'){ balance+=10; updateBalance(); transactions.unshift("Промокод: +10 TON"); updateTransactionHistory(); alert("Промокод активирован!"); }
-      else { alert("Неверный промокод"); }
-    }
-    function addBalance(method){
-      let amount=100; let fee=0;
-      if(method==='crypto') fee=0.05;
-      if(method==='stars') fee=0.20;
-      const final=amount*(1-fee);
-      balance+=final; updateBalance();
-      transactions.unshift(`Пополнение ${amount} TON через ${method} (комиссия ${fee*100}%)`);
-      updateTransactionHistory();
-    }
-
-    // === Предзагрузка ===
-    async function preload(){
-      const files=[...Object.values(backgrounds),...oreTypes.map(o=>o.img)];
-      gifts.forEach(g=>files.push(`emoji/${g.name}.json`));
-      files.push("ton.svg","icons/cryptobot.svg","icons/stars.svg","minecraft.ttf");
-      let loaded=0;
-      for(const f of files){
-        try{
-          if (f.endsWith(".json")) {
-  await fetch(f)
-    .then(resp => {
-      if (!resp.ok) throw new Error("not found");
-      return resp.json();
-    })
-    .then(() => { /* файл ок, просто продолжаем */ })
-    .catch(() => { console.warn("Не найден файл:", f); });
-        } else {
-            await new Promise(r=>{const img=new Image(); img.onload=r; img.onerror=r; img.src=f;});
-          }
-        }catch{}
-        loaded++; document.getElementById('loaderProgressBar').style.width=`${loaded/files.length*100}%`;
-      }
-    }
-
-    async function init(){
-      lottie.loadAnimation({container:document.getElementById('loaderAnimation'),renderer:'svg',loop:true,autoplay:true,path:'myLoader.json'});
-      await preload();
-      document.getElementById('loader').classList.add('hidden');
-      updateBalance(); generateMineGrid();
-    }
-    init();
-  </script>
+</script>
 </body>
 </html>
