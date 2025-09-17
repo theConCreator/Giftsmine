@@ -2,259 +2,173 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>MineGame</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GiftsMine 🎁</title>
   <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #111;
-      color: #fff;
-      overflow: hidden;
+    @font-face { font-family:'Minecraft'; src:url('minecraft.ttf') format('truetype'); }
+    body, html {
+      margin:0; padding:0; height:100%;
+      font-family:'Minecraft',sans-serif; color:#fff;
+      overflow:hidden; display:flex; flex-direction:column;
+      background:#000 center/cover no-repeat;
+      transition: background 0.5s;
     }
-    #app {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+    #balance { padding:15px; text-align:right; font-size:1.2em; font-weight:bold; background:rgba(0,0,0,0.25); backdrop-filter:blur(5px); box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+    main { flex:1; overflow-y:auto; padding:10px; padding-bottom:70px; display:none; background: rgba(0,0,0,0.2); }
+    main.active{display:block;}
+    h2{margin-top:0;text-align:center}
+    .banner{width:100%;aspect-ratio:5/1;background:rgba(255,255,255,0.06);border-radius:10px;margin-bottom:15px;display:flex;align-items:center;justify-content:center;color:#ccc}
+    .tab-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; justify-content: space-between;
+      background: rgba(0,0,0,0.25); padding: 10px 8px;
+      border-top: 2px solid #fff; z-index: 1000;
+      box-sizing: border-box;
     }
-    header {
-      flex: 0 0 50px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background: #222;
+    .tab-bar button {
+      flex: 1; margin: 0 4px; padding: 10px;
+      font-size: 1em; border-radius: 10px; transition: 0.25s;
+      background: rgba(0,0,0,0.6); color:#fff; border:none; font-weight:bold;
     }
-    header button {
-      background: rgba(0,0,0,0.6);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      padding: 8px 14px;
-      cursor: pointer;
-      transition: background 0.2s;
+    .tab-bar button.active { background: rgba(255,255,255,0.25); }
+    button {
+      background: rgba(0,0,0,0.6); color:#fff; border:none;
+      border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:bold;
+      transition:0.3s;
     }
-    header button:hover {
-      background: rgba(255,255,255,0.15);
-    }
-    main {
-      flex: 1;
-      overflow: auto;
-      position: relative;
-    }
-    .hidden { display: none; }
-    #loader {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    #loaderProgress {
-      width: 60%;
-      height: 12px;
-      background: #333;
-      border-radius: 6px;
-      overflow: hidden;
-      margin-top: 20px;
-    }
-    #loaderProgressBar {
-      height: 100%;
-      width: 0%;
-      background: #4caf50;
-      transition: width 0.2s;
-    }
-    /* Меню */
-    #menu {
-      width: 100%;
-      height: 100%;
-      background: url('backgrounds/menu.jpg') center/cover no-repeat;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    #menuBanner {
-      width: 80%;
-      aspect-ratio: 5 / 1;
-      background: rgba(0,0,0,0.5);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 1.2em;
-    }
-    /* Шахта */
-    #mineGrid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 4px;
-      padding: 10px;
-    }
+    button:hover { background: rgba(255,255,255,0.2); }
+    .grid { display:grid; gap:5px; justify-content:center; }
+    #mineGrid { grid-template-columns: repeat(4, minmax(60px,1fr)); }
     .block {
-      position: relative;
-      aspect-ratio: 1;
-      background-size: cover;
-      background-position: center;
-      border-radius: 6px;
-      cursor: pointer;
-      overflow: hidden;
+      aspect-ratio:1/1; background:#333; display:flex;
+      align-items:center; justify-content:center; cursor:pointer;
+      transition:0.2s; position:relative; overflow:hidden;
+      background-size:cover; background-position:center;
+      border-radius:6px; image-rendering: pixelated;
     }
-    .block.disabled {
-      background-color: rgba(0,0,0,0.5);
-      pointer-events: none;
+    .block-price, .block-timer {
+      position:absolute; font-size:0.65em; padding:2px 4px;
+      border-radius:4px; background:rgba(0,0,0,0.55);
+      display:flex; align-items:center; gap:2px;
     }
-    .priceTag, .timerTag {
-      position: absolute;
-      background: rgba(0,0,0,0.6);
-      padding: 2px 5px;
-      border-radius: 6px;
-      font-size: 0.7em;
+    .block-price { bottom:2px; right:2px; }
+    .block-timer { top:2px; left:2px; }
+    .block.cooldown { filter:brightness(0.5); cursor:not-allowed; }
+    .inventory-list { display:flex; flex-direction:column; gap:12px; }
+    .gift-item { display:flex; flex-direction:column; background: rgba(20,20,20,0.95); border-radius:10px; padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.5); color:#fff; }
+    .gift-top { display:flex; gap:10px; align-items:center; margin-bottom:8px; }
+    .gift-preview { width:60px; height:60px; flex-shrink:0; border-radius:6px; overflow:hidden; background:#111; display:flex; align-items:center; justify-content:center; }
+    .gift-info { display:flex; flex-direction:column; justify-content:center; gap:4px; flex-grow:1; }
+    .gift-name { font-size:1em; font-weight:bold; }
+    .gift-price { font-size:0.9em; color:#ccc; }
+    .gift-actions { display:flex; gap:10px; margin-top:6px; }
+    .gift-actions button { flex:1; padding:6px; font-size:0.85em; }
+    .flying { position:absolute; width:60px; height:60px; pointer-events:none; z-index:10000; }
+    #loader {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      flex-direction:column; z-index:9999; background:#000;
+      transition:opacity 0.6s ease;
     }
-    .priceTag {
-      bottom: 4px;
-      right: 4px;
-    }
-    .timerTag {
-      top: 4px;
-      left: 4px;
-    }
-    .breakStage {
-      position: absolute;
-      inset: 0;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-      image-rendering: pixelated;
-      pointer-events: none;
-    }
-    /* Инвентарь */
-    #inventoryList {
-      padding: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .giftCard {
-      background: rgba(0,0,0,0.5);
-      border-radius: 8px;
-      padding: 10px;
-      width: 150px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .giftActions button {
-      margin: 4px;
-      background: rgba(0,0,0,0.6);
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      padding: 4px 8px;
-      cursor: pointer;
-    }
-    /* Баланс */
-    #balanceSection {
-      padding: 12px;
-    }
-    .balanceCard {
-      background: rgba(0,0,0,0.5);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-    .depositButton {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(0,0,0,0.6);
-      border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      margin: 6px 0;
-      width: 100%;
-      cursor: pointer;
-    }
-    .depositButton img {
-      width: 20px;
-      margin-right: 10px;
-    }
-    #transactionHistory {
-      font-size: 0.9em;
-    }
+    #loader.hidden { opacity:0; pointer-events:none; }
+    #loaderAnimation { width:120px; height:120px; margin-bottom:15px; }
+    #loaderProgress { width:50%; height:14px; background:#333; border-radius:10px; overflow:hidden; }
+    #loaderProgressBar { width:0%; height:100%; background:#ff9a9e; transition:width 0.3s; }
+    input[type="text"]{padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-weight:bold;width:100%;}
+    .balance-section { margin:15px 0; padding:10px; background:rgba(0,0,0,0.35); border-radius:10px; }
+    .balance-buttons button{width:100%; margin-bottom:8px;}
+    @media (max-width:500px){ .tab-bar button{font-size:0.85em;padding:8px;} #balance{font-size:1em;padding:10px;} #mineGrid{gap:3px;} }
   </style>
 </head>
 <body>
-  <div id="loader">
-    <div id="loaderAnimation"></div>
-    <div id="loaderProgress">
-      <div id="loaderProgressBar"></div>
+<div id="loader">
+  <div id="loaderAnimation"></div>
+  <div id="loaderProgress"><div id="loaderProgressBar"></div></div>
+  <p style="color:#fff;font-size:1.1em;margin-top:8px">Загрузка ресурсов...</p>
+</div>
+
+<div id="balance">Баланс: 10000 <img src="ton.svg" style="width:16px;vertical-align:middle"></div>
+
+<main id="menu" class="active">
+  <h2>Главное меню</h2>
+  <a href="https://t.me/theConCreator" target="_blank" class="banner">
+    <img src="images/banner.jpg" alt="Реклама" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+  </a>
+  <p style="text-align:center;color:#bbb">Выбирай режим и зарабатывай подарки!</p>
+</main>
+
+<main id="mine">
+  <h2>Шахта</h2>
+  <div id="brokenBlocks" style="text-align:center;margin-bottom:12px">Сломано блоков: 0</div>
+  <div class="grid" id="mineGrid"></div>
+</main>
+
+<main id="inventory">
+  <h2>Инвентарь</h2>
+  <div class="inventory-list" id="inventoryList"></div>
+</main>
+
+<main id="balanceTab">
+  <h2>Баланс</h2>
+  <div class="balance-section">
+    <h3>Пополнение</h3>
+    <div class="balance-buttons">
+      <button onclick="addBalance('TON')"><img src="icons/ton.svg" style="width:16px;vertical-align:middle"> TON-кошелёк (0% комиссия)</button>
+      <button onclick="addBalance('CryptoBot')"><img src="icons/cryptobot.svg" style="width:16px;vertical-align:middle"> CryptoBot (5% комиссия)</button>
+      <button onclick="addBalance('Stars')"><img src="icons/stars.svg" style="width:16px;vertical-align:middle"> Telegram Stars (20% комиссия)</button>
     </div>
   </div>
-  <div id="app">
-    <header>
-      <button onclick="showTab('menu')">Меню</button>
-      <button onclick="showTab('mine')">Шахта</button>
-      <button onclick="showTab('inventory')">Инвентарь</button>
-      <button onclick="showTab('balance')">Баланс</button>
-    </header>
-    <main>
-      <section id="menu">
-        <div id="menuBanner">Рекламный баннер</div>
-      </section>
-      <section id="mine" class="hidden">
-        <div id="mineGrid"></div>
-      </section>
-      <section id="inventory" class="hidden">
-        <div id="inventoryList"></div>
-      </section>
-      <section id="balance" class="hidden">
-        <div id="balanceSection">
-          <div class="balanceCard">
-            <h3>Пополнение</h3>
-            <button class="depositButton" onclick="addBalance('ton')">
-              <span><img src="icons/ton.svg"> TON кошелёк</span>
-              <span>0% комиссия</span>
-            </button>
-            <button class="depositButton" onclick="addBalance('crypto')">
-              <span><img src="icons/cryptobot.svg"> Crypto bot</span>
-              <span>5% комиссия</span>
-            </button>
-            <button class="depositButton" onclick="addBalance('stars')">
-              <span><img src="icons/stars.svg"> Telegram Stars</span>
-              <span>20% комиссия</span>
-            </button>
-          </div>
-          <div class="balanceCard">
-            <h3>Промокод</h3>
-            <input id="promoCode" placeholder="Введите промокод">
-            <button onclick="redeemPromo()">Активировать</button>
-          </div>
-          <div class="balanceCard">
-            <h3>Реферальная программа</h3>
-            <p>+0.5% с депозита за каждый сломанный блок (макс. 20%).</p>
-            <p id="refPercent">Текущий бонус: 1%</p>
-          </div>
-          <div class="balanceCard">
-            <h3>История операций</h3>
-            <div id="transactionHistory"></div>
-          </div>
-        </div>
-      </section>
-    </main>
+  <div class="balance-section">
+    <h3>Реферальная программа</h3>
+    <p>+0.5% к бонусу с депозитов рефералов за каждый сломанный блок (максимум 20%).</p>
+    <p id="refPercent">Текущий бонус: 1%</p>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.2/lottie.min.js"></script>
-  <script>
-    let balance = 100;
-    let inventory = [];
-    let transactions = [];
-    let brokenBlocks = 0;
-    let refPercent = 1;
-    const gifts = [
+  <div class="balance-section">
+    <h3>Промокод</h3>
+    <input type="text" id="promoCode" placeholder="Введите промокод">
+    <button style="margin-top:8px;width:100%" onclick="redeemPromo()">Активировать</button>
+  </div>
+  <div class="balance-section">
+    <h3>История операций</h3>
+    <div id="transactionHistory"></div>
+  </div>
+</main>
+
+<div class="tab-bar">
+  <button onclick="showTab('menu')" id="tab-menu" class="active">Меню</button>
+  <button onclick="showTab('mine')" id="tab-mine">Шахта</button>
+  <button onclick="showTab('inventory')" id="tab-inventory">Инвентарь</button>
+  <button onclick="showTab('balanceTab')" id="tab-balanceTab">Баланс</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+<script>
+// Лоадер
+let loaderAnim=lottie.loadAnimation({container:document.getElementById('loaderAnimation'),renderer:'svg',loop:true,autoplay:true,path:'animations/myLoader.json'});
+
+// Основные переменные
+let balance=10000,transactions=[],inventory=[],brokenBlocks=0,refPercent=1,firstMineCount=0;
+const animationMap={};
+const backgrounds={menu:'images/menu.jpg',mine:'images/mine.jpg',inventory:'images/inventory.jpg',balanceTab:'images/mobs.jpg'};
+document.body.style.backgroundImage=`url(${backgrounds.menu})`;
+
+// Функции обновления
+function updateBalance(){document.getElementById('balance').innerHTML=`Баланс: ${balance.toFixed(2)} <img src="ton.svg" style="width:16px;vertical-align:middle">`;}
+function updateTransactionHistory(){const el=document.getElementById('transactionHistory'); el.innerHTML=transactions.map(t=>`<div style="padding:4px 0;font-size:0.85em;color:#ddd">${t}</div>`).join('');}
+function updateBrokenBlocks(){document.getElementById('brokenBlocks').textContent=`Сломано блоков: ${brokenBlocks}`; document.getElementById('refPercent').textContent=`Текущий бонус: ${Math.min(refPercent,20).toFixed(1)}%`;}
+
+// Переключение вкладок
+function showTab(id){
+  document.querySelectorAll('main').forEach(m=>m.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.body.style.backgroundImage=`url(${backgrounds[id]})`;
+  if(id==='inventory') renderInventory();
+}
+
+// Подарки (пример, список можно расширить)
+const gifts = [
       {name:"Hypno Lollipop",price:1.77}, {name:"Desk Calendar",price:1.31},
       {name:"B-Day Candle",price:1.32}, {name:"Lol Pop",price:1.32},
       {name:"Lunar Snake",price:1.38}, {name:"Snake Box",price:1.36},
@@ -301,102 +215,150 @@
       {name:"Precious Peach",price:379.99}, {name:"Durov’s Cap",price:794.9},
       {name:"Heart Locket",price:1450}, {name:"Plush Pepe",price:5199}
     ];
-    const blocks = ["coal","iron","gold","diamond","emerald","earth","glass"];
 
-    function showTab(id){
-      document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
-      document.getElementById(id).classList.remove("hidden");
-    }
+// Руды
+const oreTypes=[
+  {img:"images/ores/coal.png",hits:3,min:1,max:5},
+  {img:"images/ores/iron.png",hits:4,min:3,max:10},
+  {img:"images/ores/gold.png",hits:5,min:6,max:20},
+  {img:"images/ores/diamond.png",hits:6,min:10,max:50},
+  {img:"images/ores/emerald.png",hits:7,min:15,max:70},
+  {img:"images/ores/dirt.png",hits:2,min:0.1,max:1,type:"dirt"},
+  {img:"images/ores/glass.png",hits:5,min:3,max:20,type:"glass"}
+];
 
-    function updateBalance(){
-      document.querySelector("header").children[3].textContent = "Баланс: "+balance.toFixed(2)+" TON";
-    }
-    function updateTransactionHistory(){
-      document.getElementById("transactionHistory").innerHTML = transactions.map(t=>"<div>"+t+"</div>").join("");
-    }
-    function updateRefPercent(){
-      document.getElementById("refPercent").textContent = "Текущий бонус: "+refPercent.toFixed(1)+"%";
-    }
+// Получение подарка
+function getGiftByPrice(price,isFirst=false){
+  let min=price*0.5,max=price*3;
+  let possible=gifts.filter(g=>g.price>=min && g.price<=max);
+  if(possible.length===0) possible=gifts;
+  return possible[Math.floor(Math.random()*possible.length)];
+}
 
-    function generateMineGrid(){
-      const grid=document.getElementById("mineGrid");
-      grid.innerHTML="";
-      for(let i=0;i<20;i++){
-        const block=document.createElement("div");
-        block.className="block";
-        const type=blocks[Math.floor(Math.random()*blocks.length)];
-        block.dataset.type=type;
-        block.style.backgroundImage=`url(blocks/${type}.png)`;
-        const price=type==="earth"?1:Math.floor(Math.random()*20)+1;
-        block.dataset.price=price;
-        const priceTag=document.createElement("div");
-        priceTag.className="priceTag";
-        priceTag.textContent=price+" TON";
-        block.appendChild(priceTag);
-        block.onclick=()=>mineBlock(block);
-        grid.appendChild(block);
+// Генерация блока
+function spawnBlock(cell,index=0){
+  const ore=oreTypes[Math.floor(Math.random()*oreTypes.length)];
+  let price=+(ore.min+Math.random()*(ore.max-ore.min)).toFixed(2);
+  cell.className="block"; cell.style.backgroundImage=`url(${ore.img})`;
+  cell.innerHTML=`<div class="block-price">${price}<img src="ton.svg" style="width:12px;vertical-align:middle"></div>`;
+  let hits=0;
+  cell.onclick=()=>{
+    if(balance<price) return alert("Недостаточно средств!");
+    hits++;
+    let stage=Math.floor(hits/ore.hits*9);
+    cell.style.backgroundImage=`url(destroy/destroy_stage_${stage}.png), url(${ore.img})`;
+    if(hits>=ore.hits){
+      brokenBlocks++; updateBrokenBlocks();
+      balance-=price; updateBalance();
+      transactions.unshift(`Потрачено ${price.toFixed(2)} TON на блок`);
+      updateTransactionHistory();
+
+      if(ore.type==="dirt"){
+        if(Math.random()<0.5){
+          balance+=0.1; updateBalance();
+          transactions.unshift("Получение из блока +0.1 TON"); updateTransactionHistory();
+          flyTon(cell,0.1);
+        } else {
+          let cheap=gifts.filter(g=>g.price<2);
+          let gift=cheap[Math.floor(Math.random()*cheap.length)];
+          inventory.push(gift); renderInventory(); flyGift(gift,cell);
+        }
+      } else if(ore.type==="glass"){
+        let gift=gifts.filter(g=>g.price>=price*1.5 && g.price<=price*3);
+        if(gift.length>0) gift=gift[Math.floor(Math.random()*gift.length)];
+        else gift=getGiftByPrice(price);
+        inventory.push(gift); renderInventory(); flyGift(gift,cell);
+      } else {
+        let gift=getGiftByPrice(price,index===0);
+        inventory.push(gift); renderInventory(); flyGift(gift,cell);
       }
-    }
 
-    function mineBlock(block){
-      const price=parseFloat(block.dataset.price);
-      if(balance<price){alert("Недостаточно средств!");return;}
-      balance-=price;updateBalance();
-      transactions.unshift("Списано "+price+" TON за ломание блока");
-      updateTransactionHistory();
-      block.classList.add("disabled");
-      const timer=document.createElement("div");
-      timer.className="timerTag";
-      timer.textContent="5с";
-      block.appendChild(timer);
-      let t=5;
-      const interval=setInterval(()=>{
-        t--;timer.textContent=t+"с";
-        if(t<=0){clearInterval(interval);block.classList.remove("disabled");generateMineGrid();}
-      },1000);
-      brokenBlocks++;if(refPercent<20)refPercent+=0.5;updateRefPercent();
+      let respawn=(60+Math.random()*1740)*1000;
+      cell.classList.add("cooldown");
+      cell.innerHTML=`<div class="block-timer">${Math.round(respawn/60000)}m</div>`;
+      cell.onclick=null;
+      setTimeout(()=>{ cell.classList.remove("cooldown"); spawnBlock(cell,index); },respawn);
     }
+  };
+}
 
-    function addBalance(method){
-      let amount=100;let fee=0;
-      if(method==="crypto") fee=0.05;
-      if(method==="stars") fee=0.20;
-      let final=amount*(1-fee);
-      balance+=final;updateBalance();
-      transactions.unshift("Пополнение "+final+" TON через "+method);
-      updateTransactionHistory();
-    }
-    function redeemPromo(){
-      const code=document.getElementById("promoCode").value.trim();
-      if(code==="BONUS10"){balance+=10;updateBalance();transactions.unshift("Промокод +10 TON");}
-      else{transactions.unshift("Неверный промокод");}
-      updateTransactionHistory();
-    }
+// Летающий подарок
+function flyGift(gift, fromCell){
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'flying';
+  fly.style.left = rect.left + rect.width / 2 - 30 + 'px';
+  fly.style.top  = rect.top  + rect.height / 2 - 30 + 'px';
+  document.body.appendChild(fly);
+  const anim = lottie.loadAnimation({container: fly,renderer: 'svg',loop:true,autoplay:true,path: `emoji/${gift.name}.json`});
+  const invBtn = document.getElementById('tab-inventory').getBoundingClientRect();
+  const targetX = invBtn.left + invBtn.width / 2 - 30;
+  const targetY = invBtn.top  + invBtn.height / 2 - 30;
+  fly.animate([{ transform: 'translate(0,0)' },{ transform: `translate(${targetX - (rect.left + rect.width / 2 - 30)}px, ${targetY - (rect.top + rect.height / 2 - 30)}px)` }], { duration: 1500, easing: 'ease-in-out' });
+  setTimeout(()=>{ fly.remove(); anim.destroy(); },1500);
+}
 
-    async function preload(){
-      const files=[...blocks.map(b=>"blocks/"+b+".png"),...Array.from({length:10},(_,i)=>"destroy/destroy_stage_"+i+".png"),...gifts.map(g=>"emoji/"+g.name+".json"),"backgrounds/menu.jpg","icons/ton.svg","icons/cryptobot.svg","icons/stars.svg","ton.svg"];
-      let loaded=0;
-      for(const f of files){
-        try{
-          if(f.endsWith(".json")){
-            await fetch(f).then(r=>{if(!r.ok)throw 0;return r.json();});
-          }else{
-            await new Promise((res,rej)=>{const img=new Image();img.onload=res;img.onerror=res;img.src=f;});
-          }
-        }catch{}
-        loaded++;document.getElementById("loaderProgressBar").style.width=(loaded/files.length*100)+"%";
-      }
-    }
-    async function init(){
-      lottie.loadAnimation({container:document.getElementById("loaderAnimation"),renderer:"svg",loop:true,autoplay:true,path:"myLoader.json"});
-      await preload();
-      document.getElementById("loader").classList.add("hidden");
-      generateMineGrid();
-      updateBalance();
-      updateTransactionHistory();
-      updateRefPercent();
-    }
-    init();
-  </script>
+// Летающий TON
+function flyTon(fromCell,amount){
+  const rect = fromCell.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'flying';
+  fly.style.left = rect.left + rect.width/2 - 15 + 'px';
+  fly.style.top  = rect.top  + rect.height/2 - 15 + 'px';
+  fly.innerHTML = `<img src="ton.svg" style="width:30px"><span style="position:absolute;color:white;font-size:0.8em;font-weight:bold">${amount}</span>`;
+  document.body.appendChild(fly);
+  const bal = document.getElementById('balance').getBoundingClientRect();
+  const targetX = bal.left + bal.width/2 - 15;
+  const targetY = bal.top - 20;
+  fly.animate([{ transform: 'translate(0,0)' },{ transform: `translate(${targetX - (rect.left + rect.width/2 - 15)}px, ${targetY - (rect.top + rect.height/2 - 15)}px)` }], { duration: 1200, easing: 'ease-in-out' });
+  setTimeout(()=>fly.remove(),1200);
+}
+
+// Рендер инвентаря
+function renderInventory(){
+  const inv=document.getElementById('inventoryList');
+  inv.innerHTML='';
+  inventory.forEach((gift,i)=>{
+    const item=document.createElement('div'); item.className='gift-item';
+    item.innerHTML=`
+      <div class="gift-top">
+        <div class="gift-preview" id="preview-${i}"></div>
+        <div class="gift-info">
+          <div class="gift-name">${gift.name}</div>
+          <div class="gift-price">${gift.price.toFixed(2)} TON</div>
+        </div>
+      </div>
+      <div class="gift-actions">
+        <button onclick="sellGift(${i})">Продать</button>
+        <button onclick="withdrawGift(${i})">Вывод</button>
+      </div>`;
+    inv.appendChild(item);
+    const anim=lottie.loadAnimation({container:document.getElementById(`preview-${i}`),renderer:'svg',loop:true,autoplay:true,path:`emoji/${gift.name}.json`});
+    animationMap[i]=anim;
+  });
+}
+
+// Продажа и вывод
+function sellGift(i){balance+=inventory[i].price;updateBalance();transactions.unshift(`Продан ${inventory[i].name} +${inventory[i].price.toFixed(2)} TON`);updateTransactionHistory();inventory.splice(i,1);renderInventory();}
+function withdrawGift(i){transactions.unshift(`Выведен ${inventory[i].name}`);updateTransactionHistory();inventory.splice(i,1);renderInventory();}
+
+// Баланс
+function addBalance(type){let a=prompt("Введите сумму пополнения:");if(!a)return;a=parseFloat(a);if(isNaN(a)||a<=0)return;let comm=0;if(type==='CryptoBot')comm=0.05;if(type==='Stars')comm=0.2;a=a*(1-comm);a+=a*(refPercent/100);balance+=a;updateBalance();transactions.unshift(`Пополнение ${type}: +${a.toFixed(2)} TON`);updateTransactionHistory();}
+function redeemPromo(){let code=document.getElementById('promoCode').value.trim();if(code==='FREE100'){balance+=100;updateBalance();transactions.unshift("Активирован промокод +100 TON");updateTransactionHistory();}}
+
+// Инициализация
+async function preloadResources(){
+  const urls=[...Object.values(backgrounds),'animations/myLoader.json',...gifts.map(g=>`emoji/${g.name}.json`),...oreTypes.map(o=>o.img),...Array.from({length:10},(_,i)=>`destroy/destroy_stage_${i}.png`)];
+  let loaded=0;
+  for(const url of urls){
+    try{await fetch(url);loaded++;document.getElementById('loaderProgressBar').style.width=((loaded/urls.length)*100)+'%';}
+    catch(e){console.warn("skip",url);}
+  }
+  setTimeout(()=>{document.getElementById('loader').classList.add('hidden');showTab('menu');},500);
+}
+function initMine(){const grid=document.getElementById('mineGrid');for(let i=0;i<12;i++){const cell=document.createElement('div');cell.className='block';grid.appendChild(cell);spawnBlock(cell,i);}}
+function init(){updateBalance();updateTransactionHistory();updateBrokenBlocks();initMine();preloadResources();}
+init();
+</script>
 </body>
 </html>
